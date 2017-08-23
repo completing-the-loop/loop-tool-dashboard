@@ -22,7 +22,7 @@ Key functionality
 ### Tech Stack
 * Ubuntu 14 LTS
 * nginx + gunicorn
-* Python 3.4
+* Python 3.5
 * Django 1.11
 * MySQL 5.6
 * node 6 (dev only)
