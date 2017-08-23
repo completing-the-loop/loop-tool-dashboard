@@ -1,0 +1,63 @@
+"""
+Common settings for production/staging/ci etc
+"""
+from .base import *
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Core Site configuration
+
+ALLOWED_HOSTS = [
+    # overridden in the hostname_*.py files
+]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# SECRET_KEY
+SECRET_KEY = get_env_setting('SECRET_KEY')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Database Configuration
+DATABASES['default']['HOST'] = get_env_setting('DB_HOST')
+DATABASES['default']['NAME'] = get_env_setting('DB_NAME')
+DATABASES['default']['USER'] = get_env_setting('DB_USER')
+DATABASES['default']['PASSWORD'] = get_env_setting('DB_PASSWORD')
+
+
+# Useful on heroku
+# DATABASES['default'].update({
+#     (key, value)
+#     for (key, value) in dj_database_url.config().items()
+#     if key in ('NAME', 'USER', 'PASSWORD', 'HOST', 'PORT')
+# })
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Email Configuration
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = get_env_setting('EMAIL_HOST', 'localhost')
+EMAIL_PORT = get_env_setting('EMAIL_PORT', 25)
+EMAIL_HOST_USER = get_env_setting('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = get_env_setting('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+# EMAIL_TIMEOUT =
+# EMAIL_FILE_PATH =
+
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
+EMAIL_SUBJECT_PREFIX = '[%s] ' % SITE_NAME
+
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
+SERVER_EMAIL = 'webmaster@localhost'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Cache configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}

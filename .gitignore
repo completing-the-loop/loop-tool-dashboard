@@ -1,0 +1,25 @@
+*.mwb.bak
+*.pyc
+
+.DS_Store
+.idea
+.tox
+
+SECRET_KEY
+
+# Third party packages
+bower_components
+node_modules
+requirements/src
+
+# dev files
+frontend/build/*
+frontend/dist/*
+venv/
+
+log/*
+
+# Media files
+assets/
+media/
+

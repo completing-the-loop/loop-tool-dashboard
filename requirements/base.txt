@@ -1,0 +1,48 @@
+Django==1.11.*
+
+# Alliance software utils
+-e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@v/0.1#egg=allianceutils
+
+# AWS interface (esp access to S3 storage)
+#boto
+
+# Django authentication tools
+django-authtools
+
+# HTML editor
+#django-ckeditor
+
+# Useful extensions (eg reset_db, shell_plus, runserver_plus)
+# 1.7.5 required for picking up mysql database settings correctly
+django-extensions>=1.7.5
+
+# Impersonate users
+django-hijack
+
+# Export
+#django-import-export
+
+# Default views to requiring login
+django-stronghold
+
+# Django webpack bundle
+django-webpack-loader
+
+# Django APIs
+djangorestframework
+
+# Mysql database support
+mysqlclient
+
+# django timezones will use this if present
+# do NOT specify a version number: we want pip to not install the pytz but
+# instead use patched version from os repo if possible, because ubuntu/redhat/
+# debian patchs pytz to reads tzdata from os updates instead of files bundled
+# with official pytz which only gets updated with pytz itself
+pytz
+
+# better django authentication
+rules
+
+# Better python directory utils interface
+Unipath

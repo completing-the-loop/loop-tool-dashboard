@@ -1,0 +1,18 @@
+# Local development dependencies go here
+-r base.txt
+
+# django dev tools
+django-debug-toolbar
+
+# test dependencies
+#coverage
+#mock
+
+# python module dependencies
+pip-autoremove
+
+# python import sorter
+isort
+
+# show pip dependency tree
+pipdeptree

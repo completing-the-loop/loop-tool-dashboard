@@ -1,0 +1,87 @@
+# For a better understanding of what this file is and how to modify it, see
+#
+# https://alliancesoftware.atlassian.net/wiki/display/TEC/End-to-End+CI+Testing
+#
+# All lines starting with # is treated as comment in yaml.
+# set your variables here
+variables:
+  DJANGO_SETTINGS_MODULE: django_site.settings.ci
+
+
+cache:
+  key: global
+  paths:
+    - ci-cache
+
+
+# SSH_DEPLOY_KEY should be set via a gitlab project variable if you need to
+# check out other repositories
+before_script:
+  - time source gitlab-ci-init-python.inc
+      --ssh-key "$SSH_DEPLOY_KEY"
+      --verbose
+      # --verbose
+      # --verbose
+
+
+image: alliance/python
+
+
+lint:
+  script:
+    # we install required packages so linter's isort can know what is(n't) a 3rd party package
+    - time pip install -r requirements.txt
+    - time pip install -r requirements/dev.txt
+    - time bin/lint.sh
+#  when: manual
+
+
+# basic test
+# note this is just a sample, showing you how to set part of a CI task to be "manual"
+# manual jobs can be started by going to the pipelines page and click on start button
+test-python:
+  services:
+    - postgres:9.5
+    #- alliance/mysql:5.7
+
+  script:
+    # If you're writing libraries then you probably only need tox
+    #- tox
+    # Python unit tests
+    - time pip install -r requirements.txt
+    # TODO: Example of django unit test
+
+  when: manual
+
+# frontend browser-based tests
+test-frontend:
+  services:
+    - postgres:9.5
+    #- alliance/mysql:5.7
+
+    - selenium/standalone-chrome:3
+    #- selenium/standalone-firefox:3
+
+  script:
+    # build frontend JS
+    - ( cd frontend && time yarn install )
+    - ( cd frontend && time bower install )
+    - ( cd frontend && time yarn run build )
+
+    # django server
+    - export MOCK_DATES=1
+    - export NO_DEBUG_TOOLBAR=1
+    - time pip install -r requirements.txt
+    - ( cd django-site && time ./manage.py collectstatic --verbosity 3 --noinput )
+    - time bin/reset-db.sh --no-fixtures
+    # use DEBUG_SQL=1 if you want to log SQL queries (note gitlab-ci 4mb output limit)
+    - ( cd django-site && DEBUG_SQL=0 ./manage.py runserver_plus --insecure --noreload 0.0.0.0:8000 ) &
+    - ~/bin/wait-for-server.sh 127.0.0.1 8000
+
+    # install dependencies
+    # turn off the default proxy if needed
+    #- unset http_proxy
+    #- unset https_proxy
+    # TODO: Launch tests here
+    - echo 'Success'
+  when: manual
