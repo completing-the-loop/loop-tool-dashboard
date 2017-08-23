@@ -81,6 +81,7 @@ INSTALLED_APPS = (
 
     # project specific
     'django_site',
+    'dashboard',
 
     # 3rd party
     # 'admin_steroids',

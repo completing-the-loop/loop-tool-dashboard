@@ -34,6 +34,12 @@ djangorestframework
 # Mysql database support
 mysqlclient
 
+# Used in handling data for data analysis
+pandas
+
+# Dynamic generation of Word docs
+python-docx
+
 # django timezones will use this if present
 # do NOT specify a version number: we want pip to not install the pytz but
 # instead use patched version from os repo if possible, because ubuntu/redhat/
@@ -46,3 +52,4 @@ rules
 
 # Better python directory utils interface
 Unipath
+
