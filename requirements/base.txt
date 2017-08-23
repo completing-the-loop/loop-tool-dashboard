@@ -1,7 +1,7 @@
 Django==1.11.*
 
 # Alliance software utils
--e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@v/0.1#egg=allianceutils
+-e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@ba2dcdf41f03103f19d228660d726e0ff89d04d3#egg=allianceutils
 
 # AWS interface (esp access to S3 storage)
 #boto

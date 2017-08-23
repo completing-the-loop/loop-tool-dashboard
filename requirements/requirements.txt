@@ -1,12 +1,12 @@
--e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@8d7739315243f839126179ec207c08103f130f3c#egg=allianceutils
+-e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@ba2dcdf41f03103f19d228660d726e0ff89d04d3#egg=allianceutils
 Django==1.11.4
 django-authtools==1.6.0
 django-compat==1.0.14
-django-extensions==1.8.1
+django-extensions==1.9.0
 django-hijack==2.1.4
 django-stronghold==0.2.9
 django-webpack-loader==0.5.0
-djangorestframework==3.6.3
+djangorestframework==3.6.4
 mysqlclient==1.3.10
 pytz
 rules==1.2.1
