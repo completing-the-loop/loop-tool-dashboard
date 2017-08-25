@@ -64,7 +64,7 @@ def get_prepostevent_treetable(course_id, course_weeks, treelist_json, curr_evt,
     for page in treelist:
         pageid2 = int(page[0]) #int(row[2])
 
-        cursor = connections['olap'].cursor()
+        cursor = connections['default'].cursor()
         res_sql = "SELECT title, content_type, content_id, parent_id, order_no FROM dim_pages WHERE content_id=%d AND course_id=%d order by order_no;" %(pageid2, course_id)
         row_count = cursor.execute(res_sql)
         row = cursor.fetchall()
@@ -148,7 +148,7 @@ def get_prepostevent_table(course_id, curr_evt, contenttype, course_weeks, cours
     table.append("</thead>")
     table.append("<tbody>\n")
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     res_sql = "SELECT title, content_type, content_id, parent_id FROM dim_pages WHERE content_type IN (%s) AND course_id=%d order by order_no;" %(contentdisplaytype, course_id)
 
@@ -200,7 +200,7 @@ def getusers_prepostevent_table(course_id, curr_evt, course_weeks):
     table.append("</thead>")
     table.append("<tbody>\n")
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT user_pk,firstname,lastname,role, lms_id FROM dim_users WHERE course_id=%d ORDER BY lastname;" %(course_id) #need to make dynamic
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -242,7 +242,7 @@ def getusers_prepostevent_table(course_id, curr_evt, course_weeks):
 
 def get_userweekcountforviz(week,userid,course_id):
     pageviews = 0
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT SUM(F.pageview) AS pageviews FROM fact_coursevisits F INNER JOIN dim_dates  D ON F.Date_Id = D.Id WHERE F.user_id='%s' AND F.course_id=%d AND D.Date_week=%d;" % (userid, course_id, int(week))
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -256,7 +256,7 @@ def get_usereventpre_postcounts(week,userid,course_id, curr_evt):
     evt_pre_list = range(0,curr_evt)
     curr_evt_str = ','.join(map(str, evt_pre_list))
     pageviews = 0
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT SUM(F.pageview) AS pageviews FROM fact_coursevisits F INNER JOIN dim_dates  D ON F.Date_Id = D.Id WHERE F.course_id=%d AND F.user_id=%s AND D.date_week=%d AND D.date_dayinweek IN (%s);" % (course_id, str(userid), week, curr_evt_str)
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -268,7 +268,7 @@ def get_usereventpre_postcounts(week,userid,course_id, curr_evt):
 
 def get_weekcountforviz(week, pageid, course_id):
     pageviews = 0
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT SUM(F.pageview) AS pageviews FROM fact_coursevisits F INNER JOIN dim_dates  D ON F.Date_Id = D.Id WHERE F.course_id=%d AND F.page_id=%d AND D.date_week=%d;" % (course_id, int(pageid), int(week))
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -279,7 +279,7 @@ def get_weekcountforviz(week, pageid, course_id):
     return pageviews
 
 def get_eventpre_postcounts(week, pageid, course_id, curr_evt):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     evt_pre_list = range(0,curr_evt)
     curr_evt_str = ','.join(map(str, evt_pre_list))
     pageviews = 0
@@ -350,7 +350,7 @@ def weekbegend(year, week):
     return weekbeg, weekend, begweek_unix, endweek_unix
 
 def get_userweekcount(week,pageid, course_id, content_type, order_no):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
     sql = ""
     if content_type=="section":
@@ -365,7 +365,7 @@ def get_userweekcount(week,pageid, course_id, content_type, order_no):
     return int(usercounts)
 
 def get_quizusercount(week,pageid, course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
     # convert week to datetimestamp
     start, end, startunix, endunix = weekbegend(2015, week)
@@ -381,7 +381,7 @@ def get_quizusercount(week,pageid, course_id):
     return int(usercounts)
 
 def get_quizusercoursecount(pageid, course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
 
     sql = ""
@@ -394,7 +394,7 @@ def get_quizusercoursecount(pageid, course_id):
     return int(usercounts)
 
 def get_usercoursecount(pageid, course_id, content_type, order_no):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
     sql = ""
     if content_type=="section":
@@ -409,7 +409,7 @@ def get_usercoursecount(pageid, course_id, content_type, order_no):
     return int(usercounts)
 
 def get_noforumposts(pageid, course_id, week_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     no_posts = 0
     sql = ""
     sql = "SELECT COUNT(F.id) AS pageviews, D.date_week  FROM summary_posts F INNER JOIN dim_dates  D ON F.Date_Id = D.Id WHERE F.course_id=%d AND F.forum_id=%d AND D.date_week=%d;" % (course_id, int(pageid), week_id)
@@ -422,7 +422,7 @@ def get_noforumposts(pageid, course_id, week_id):
     return int(no_posts)
 
 def get_usernoforumposts(pageid, course_id, user_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     no_posts = 0
     if unixstart is None:
         sql = "SELECT COUNT(F.id) AS pageviews, D.date_week  FROM summary_posts F INNER JOIN dim_dates  D ON F.Date_Id = D.Id WHERE F.course_id=%d AND F.forum_id=%d AND F.user_id=%d;" % (course_id, int(pageid), user_id)
@@ -437,7 +437,7 @@ def get_usernoforumposts(pageid, course_id, user_id, unixstart=None, unixend=Non
     return int(no_posts)
 
 def get_nocourseforumposts(pageid, course_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     no_posts = 0
     sql = ""
     if unixstart is None:
@@ -452,7 +452,7 @@ def get_nocourseforumposts(pageid, course_id, unixstart=None, unixend=None):
     return int(no_posts)
 
 def get_quizattemps(pageid, course_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     no_attempts = 0
     sql = ""
     if unixstart is None:
@@ -468,7 +468,7 @@ def get_quizattemps(pageid, course_id, unixstart=None, unixend=None):
     return int(no_attempts)
 
 def get_userquizattemps(pageid, course_id, user_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     no_attempts = 0
     if unixstart is None:
         sql = "SELECT count(id) AS attempts FROM dim_submissionattempts WHERE content_id=%s AND course_id=%s AND user_id=%s;" % (pageid, course_id, user_id)
@@ -484,7 +484,7 @@ def get_userquizattemps(pageid, course_id, user_id, unixstart=None, unixend=None
     return int(no_attempts)
 
 def get_avggrade(pageid, course_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     avg_grade = 0
     sql = ""
     if unixstart is None:
@@ -500,7 +500,7 @@ def get_avggrade(pageid, course_id, unixstart=None, unixend=None):
     return int(avg_grade)
 
 def get_usergrade(pageid, course_id, user_id, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     avg_grade = 0
     if unixstart is None:
         sql = "SELECT max(grade) AS maxgrade FROM dim_submissionattempts WHERE content_id=%s AND course_id=%s AND user_id=%s;" % (pageid, course_id, user_id)
@@ -516,7 +516,7 @@ def get_usergrade(pageid, course_id, user_id, unixstart=None, unixend=None):
     return rounded_grade
 
 def get_contentdetails(content_id, course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT title, content_type FROM dim_pages WHERE content_id=%d AND course_id=%s;" % (content_id, course_id)
     row_count = cursor.execute(sql)
     title = ""
@@ -529,7 +529,7 @@ def get_contentdetails(content_id, course_id):
     return {'title': title, 'type': type}
 
 def get_userdetails(user_id, course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT firstname, lastname, email, role FROM dim_users WHERE user_pk='%s' AND course_id=%s;" % (user_id, course_id)
     result = cursor.execute(sql);
     firstname = ""
@@ -548,7 +548,7 @@ def get_userdetails(user_id, course_id):
     return {'firstname': firstname, 'lastname': lastname, 'email':email, 'role': role }
 
 def generate_userbyweek_histogram(week, course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     userbyweek_sql = "SELECT SUM(F.pageview) AS pageviews FROM dim_dates D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id WHERE D.DATE_week=%d AND F.course_id=%d GROUP BY F.user_pk;" %(week, course_id)
     row_count = cursor.execute(userbyweek_sql)
     result = cursor.fetchall()
@@ -564,7 +564,7 @@ def generate_userbyweek_histogram(week, course_id):
     return histogram
 
 def generate_userbycourse_histogram(course_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     userbyweek_sql = "SELECT SUM(F.pageview) AS pageviews FROM dim_dates D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id WHERE F.course_id=%d GROUP BY F.user_pk;" %(course_id)
     row_count = cursor.execute(userbyweek_sql)
     result = cursor.fetchall()
@@ -580,7 +580,7 @@ def generate_userbycourse_histogram(course_id):
     return histogram
 
 def generate_usersforpage_histogram(course_id, page_id, section_order, unixstart=None, unixend=None):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     userbyweek_sql = ""
     if unixstart is None:
         if (section_order==0):
@@ -637,7 +637,7 @@ def create_bins(grouped_totals_list, max, bin_allocation):
     return {'values': values, 'labels': labels}
 
 def get_usersthatdidnotaccesscontent(content_id, course_id, section_order, unixstart=None, unixend=None ):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = ""
     if unixstart is None:
         if (section_order==0):
@@ -672,7 +672,7 @@ def get_contentpageviews_dataset(content_id, course_id, weeks, section_order, co
     excluse_contentype_list = communication_types + assessment_types
     excluse_contentype_str = ','.join("'{0}'".format(x) for x in excluse_contentype_list)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT content_type FROM dim_pages WHERE content_id=%d AND course_id=%s;" % (content_id, course_id)
     result = cursor.execute(sql)
     content_type = ""
@@ -732,7 +732,7 @@ def get_userpageviews_dataset(user_id, course_id, weeks, course_type):
     excluse_contentype_list = communication_types + assessment_types
     excluse_contentype_str = ','.join("'{0}'".format(x) for x in excluse_contentype_list)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT D.id, D.Date_Year, D.Date_Month, D.Date_Day,SUM(F.pageview) AS Pageviews FROM dim_dates D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id WHERE D.DATE_week IN (%s) AND F.course_id=%d AND F.user_pk='%s' AND F.module NOT IN (%s) GROUP BY D.id ORDER BY D.date_year, D.date_month, D.date_day;" %(weeks, course_id, user_id, excluse_contentype_str)
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -769,7 +769,7 @@ def get_usercommunicationviews_dataset(user_id, course_id, weeks, course_type):
     assessment_types_str = ','.join("'{0}'".format(x) for x in assessment_types)
     communication_types_str = ','.join("'{0}'".format(x) for x in communication_types)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT D.id, D.Date_Year, D.Date_Month, D.Date_Day,SUM(F.pageview) AS Pageviews FROM dim_dates D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id WHERE D.DATE_week IN (%s) AND F.course_id=%d AND F.user_pk='%s' AND F.module IN (%s) GROUP BY D.id ORDER BY D.date_year, D.date_month, D.date_day;" %(weeks, course_id, user_id, communication_types_str)
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -806,7 +806,7 @@ def get_userassessmentviews_dataset(user_id, course_id, weeks, course_type):
     assessment_types_str = ','.join("'{0}'".format(x) for x in assessment_types)
     communication_types_str = ','.join("'{0}'".format(x) for x in communication_types)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     sql = "SELECT D.id, D.Date_Year, D.Date_Month, D.Date_Day,SUM(F.pageview) AS Pageviews FROM dim_dates D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id WHERE D.DATE_week IN (%s) AND F.course_id=%d AND F.user_pk='%s' AND F.module IN (%s) GROUP BY D.id ORDER BY D.date_year, D.date_month, D.date_day;" %(weeks, course_id, user_id, assessment_types_str)
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
@@ -841,7 +841,7 @@ def get_courseweeks(course_id):
     return [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]
 
 def get_indivuserweekcount_for_specificallcoursepage(week, course_id, module, action, user_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
     sql = "SELECT COUNT(F.user_pk) AS usercount FROM fact_coursevisits F INNER JOIN dim_dates D ON F.Date_Id = D.Id WHERE F.course_id=%d AND D.date_week=%d AND F.module='%s' AND F.action='%s AND F.user_id=%d';" % (course_id, week, module, action, user_id)
     row_count = cursor.execute(sql)
@@ -852,7 +852,7 @@ def get_indivuserweekcount_for_specificallcoursepage(week, course_id, module, ac
     return int(usercounts)
 
 def get_indivuser_weekcount(week,pageid, course_id, content_type, order_no, user_id):
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
     usercounts = 0
     pageid2 = str(pageid)
     pageid2 = int(pageid2[0:(len(pageid2)-2)])

@@ -119,7 +119,7 @@ def pedagogyhelper(request):
             pedagogyhelper_json = pedagogyhelper_objs[0].pedagogyhelper_json
             print("from database", pedagogyhelper_json)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     sql = "SELECT sitetree FROM summary_courses WHERE course_id=%d" % (course_id)
     cursor.execute(sql);
@@ -236,7 +236,7 @@ def coursedashboard(request):
 
     week_no = course_weeks.index(week_id) + 1
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     weekbeg, weekend, begweek_unix, endweek_unix = weekbegend(2015, week_id)
 
@@ -418,7 +418,7 @@ def coursedashboard(request):
 def overallcoursedashboard(request):
     context = RequestContext(request)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     course_id = int(request.GET.get('course_id'))
 
@@ -438,7 +438,7 @@ def overallcoursedashboard(request):
     excluse_contentype_list = communication_types + assessment_types
     excluse_contentype_str = ','.join("'{0}'".format(x) for x in excluse_contentype_list)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     histogram = generate_userbycourse_histogram(course_id)
 
@@ -523,7 +523,7 @@ def coursemembers(request):
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     #Get Counts and Vis Table # users_vis_table
     sql = "SELECT users_counts_table FROM summary_courses WHERE course_id=%d" % (course_id)
@@ -571,7 +571,7 @@ def coursestructure(request):
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     #Get Counts and Vis Table
     sql = "SELECT access_counts_table, access_vis_table FROM summary_courses WHERE course_id=%d" % (course_id)
@@ -644,7 +644,7 @@ def coursemember(request):
     excluse_contentype_list = communication_types + assessment_types
     excluse_contentype_str = ','.join("'{0}'".format(x) for x in excluse_contentype_list)
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     #Communication Tools - User Pageviews and No Posts
     if (startdte is None):
@@ -790,7 +790,7 @@ def content(request):
     if curr_evt is not None:
         showeventtab = True
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     sql = "SELECT content_counts_table, content_user_table, sitetree FROM summary_courses WHERE course_id=%d" % (course_id)
     cursor.execute(sql);
@@ -850,7 +850,7 @@ def communication(request):
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     sql = "SELECT communication_counts_table, communication_user_table, forum_posts_table FROM summary_courses WHERE course_id=%d" % (course_id)
     cursor.execute(sql);
@@ -910,7 +910,7 @@ def assessment(request):
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
-    cursor = connections['olap'].cursor()
+    cursor = connections['default'].cursor()
 
     sql = "SELECT assessment_counts_table, assessment_user_table, assessmentgrades FROM summary_courses WHERE course_id=%d" % (course_id)
     cursor.execute(sql);
