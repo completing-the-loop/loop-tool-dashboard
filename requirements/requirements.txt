@@ -1,4 +1,4 @@
--e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@ba2dcdf41f03103f19d228660d726e0ff89d04d3#egg=allianceutils
+-e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@88c57260b24035a4b30637d4d470a6e50bc86b04#egg=allianceutils
 Django==1.11.4
 django-authtools==1.6.0
 django-compat==1.0.14

@@ -1,4 +1,5 @@
 from authtools.models import User
+from datetime import timedelta
 from django.db import models
 
 
@@ -18,6 +19,14 @@ class Course(models.Model):
     no_weeks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
+
+    def get_end_date(self):
+        return self.start_date + timedelta(weeks=self.no_weeks)
+
+    def get_weeks(self):
+        start_week = self.start_date.isocalendar()[1]
+        end_week = self.get_end_date().isocalendar()[1]
+        return list(range(start_week, end_week))
 
     def __str__(self):
         return self.code
