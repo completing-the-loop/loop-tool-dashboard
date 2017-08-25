@@ -103,6 +103,7 @@ INSTALLED_APPS = (
     # 'import_export',
     'rest_framework',
     'rules.apps.AutodiscoverRulesConfig',
+    'stronghold',
     'webpack_loader',
 
     # core django
@@ -130,6 +131,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.common.BrokenLinkEmailsMiddleware',
     # 'allianceutils.middleware.CurrentUserMiddleware',
+    'stronghold.middleware.LoginRequiredMiddleware',
 
     # 'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware', # fall back to static html on 404
     # 'django.contrib.redirects.middleware.RedirectFallbackMiddleware', # fall back to redirect on 404
@@ -360,8 +362,9 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-LOGIN_URL = '/admin/login/?next=/admin/'
-LOGIN_REDIRECT_URL = '/admin/'
+LOGIN_URL = 'dashboard:login'
+LOGIN_REDIRECT_URL = 'dashboard:dashboard_redirect'
+LOGOUT_REDIRECT_URL = 'dashboard:login'
 
 # Hijack
 HIJACK_ALLOW_GET_REQUESTS = False

@@ -1,0 +1,21 @@
+{% extends "base_unauthorised.html" %}
+
+{% block body %}
+  <div class="container-fluid-full">
+    <div class="row-fluid">
+
+      <div class="row-fluid">
+        <div class="login-box">
+          <h2>Login to your Loop account:</h2>
+          <form id="login_form" class="form-horizontal" method="post">
+            {% csrf_token %}
+            {{ form }}
+              <div class="button-login">
+                <button type="submit" class="btn btn-primary">Login</button>
+              </div>
+          </form>
+        </div><!--/span-->
+      </div><!--/row-->
+    </div><!--/.fluid-container-->
+  </div><!--/fluid-row-->
+{% endblock body %}

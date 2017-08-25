@@ -1,9 +1,8 @@
 import json
 
 from datetime import datetime, time
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from django.contrib.auth import logout
+
+from authtools.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.db import connections
 from django.http import HttpResponse
@@ -11,8 +10,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
 from django.template import RequestContext
+from django.urls.base import reverse_lazy
+from django.views.generic.base import RedirectView
+from django.views.generic.base import TemplateView
 from docx import Document
 
+from dashboard.forms import LoginForm
 from dashboard.models import Course
 from dashboard.models import CourseRepeatingEvent
 from dashboard.models import PedagogyHelper
@@ -47,44 +50,30 @@ from dashboard.utils import get_userweekcount
 from dashboard.utils import weekbegend
 
 
-def home(request):
-    context = RequestContext(request)
+class DashboardRedirectView(RedirectView):
+    permanent = False
 
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+    def get_redirect_url(self, *args, **kwargs):
 
-        user = authenticate(username=username, password=password)
+        if self.request.user.is_superuser:
+            return reverse_lazy('admin:index')
+        return reverse_lazy('dashboard:course_list')
 
-        if user:
-            # Is the account active? It could have been disabled.
-            if user.is_active:
-                # If the account is valid and active, we can log the user in.
-                # We'll send the user back to the homepage.
-                login(request, user)
-                return HttpResponseRedirect('/mycourses')
-            else:
-                # An inactive account was used - no logging in!
-                return HttpResponse("Your cloop account is disabled.")
-        else:
-            # Bad login details were provided. So we can't log the user in.
-            #print ("Invalid login details: {0}, {1}".format(username, password))
-            return HttpResponse("Invalid login details supplied.")
 
-    # The request is not a HTTP POST, so display the login form.
-    # This scenario would most likely be a HTTP GET.
-    else:
-        # No context variables to pass to the template system, hence the
-        # blank dictionary object...
-        return render_to_response('dashboard/home.html', {}, context)
+class CustomLoginView(LoginView):
+    template_name = 'dashboard/login.html'
+    form_class = LoginForm
 
-@login_required
-def mycourses(request):
-    context = RequestContext(request)
-    curuser = request.user
-    all_courses = Course.objects.filter(owner=curuser)
-    context_dict = {'courses': all_courses}
-    return render_to_response('dashboard/mycourses.html', context_dict, context)
+
+class CourseListView(TemplateView):
+    template_name = 'dashboard/course_list.html'
+
+    def get_context_data(self, **kwargs):
+        courses = Course.objects.filter(owner=self.request.user)
+
+        context = super().get_context_data(**kwargs)
+        context['courses'] = courses
+        return context
 
 @login_required
 def pedagogyhelper(request):

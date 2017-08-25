@@ -1,0 +1,107 @@
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- start: Meta -->
+  <meta charset="utf-8">
+  <title>CLoop Analytics - {% block title %} My Courses {% endblock %}</title>
+  <meta name="description" content="Analytics for Learning Design from Popular LMS such as Moodle and Blackboard">
+  <meta name="author" content="Closing the Loop - ALTC Grant">
+  <meta name="keyword" content="Analytics, Learning Design, Moodle, Blackboard">
+  <!-- end: Meta -->
+
+  <!-- start: Mobile Specific -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- end: Mobile Specific -->
+
+  <!-- start: Favicon -->
+  <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
+  <!-- end: Favicon -->
+
+  <!-- start: CSS -->
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&subset=latin,cyrillic-ext,latin-ext' rel='stylesheet' type='text/css'>
+  {% render_bundle 'main' 'css' %}
+  {% block stylesheets%}
+
+  {% endblock stylesheets %}
+  <!-- end: CSS -->
+
+{#  <link id="base-style" href="/static/css/style.css" rel="stylesheet">#}
+{#  <link id="base-style-responsive" href="/static/css/style-responsive.css" rel="stylesheet">#}
+{#  <link rel="stylesheet" href="/static/css/jstree/themes/default/style.min.css" />#}
+
+{#<style>#}
+{#  .node {#}
+{#    cursor: pointer;#}
+{#  }#}
+{##}
+{#  .overlay{#}
+{#      background-color:#EEE;#}
+{#  }#}
+{##}
+{#  .node circle {#}
+{#    fill: #fff;#}
+{#    stroke: steelblue;#}
+{#    stroke-width: 1.5px;#}
+{#  }#}
+{##}
+{#  .node text {#}
+{#    font-size:10px;#}
+{#    font-family:sans-serif;#}
+{#  }#}
+{##}
+{#  .link {#}
+{#    fill: none;#}
+{#    stroke: #ccc;#}
+{#    stroke-width: 1.5px;#}
+{#  }#}
+{##}
+{#  .additionalParentLink {#}
+{#    fill: none;#}
+{#    stroke: blue;#}
+{#    stroke-width: 1.5px;#}
+{#  }#}
+{##}
+{#  .templink {#}
+{#    fill: none;#}
+{#    stroke: red;#}
+{#    stroke-width: 3px;#}
+{#  }#}
+{##}
+{#  .ghostCircle.show{#}
+{#      display:block;#}
+{#  }#}
+{##}
+{#  .ghostCircle, .activeDrag .ghostCircle{#}
+{#       display: none;#}
+{#  }#}
+{#</style>#}
+{##}
+{#  <!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->#}
+{#  <!--[if lt IE 9]>#}
+{#      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>#}
+{#    <link id="ie-style" href="css/ie.css" rel="stylesheet">#}
+{#  <![endif]-->#}
+{##}
+{#  <!--[if IE 9]>#}
+{#    <link id="ie9style" href="css/ie9.css" rel="stylesheet">#}
+{#  <![endif]-->#}
+</head>
+
+<body>
+  <div class="{% block container_class %}{% endblock container_class %}">
+    {% block body %}
+
+    {% endblock body %}
+  </div>
+
+  {% render_bundle 'main' 'js' %}
+  {% block javascript %}
+
+  {% endblock javascript %}
+</body>
+
+</html>

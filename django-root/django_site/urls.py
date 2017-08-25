@@ -6,7 +6,7 @@ from django.contrib import admin
 
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^', include('dashboard.urls'))
+    url(r'^', include('dashboard.urls', namespace='dashboard'))
 ]
 
 if 'debug_toolbar' in settings.INSTALLED_APPS:

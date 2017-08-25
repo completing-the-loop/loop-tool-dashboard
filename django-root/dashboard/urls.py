@@ -1,13 +1,18 @@
+from authtools.views import LogoutView
 from django.conf.urls import url
 from django.contrib.auth.views import logout
+from stronghold.decorators import public
 
 from dashboard import views
 
 
 urlpatterns = [
-    url(r'^$', views.home, name='home'),
-    url(r'^home/', views.home, name='home'),
-    url(r'^mycourses/', views.mycourses, name='mycourses'),
+    url(r'^$', views.DashboardRedirectView.as_view(), name='dashboard_redirect'),
+    url(r'^login/', public(views.CustomLoginView.as_view()), name='login'),
+    url(r'^logout/', LogoutView.as_view(), name='logout'),
+
+    url(r'^courses/', views.CourseListView.as_view(), name='course_list'),
+
     url(r'^coursedashboard/$', views.coursedashboard, name='coursedashboard'),
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='coursemembers'),
