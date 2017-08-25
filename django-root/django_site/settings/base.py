@@ -103,7 +103,7 @@ INSTALLED_APPS = (
     # 'import_export',
     'rest_framework',
     'rules.apps.AutodiscoverRulesConfig',
-    # 'webpack_loader',
+    'webpack_loader',
 
     # core django
     'django.contrib.admin',
@@ -314,7 +314,7 @@ STATIC_URL = '/static/'
 
 # non-app static file locations
 STATICFILES_DIRS = (
-    ('dist/prod', _Path(PROJECT_DIR, 'frontend/dist/production')),
+    ('dist/production', _Path(PROJECT_DIR, 'frontend/dist/production')),
     #_Path(PROJECT_DIR, 'node_modules/bootstrap-sass/assets/stylesheets'),
 )
 
@@ -333,9 +333,8 @@ STATICFILES_FINDERS = (
 
 WEBPACK_LOADER = {
     'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'dist/prod/',
-        'STATS_FILE': _Path(PROJECT_DIR, 'frontend/dist/prod/webpack-stats.json'),
-        'LOADER_CLASS': 'allianceutils.webpack.TimestampWebpackLoader',
+        'BUNDLE_DIR_NAME': 'dist/',
+        'STATS_FILE': _Path(PROJECT_DIR, 'frontend/dist/webpack-stats-prod.json'),
     },
 }
 

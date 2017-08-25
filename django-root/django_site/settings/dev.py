@@ -15,6 +15,7 @@ from .base import *
 
 DEBUG = True
 DEBUG_WEBPACK = True
+TESTING = get_env_setting('TESTING', False)
 
 ALLOWED_HOSTS += [
     '127.0.0.1',
@@ -74,8 +75,7 @@ DATABASES['default']['NAME'] = 'cloop'
 # Static files (CSS, JavaScript, Images)
 
 if DEBUG:
-    WEBPACK_LOADER['DEFAULT']['BUNDLE_DIR_NAME'] = 'dist/dev/'
-    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = _Path(PROJECT_DIR, 'frontend/dist/dev/webpack-stats.json')
+    WEBPACK_LOADER['DEFAULT']['STATS_FILE'] = _Path(PROJECT_DIR, 'frontend/dist/webpack-stats-dev.json')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # SECRET_KEY

@@ -8,5 +8,6 @@ const commonSettings = {
 
 module.exports = {
     production:  () => webpackGenericConfig(Object.assign({environment: 'production'},  commonSettings)),
-    development: () => webpackGenericConfig(Object.assign({environment: 'development'}, commonSettings)),
+    development: (extraConfig = {}) => webpackGenericConfig(
+        Object.assign({environment: 'development'}, extraConfig, commonSettings)),
 };

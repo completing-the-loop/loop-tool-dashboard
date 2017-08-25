@@ -7,6 +7,8 @@
   "scripts": {
     "build": "webpack -p",
     "dev": "node webpack.devserver.js",
+    "lint": "eslint src",
+    "lint --fix": "eslint src --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Alliance Software <support@alliancesoftware.com.au> (http://www.alliancesoftware.com.au) TEMPLATE_FIXME",
@@ -14,7 +16,10 @@
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.21.0",
+    "babel-eslint": "^7.1.1",
     "babel-loader": "^6.2.10",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-transform-async-to-generator": "^6.16.0",
     "babel-plugin-transform-react-constant-elements": "^6.9.1",
     "babel-plugin-transform-react-remove-prop-types": "^0.2.11",
@@ -22,18 +27,27 @@
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
     "bootstrap-sass": "^3.3.7",
+    "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "css-loader": "^0.26.1",
+    "eslint": "^3.16.0",
+    "eslint-config-alliance": "git+ssh://git@gitlab.internal.alliancesoftware.com.au/alliance/eslint-config.git#v2.0.0",
+    "express": "^4.14.1",
+    "extract-text-webpack-plugin": "^2.0.0-rc.3",
     "file-loader": "^0.9.0",
     "jquery": "^3.1.1",
     "json-loader": "^0.5.4",
     "node-sass": "^4.0.0",
+    "postcss-loader": "^1.3.0",
     "sass-loader": "^4.1.0",
     "style-loader": "^0.13.1",
     "url-loader": "^0.5.7",
     "webpack": "^2.1.0-beta.28",
-    "webpack-bundle-tracker": "^0.1.0",
-    "webpack-dev-server": "^2.2.0-rc.0"
+    "webpack-bundle-tracker": "^0.2.0",
+    "webpack-dev-middleware": "^1.10.0",
+    "webpack-dev-server": "^2.2.0-rc.0",
+    "webpack-hot-middleware": "^2.16.1"
   },
   "dependencies": {
+    "lodash": "^4.17.4"
   }
 }
