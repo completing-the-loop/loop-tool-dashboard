@@ -69,6 +69,7 @@ module.exports = ({
     const assert = require('assert');
     const autoprefixer = require('autoprefixer');
     const path = require('path');
+    const fs = require('fs');
     const webpack = require("webpack");
 
     // TODO: verbose
@@ -282,6 +283,13 @@ module.exports = ({
     conf.module.rules.push({
         test: /\.json$/,
         loader: 'json-loader'
+    });
+
+    const pagesRoot = path.resolve(`${srcRoot}pages`);
+    const files = fs.readdirSync(pagesRoot);
+    files.forEach(filename => {
+      const entryName = filename.replace('.js', '');
+      conf.entry.push(path.resolve(pagesRoot, entryName));
     });
 
     // ------------------------------------------------------------------
