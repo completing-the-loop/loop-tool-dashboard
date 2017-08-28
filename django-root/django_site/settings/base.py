@@ -166,6 +166,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
 
                 # project-specific custom global context processors
+                'django_site.context_processors.constants',
             ],
             'debug': DEBUG,
             # Only one of APP_DIRS and loaders should be set

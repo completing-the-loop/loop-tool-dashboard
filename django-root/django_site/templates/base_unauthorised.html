@@ -97,6 +97,12 @@
 
     {% endblock body %}
   </div>
+  <script>
+    window.__APP_CONTEXT__ = {
+      BASE_URL: '{{ BASE_URL }}',
+      BASE_API_URL: '{{ BASE_API_URL }}',
+    };
+  </script>
 
   {% render_bundle 'main' 'js' %}
   {% block javascript %}
