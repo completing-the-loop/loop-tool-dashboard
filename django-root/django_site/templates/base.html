@@ -39,9 +39,44 @@
 
   <div class="container-fluid-full">
     <div class="row-fluid">
-      {% block nav %}
-
-      {% endblock %}
+      <!-- start: Main Menu -->
+      <div id="sidebar-left" class="span2">
+        <div class="nav-collapse sidebar-nav">
+          <ul class="nav nav-tabs nav-stacked main-menu">
+            <li>
+              <a href="{% url 'dashboard:course_dashboard' %}?course_id={{ course.id }}&week_filter=0">
+                <i class="icon-bar-chart"></i><span class="hidden-tablet">Course Dashboard</span>
+              </a>
+            </li>
+            <li>
+              <a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> Course Access</span></a>
+              <ul>
+                <li>
+                  <a class="submenu" href="{% url 'dashboard:course_content' %}?course_id={{ course.id }}">
+                    <i class="icon-file-alt"></i><span class="hidden-tablet"> Content</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="submenu" href="{% url 'dashboard:course_communications' %}?course_id={{ course.id }}">
+                    <i class="icon-file-alt"></i><span class="hidden-tablet"> Communication</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="submenu" href="{% url 'dashboard:course_assessments' %}?course_id={{ course.id }}">
+                    <i class="icon-file-alt"></i><span class="hidden-tablet"> Assessment</span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <a href="{% url 'dashboard:course_members' %}?course_id={{ course.id }}">
+                <i class="icon-user"></i><span class="hidden-tablet">Students</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <!-- end: Main Menu -->
 
       <noscript>
         <div class="alert alert-block span10">

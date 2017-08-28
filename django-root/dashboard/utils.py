@@ -9,7 +9,7 @@
 """
 
 from collections import defaultdict
-from datetime import date
+from datetime import datetime
 from datetime import time
 from datetime import timedelta
 import json
@@ -330,7 +330,7 @@ def getSubmissionCourseEvents(course_id):
     return evt
 
 def weekbegend(year, week):
-    d = date(year, 1, 1)
+    d = datetime(year, 1, 1)
     delta_days = d.isoweekday() - 1
     delta_weeks = week
     if year == d.isocalendar()[0]:
@@ -342,11 +342,9 @@ def weekbegend(year, week):
     delta2 = timedelta(days=6-delta_days, weeks=delta_weeks)
     weekend = d + delta2
 
-    begweek_unix = time.mktime(weekbeg.timetuple())
-    endweek_unix = time.mktime(weekend.timetuple())
+    begweek_unix = weekbeg.timestamp()
+    endweek_unix = weekend.timestamp()
 
-    begweek = weekbeg.strftime("%A %d %B %Y")
-    endweek = weekend.strftime("%A %d %B %Y")
     return weekbeg, weekend, begweek_unix, endweek_unix
 
 def get_userweekcount(week,pageid, course_id, content_type, order_no):

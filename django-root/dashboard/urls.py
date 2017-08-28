@@ -4,6 +4,7 @@ from django.contrib.auth.views import logout
 from stronghold.decorators import public
 
 from dashboard.views.courses import CourseListView
+from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
 
@@ -16,8 +17,8 @@ urlpatterns = [
     url(r'^logout/', LogoutView.as_view(), name='logout'),
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
+    url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
 
-    url(r'^coursedashboard/$', views.coursedashboard, name='coursedashboard'),
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),
     url(r'^coursemember/$', views.coursemember, name='coursemember'),
