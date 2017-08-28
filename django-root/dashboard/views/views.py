@@ -2,7 +2,6 @@ import json
 
 from datetime import datetime, time
 
-from authtools.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.db import connections
 from django.http import HttpResponse
@@ -10,12 +9,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.shortcuts import redirect
 from django.template import RequestContext
-from django.urls.base import reverse_lazy
-from django.views.generic.base import RedirectView
-from django.views.generic.base import TemplateView
 from docx import Document
 
-from dashboard.forms import LoginForm
 from dashboard.models import Course
 from dashboard.models import CourseRepeatingEvent
 from dashboard.models import PedagogyHelper
@@ -49,31 +44,6 @@ from dashboard.utils import get_usersthatdidnotaccesscontent
 from dashboard.utils import get_userweekcount
 from dashboard.utils import weekbegend
 
-
-class DashboardRedirectView(RedirectView):
-    permanent = False
-
-    def get_redirect_url(self, *args, **kwargs):
-
-        if self.request.user.is_superuser:
-            return reverse_lazy('admin:index')
-        return reverse_lazy('dashboard:course_list')
-
-
-class CustomLoginView(LoginView):
-    template_name = 'dashboard/login.html'
-    form_class = LoginForm
-
-
-class CourseListView(TemplateView):
-    template_name = 'dashboard/course_list.html'
-
-    def get_context_data(self, **kwargs):
-        courses = Course.objects.filter(owner=self.request.user)
-
-        context = super().get_context_data(**kwargs)
-        context['courses'] = courses
-        return context
 
 @login_required
 def pedagogyhelper(request):
@@ -201,7 +171,6 @@ def pedagogyhelperdownload(request):
 
     return response
 
-@login_required
 def coursedashboard(request):
     context = RequestContext(request)
 
