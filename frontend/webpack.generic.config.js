@@ -240,6 +240,7 @@ module.exports = ({
                 bootstrapAssetsPath + '/fonts/',
             ];
         }
+        conf.entry.push('bootstrap-sass/assets/javascripts/bootstrap.js');
     }
 
 

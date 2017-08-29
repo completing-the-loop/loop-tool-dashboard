@@ -3,6 +3,8 @@
 {% block page_id %}course-dashboard{% endblock page_id %}
 
 {% block content %}
+  <p v-tooltip:top="'My tooltip title'">Sample tooltip</p>
+
   <p>
     <form id="weekselector" method="get">
       Course Weekly Dashboard: Week {{ week_no }} ({{ weekbeg }} - {{weekend}})
