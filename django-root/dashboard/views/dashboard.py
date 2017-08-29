@@ -11,10 +11,10 @@ class CourseDashboardView(TemplateView):
     template_name = 'dashboard/course_dashboard.html'
 
     def get(self, request, *args, **kwargs):
-        course_id = int(self.request.GET.get('course_id'))
+        course_id = kwargs.get('course_id')
         self.course = Course.objects.get(pk=course_id)
 
-        self.week_id = int(self.request.GET.get('week_filter'))
+        self.week_id = int(self.request.GET.get('week_filter', 0))
 
         if self.week_id == -1:
             return redirect('/overallcoursedashboard?course_id=' + str(self.course.id))

@@ -17,7 +17,7 @@ urlpatterns = [
     url(r'^logout/', LogoutView.as_view(), name='logout'),
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
-    url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+    url(r'^(?P<course_id>\d+)/course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
 
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),
