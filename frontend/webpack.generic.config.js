@@ -285,12 +285,41 @@ module.exports = ({
         loader: 'json-loader'
     });
 
+
+    // ------------------------------------------------------------------
+    // Vue / Client application setup
     const pagesRoot = path.resolve(`${srcRoot}pages`);
     const files = fs.readdirSync(pagesRoot);
     files.forEach(filename => {
       const entryName = filename.replace('.js', '');
       conf.entry.push(path.resolve(pagesRoot, entryName));
     });
+
+    if (!conf.resolve) {
+      conf.resolve = {};
+    }
+    if (!conf.resolve.alias) {
+      conf.resolve.alias = {};
+    }
+    // See https://vuejs.org/v2/guide/installation.html#Standalone-vs-Runtime-only-Build
+    conf.resolve.alias['vue$'] = "vue/dist/vue.js";
+    // Setup support for .vue files
+    let vueConfig = {
+      test: /\.vue$/,
+      loader: 'vue',
+      // vue-loader options goes here
+      options: {}
+    };
+    if (!isDev) {
+      vueConfig.options.loaders = {
+        css: ExtractTextPlugin.extract({
+          loader: 'css-loader',
+          fallbackLoader: 'vue-style-loader',
+        }),
+      };
+    }
+    conf.module.rules.push(vueConfig);
+
 
     // ------------------------------------------------------------------
     // CSS/SCSS
