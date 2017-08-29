@@ -537,7 +537,7 @@ REST_FRAMEWORK = {
         # default to requiring authentication & a role
         # you can override this by setting the permission_classes to AllowAny in the view
         'rest_framework.permissions.IsAuthenticated',
-        'allianceutils.api.permissions.SimpleDjangoObjectPermissions',
+        #'allianceutils.api.permissions.SimpleDjangoObjectPermissions',
     ),
 }
 
