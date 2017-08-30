@@ -176,6 +176,9 @@ module.exports = ({
                 filename: OUTPUT_DIR_BASE + (isDev ? '/webpack-stats-dev.json' : '/production/webpack-stats.json'),
             }),
         ],
+        resolve: {
+            alias: {},
+        },
     };
 
     if (isDev) {
@@ -288,7 +291,7 @@ module.exports = ({
 
 
     // ------------------------------------------------------------------
-    // Vue / Client application setup
+    // Vue / Client / Plotly application setup
     const pagesRoot = path.resolve(`${srcRoot}pages`);
     const files = fs.readdirSync(pagesRoot);
     files.forEach(filename => {
@@ -296,12 +299,6 @@ module.exports = ({
       conf.entry.push(path.resolve(pagesRoot, entryName));
     });
 
-    if (!conf.resolve) {
-      conf.resolve = {};
-    }
-    if (!conf.resolve.alias) {
-      conf.resolve.alias = {};
-    }
     // See https://vuejs.org/v2/guide/installation.html#Standalone-vs-Runtime-only-Build
     conf.resolve.alias['vue$'] = "vue/dist/vue.js";
     // Setup support for .vue files
@@ -320,6 +317,8 @@ module.exports = ({
       };
     }
     conf.module.rules.push(vueConfig);
+
+    conf.resolve.alias['plotly$'] = "plotly.js/dist/plotly.js";
 
 
     // ------------------------------------------------------------------
