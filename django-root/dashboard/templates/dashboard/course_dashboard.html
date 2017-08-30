@@ -131,7 +131,14 @@
             </tr>
           </thead>
           <tbody>
-            {{ topusers_table|safe }}
+            {% verbatim %}
+              <tr v-for="user in topUsers">
+                <td>{{ user.firstname }}</td>
+                <td>{{ user.lastname }}</td>
+                <td>{{ user.role }}</td>
+                <td>0</td>
+              </tr>
+            {% endverbatim %}
           </tbody>
          </table>
       </div>

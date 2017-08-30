@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { get } from '../api';
 
 const init = async (
     courseId,
@@ -6,28 +7,18 @@ const init = async (
     new Vue({
         el: '#course-dashboard',
         data: {
-            courseId,
+            courseId: courseId,
+            topUsers: {},
         },
         mounted: async function mounted() {
-            // this.loadSubClassifications(false);
+            this.getTopUsers();
         },
         methods: {
-            // async loadSubClassifications(reset = true) {
-            //     if (reset) {
-            //         this.subClassificationId = null;
-            //     }
-            //
-            //     if (!this.classificationId) {
-            //         this.subClassifications = [];
-            //         return;
-            //     }
-            //
-            //     const classification = await get(`job-classifications/${this.classificationId}`);
-            //     this.subClassifications = [{ id: null, name: '---------' }, ...classification.subClassifications];
-            // },
-            // async getTeamNames(value) {
-            //     return get('campaigns/team_names/', { q: value });
-            // },
+            async getTopUsers() {
+                // This is getting all users without page views rather than top users with page views filtered by week
+                // as we need to refactor the olap models first. It's more to demo/test the Vue setup
+                this.topUsers = await get(`${this.courseId}/course_users`);
+            },
         },
     });
 };
