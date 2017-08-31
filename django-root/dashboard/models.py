@@ -14,7 +14,7 @@ class Course(models.Model):
     code = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     offering = models.CharField(max_length=255)
-    owner = models.ManyToManyField(User)
+    owners = models.ManyToManyField(User)
     start_date = models.DateField()
     no_weeks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
