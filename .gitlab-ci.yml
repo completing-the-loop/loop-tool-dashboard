@@ -41,23 +41,24 @@ lint:
 # manual jobs can be started by going to the pipelines page and click on start button
 test-python:
   services:
-    - postgres:9.5
-    #- alliance/mysql:5.7
+    #- postgres:9.5
+    - alliance/mysql:5.7
 
   script:
     # If you're writing libraries then you probably only need tox
     #- tox
     # Python unit tests
     - time pip install -r requirements.txt
-    # TODO: Example of django unit test
+    - bin/run-tests-django.sh
+    - echo 'Success'
 
-  when: manual
+  # when: manual
 
 # frontend browser-based tests
 test-frontend:
   services:
-    - postgres:9.5
-    #- alliance/mysql:5.7
+    #- postgres:9.5
+    - alliance/mysql:5.7
 
     - selenium/standalone-chrome:3
     #- selenium/standalone-firefox:3
