@@ -49,6 +49,7 @@ test-python:
     #- tox
     # Python unit tests
     - time pip install -r requirements.txt
+    - mkdir log
     - bin/run-tests-django.sh
     - echo 'Success'
 
