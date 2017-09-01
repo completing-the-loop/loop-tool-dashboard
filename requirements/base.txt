@@ -56,3 +56,5 @@ Unipath
 # Test data generation
 factory_boy
 
+# temp required to make frontend run
+SQLAlchemy
