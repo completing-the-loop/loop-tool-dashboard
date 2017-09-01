@@ -6,4 +6,4 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.inc"
 
 cd "$project_dir"
 
-./manage.py test "$@"
+./manage.py test --keepdb "$@"
