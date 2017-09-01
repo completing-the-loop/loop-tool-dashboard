@@ -3,7 +3,7 @@
 {% block page_id %}course-dashboard{% endblock page_id %}
 
 {% block content %}
-  <p v-tooltip:top="'My tooltip title'">Sample tooltip</p>
+  <!--<p v-tooltip:top="'My tooltip title'">Sample tooltip</p>-->
 
   <p>
     <form id="weekselector" method="get">
@@ -22,20 +22,22 @@
   </p>
 
   <div class="row-fluid">
-    <div class="box span7 ">
-      <div class="box-header">
-        <h2><i class="halflings-icon list-alt"></i><span class="break"></span>Pageviews</h2>
+    <div class="col-md-8">
+    <div class="panel panel-default ">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon list-alt"></i><span class="break"></span>Pageviews</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <div id="graph_container" style="height: 282px;"></div>
       </div>
     </div>
-
-    <div class="box span5">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Week Metrics</h2>
+    </div>
+    <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Week Metrics</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <div class="widget green">
           <ul class="unstyled">
             <li><span id="uniquepageviewsbydayinweek"></span>
@@ -60,22 +62,26 @@
       </div>
     </div><!--/span-->
   </div>
+</div>
 
   <div class="row-fluid">
-    <div class="box span6">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Student Pageviews Histogram</h2> <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique students (vertical axis) who have viewed a number of pages within a range  (horizontal axis) that week"><i class="halflings-icon info-sign"></i></a>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Student Pageviews Histogram</h3> <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique students (vertical axis) who have viewed a number of pages within a range  (horizontal axis) that week"><i class="halflings-icon info-sign"></i></a>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <div id="userhistogram" style="height: 500px"></div>
       </div>
     </div><!--/span-->
+    </div>
 
-    <div class="box span6">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Top Accessed Content</h2>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Top Accessed Content</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <table class="table">
           <thead>
             <tr>
@@ -91,14 +97,16 @@
          </table>
       </div>
     </div><!--/span-->
+    </div>
   </div><!--/row-->
 
   <div class="row-fluid">
-    <div class="box span6">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Communication Access</h2>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Communication Access</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <table class="table">
           <thead>
             <tr>
@@ -115,12 +123,14 @@
          </table>
       </div>
     </div><!--/span-->
+    </div>
 
-    <div class="box span6">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Top Course Visitors</h2>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Top Course Visitors</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <table class="table table-striped">
           <thead>
             <tr>
@@ -143,14 +153,16 @@
          </table>
       </div>
     </div><!--/span-->
+    </div>
   </div><!--/row-->
 
   <div class="row-fluid">
-    <div class="box span6">
-      <div class="box-header">
-        <h2><i class="halflings-icon align-justify"></i><span class="break"></span>Assessment Access</h2>
+    <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Assessment Access</h3>
       </div>
-      <div class="box-content">
+      <div class="panel-body">
         <table class="table table-striped">
           <thead>
             <tr>
@@ -168,6 +180,7 @@
          </table>
       </div>
     </div><!--/span-->
+    </div>
   </div><!--/row-->
 
 {% endblock content %}

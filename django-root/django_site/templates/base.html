@@ -37,10 +37,10 @@
   </div>
   <!-- start: Header -->
 
-  <div class="container-fluid-full">
-    <div class="row-fluid">
+  <div class="container-fluid">
+    <div class="row">
       <!-- start: Main Menu -->
-      <div id="sidebar-left" class="span2">
+      <div id="sidebar-left" class="col-sm-3 col-md-2 sidebar">
         {% if course %}
           <div class="nav-collapse sidebar-nav">
             <ul class="nav nav-tabs nav-stacked main-menu">
@@ -88,9 +88,10 @@
       </noscript>
 
       <!-- start: Content -->
-      <div id="content" class="span10">
+      <div id="content" class="col-sm-9 col-md-10">
 
         {% block breadcrumb %}
+        <!--
           <ul class="breadcrumb">
             <li>
               <i class="icon-home"></i>
@@ -101,6 +102,7 @@
               <a href="#">My Courses</a>
             </li>
           </ul>
+          -->
         {% endblock %}
 
         {% block content %}
