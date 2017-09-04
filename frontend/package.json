@@ -5,8 +5,9 @@
   "private": true,
   "main": "bundle.js",
   "scripts": {
-    "build": "webpack -p",
+    "build": "yarn run clean && webpack -p",
     "dev": "node webpack.devserver.js",
+    "clean": "rm -rf dist/production/*",
     "lint": "eslint src",
     "lint --fix": "eslint src --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
