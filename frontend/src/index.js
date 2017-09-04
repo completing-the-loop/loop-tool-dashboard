@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import $ from 'jquery';
-import AsyncComputed from 'vue-async-computed';
+import AsyncComputed from 'vue-async-computed/dist/vue-async-computed';
 
 import './styles/main.scss';
 
