@@ -85,14 +85,21 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Page</th>
-              <th>Type</th>
-              <th>Student Visits</th>
-              <th>Pageviews</th>
+              <th class="text-center">Page</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Student Visits</th>
+              <th class="text-center">Pageviews</th>
             </tr>
           </thead>
           <tbody>
-            {{ topcontent_table|safe }}
+          {% verbatim %}
+          <tr v-for="page in topContent">
+            <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
+            <td>{{ page.module }}</td>
+            <td class="text-right">{{ page.user_views }}</td>
+            <td class="text-right">{{ page.page_views }}</td>
+          </tr>
+          {% endverbatim %}
           </tbody>
          </table>
       </div>
@@ -110,15 +117,23 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Unique Students</th>
-              <th>Pageviews</th>
-              <th>Posts</th>
+              <th class="text-center">Title</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Unique Students</th>
+              <th class="text-center">Pageviews</th>
+              <th class="text-center">Posts</th>
             </tr>
           </thead>
           <tbody>
-            {{ topforumcontent_table|safe }}
+          {% verbatim %}
+            <tr v-for="page in topForumContent">
+              <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
+              <td>{{ page.module }}</td>
+              <td class="text-right">{{ page.user_views }}</td>
+              <td class="text-right">{{ page.page_views }}</td>
+              <td class="text-right">{{ page.post_count }}</td>
+            </tr>
+          {% endverbatim %}
           </tbody>
          </table>
       </div>
@@ -134,10 +149,10 @@
         <table class="table table-striped">
           <thead>
             <tr>
-              <th>Firstname</th>
-              <th>Surname</th>
-              <th>Role</th>
-              <th>Pageviews</th>
+              <th class="text-center">Firstname</th>
+              <th class="text-center">Surname</th>
+              <th class="text-center">Role</th>
+              <th class="text-center">Pageviews</th>
             </tr>
           </thead>
           <tbody>
@@ -146,7 +161,7 @@
                 <td>{{ user.firstname }}</td>
                 <td>{{ user.lastname }}</td>
                 <td>{{ user.role }}</td>
-                <td>0</td>
+                <td class="text-right">0</td>
               </tr>
             {% endverbatim %}
           </tbody>
@@ -166,16 +181,24 @@
         <table class="table table-striped">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Type</th>
-              <th>Unique Students</th>
+              <th class="text-center">Title</th>
+              <th class="text-center">Type</th>
+              <th class="text-center">Unique Students</th>
               <!--<th>Pageviews</th>-->
-              <th>Attempts</th>
-              <th>Average Student Score</th>
+              <th class="text-center">Attempts</th>
+              <th class="text-center">Average Student Score</th>
             </tr>
           </thead>
           <tbody>
-            {{ topquizcontent_table|safe }}
+          {% verbatim %}
+            <tr v-for="page in topQuizContent">
+              <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
+              <td>{{ page.module }}</td>
+              <td class="text-right">{{ page.user_views }}</td>
+              <td class="text-right">{{ page.attempts }}</td>
+              <td class="text-right">{{ page.average_score }}</td>
+            </tr>
+          {% endverbatim %}
           </tbody>
          </table>
       </div>
