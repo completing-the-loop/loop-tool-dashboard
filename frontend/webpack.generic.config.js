@@ -12,7 +12,6 @@ function getClientEnvironment(publicUrl) {
         },
         {
             // Useful for determining whether we’re running in production mode.
-            // Most importantly, it switches React into the correct mode.
             NODE_ENV: JSON.stringify(node_env),
             // Useful for resolving the correct path to static assets in `public`.
             // For example, <img src={process.env.PUBLIC_URL + '/img/logo.png'} />.
@@ -22,10 +21,6 @@ function getClientEnvironment(publicUrl) {
         });
     return {
         'process.env': processEnv,
-        // Used in React setup to include/exclude devtools
-        __DEBUG__: node_env === 'development' && !argv.no_debug,
-        // Used in React setup to open devtools in new window
-        __DEBUG_NEW_WINDOW__ : !!argv.nw,
     };
 }
 
@@ -44,17 +39,11 @@ module.exports = ({
     // Not done by default because it breaks IDE discoverability
     bootstrapSassIncludePath = false,
 
-    // Include settings for react?
-    react = false,
-
     // Include settings for jQuery?
-    jQuery = !react,
+    jQuery = true,
 
-    // Enable webpack HMR? If react is true will also enable react-hot-loader
+    // Enable webpack HMR?
     hot = true,
-
-    // Use css-modules?
-    cssModules = react,
 
     // Dev server config
     serverHost = '0.0.0.0',
@@ -72,24 +61,6 @@ module.exports = ({
     const fs = require('fs');
     const webpack = require("webpack");
 
-    // TODO: verbose
-    // TODO: CommonsChunk plugin
-    // TODO: bundle size stats
-    // TODO: webpack-dashboard
-    // TODO: vendor bundling?
-        // TODO: set up bundles:
-        // - common
-        // - frontend/public/SPA
-        // - backend/admin
-    // TODO: vue
-    // TODO: angular
-    // TODO: pngcrush for production
-    // TODO: vanilla CSS handling
-    // TODO: handle JS located in django apps
-    // TODO: handle (S)CSS located in django apps
-
-    // TODO: use webpack-node-externals?
-
     const isDev = environment != 'production';
     const FRONTEND_DIR = './';
     const NODE_MODULES_DIR = path.join(FRONTEND_DIR, 'node_modules') + '/';
@@ -104,25 +75,15 @@ module.exports = ({
     if (sourceMap === true)      sourceMap = isDev ? 'eval-source-map' : 'source-map';
     if (sourceMap === undefined) sourceMap = isDev ? 'eval-source-map' : 'hidden-source-map';
 
-    const srcRoot = react ? './src-react/' : './src/';
+    const srcRoot = './src/';
 
     const entry = [
         `${srcRoot}index.js`,
     ];
 
-    if (react) {
-        // fetch() polyfill for making API calls. Only including for react as
-        // assume other builds that use jquery etc will just use ajax functions
-        // provided
-        entry.push(require.resolve('whatwg-fetch'));
-    }
-
     if (isDev && hot) {
         // HMR related loaders must come first
         entry.unshift(`webpack-hot-middleware/client?path=http://${serverHost}:${serverPort}/__webpack_hmr`);
-        if (react) {
-            entry.unshift(require.resolve('react-hot-loader/patch'));
-        }
     }
 
     // ----------------------------------------------------------------------
@@ -158,7 +119,7 @@ module.exports = ({
                                     '>1%',
                                     'last 4 versions',
                                     'Firefox ESR',
-                                    'not ie < 9', // React doesn't support IE8 anyway
+                                    'not ie < 9',
                                 ]
                             }),
                         ];
@@ -215,14 +176,6 @@ module.exports = ({
         'transform-object-rest-spread',
     ];
     let babelPluginsProd = [];
-
-    // ----------------------------------------------------------------------
-    if (react) {
-        babelPlugins.push(require.resolve('react-hot-loader/babel'));
-        babelPresets.push('react');
-        babelPluginsProd.push('babel-plugin-transform-react-remove-prop-types');
-        babelPluginsProd.push('babel-plugin-transform-react-constant-elements');
-    }
 
     // ----------------------------------------------------------------------
     // jQuery
@@ -323,12 +276,12 @@ module.exports = ({
 
     // ------------------------------------------------------------------
     // CSS/SCSS
-    const getCssLoader = (includeSass, useCssModules) => {
+    const getCssLoader = (includeSass) => {
         const cssUse = [
             {
                 loader: 'css-loader',
                 options: {
-                    modules: useCssModules,
+                    modules: false,
                     localIdentName: '[name]__[local]__[hash:base64:5]',
                 },
             },
@@ -354,35 +307,14 @@ module.exports = ({
 
     const cssRule = {
         test: /\.(css)$/,
-        use: getCssLoader(false, cssModules),
-    }
+        use: getCssLoader(false),
+    };
     const sassRule = {
         test: /\.(scss)$/,
-        use: getCssLoader(true, cssModules),
+        use: getCssLoader(true),
     };
-    if (cssModules) {
-        // If using css-modules specifically exclude the src/styles directory.
-        // This directory can contain styles that are NOT processed by
-        // css-modules and so can apply globally (eg. bootstrap styles)
-        // We add another rule below to setup the SASS loader on this dir
-        sassRule.exclude = cssRule.exclude = path.resolve(`${srcRoot}styles/`);
-    }
     conf.module.rules.push(cssRule);
     conf.module.rules.push(sassRule);
 
-    // If using css-modules provide way to use styles that aren't processed by
-    // css-modules (eg. import bootstrap styles, other global styles)
-    if (cssModules) {
-        conf.module.rules.push({
-            test: /\.(css)$/,
-            use: getCssLoader(false, false),
-            include: path.resolve(`${srcRoot}styles/`),
-        });
-        conf.module.rules.push({
-            test: /\.(scss)$/,
-            use: getCssLoader(true, false),
-            include: path.resolve(`${srcRoot}styles/`),
-        });
-    }
     return conf;
 };
