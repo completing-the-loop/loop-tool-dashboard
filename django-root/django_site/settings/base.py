@@ -337,7 +337,7 @@ STATICFILES_FINDERS = (
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'dist/',
-        'STATS_FILE': _Path(PROJECT_DIR, 'frontend/dist/webpack-stats-prod.json'),
+        'STATS_FILE': _Path(PROJECT_DIR, 'frontend/dist/production/webpack-stats.json'),
     },
 }
 

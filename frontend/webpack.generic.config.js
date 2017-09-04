@@ -67,7 +67,7 @@ module.exports = ({
     const OUTPUT_DIR_BASE = path.join(FRONTEND_DIR, 'dist') + '/';
     const OUTPUT_DIR_RELATIVE = `/${environment}/`;
     // In dev assets are served from dev server, otherwise filesystem
-    const PUBLIC_PATH = isDev ? `http://${serverHost}:${serverPort}/` : '/static' + OUTPUT_DIR_RELATIVE;
+    const PUBLIC_PATH = isDev ? `http://${serverHost}:${serverPort}/` : '/static/dist' + OUTPUT_DIR_RELATIVE;
     const INLINE_BINARY_DATA_LIMIT = 8192;
 
     assert(['development', 'production'].indexOf(environment) >= 0, '"environment" option is not valid');
