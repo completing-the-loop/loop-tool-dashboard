@@ -4,6 +4,6 @@ set -o pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.inc"
 
-cd "$PROJECT_DIR"
+cd "$project_dir"
 
-./manage.py test "$@"
+./manage.py test --keepdb "$@"

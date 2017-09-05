@@ -16,13 +16,11 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     get_env_setting('SERVER_HOSTNAME'),
-    get_env_setting('SELENIUM__STANDALONE_CHROME_PORT_4444_TCP_ADDR'),
 ]
 
 INTERNAL_IPS = [
     '127.0.0.1',
     get_env_setting('SERVER_HOSTNAME'),
-    get_env_setting('SELENIUM__STANDALONE_CHROME_PORT_4444_TCP_ADDR'),
 ]
 
 BODY_ENV_CLASS = 'env-ci'

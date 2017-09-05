@@ -22,5 +22,6 @@ pytz
 rules==1.2.1
 six==1.10.0
 UkPostcodeParser==1.1.1
+SQLAlchemy==1.1.13
 Unipath==1.1
 whitenoise==3.3.0

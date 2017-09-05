@@ -15,6 +15,7 @@ requirements/src
 # dev files
 frontend/build/*
 frontend/dist/*
+!frontend/dist/production
 venv/
 
 log/*
