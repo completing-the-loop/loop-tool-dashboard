@@ -29,6 +29,7 @@ Key functionality
 * MySQL 5.6
 * node 6 (dev only)
 * Bootstrap
+* RabbitMQ (http://www.rabbitmq.com/) - for Celery broker
 
 
 ## Architecture
@@ -37,6 +38,8 @@ Key functionality
 * Course data is accessible only to assigned course owners
 * Admin is accessible only to system administrators
   * `django-stronghold` means login required by default
+* Celery (with RAbbitMQ broker) used to process the LMS export data
+  
 
 ## Development
 
@@ -53,9 +56,7 @@ ln -s ../git-hooks hooks
 * Install OS packages
 
 ```bash
-brew install nonstandard-package1
-brew install nonstandard-package2
-# (Don't need to list DB packages or core python here; they are assumed)
+brew install rabbitmq
 ```
 
 * Create & activate a python 3 virtualenv
