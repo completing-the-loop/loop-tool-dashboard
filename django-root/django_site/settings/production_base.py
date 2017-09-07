@@ -61,3 +61,14 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Celery and RabbitMQ
+
+RABBITMQ_USER = get_env_setting('RABBITMQ_USER')
+RABBITMQ_PASSWORD = get_env_setting('RABBITMQ_PASSWORD')
+RABBITMQ_HOSTNAME = get_env_setting('RABBITMQ_HOSTNAME')
+RABBITMQ_PORT = get_env_setting('RABBITMQ_PORT')
+RABBITMQ_VHOST = get_env_setting('RABBITMQ_VHOST')
+
+CELERY_BROKER_URL = 'amqp://{}:{}@{}:{}/{}'.format(RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_HOSTNAME, RABBITMQ_PORT, RABBITMQ_VHOST)
