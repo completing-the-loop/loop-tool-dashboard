@@ -12,6 +12,9 @@ celery
 # Django authentication tools
 django-authtools
 
+# Use Django ORM to record celery results
+django-celery-results
+
 # HTML editor
 #django-ckeditor
 

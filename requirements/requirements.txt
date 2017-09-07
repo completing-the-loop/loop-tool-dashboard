@@ -4,6 +4,7 @@ amqp==2.2.1
 billiard==3.5.0.3
 celery==4.1.0
 django-authtools==1.6.0
+django-celery-results==1.0.1
 django-compat==1.0.14
 django-extensions==1.9.0
 django-hijack==2.1.4
