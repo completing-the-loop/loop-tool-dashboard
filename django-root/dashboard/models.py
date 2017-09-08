@@ -61,13 +61,13 @@ class CourseSingleEvent(models.Model):
 
 
 class CourseRepeatingEvent(models.Model):
-    EVENT_DAY_MON = '0'
-    EVENT_DAY_TUE = '1'
-    EVENT_DAY_WED = '2'
-    EVENT_DAY_THU = '3'
-    EVENT_DAY_FRI = '4'
-    EVENT_DAY_SAT = '5'
-    EVENT_DAY_SUN = '6'
+    EVENT_DAY_MON = 0
+    EVENT_DAY_TUE = 1
+    EVENT_DAY_WED = 2
+    EVENT_DAY_THU = 3
+    EVENT_DAY_FRI = 4
+    EVENT_DAY_SAT = 5
+    EVENT_DAY_SUN = 6
     EVENT_DAY_CHOICES = (
         (EVENT_DAY_MON, 'Monday'),
         (EVENT_DAY_TUE, 'Tuesday'),
@@ -82,7 +82,7 @@ class CourseRepeatingEvent(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     start_week = models.IntegerField(blank=True)
     end_week = models.IntegerField(blank=True)
-    day_of_week = models.CharField(max_length=50, choices=EVENT_DAY_CHOICES, default=EVENT_DAY_MON)
+    day_of_week = models.IntegerField(choices=EVENT_DAY_CHOICES, default=EVENT_DAY_MON)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
