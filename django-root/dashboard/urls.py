@@ -5,6 +5,10 @@ from stronghold.decorators import public
 
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
+from dashboard.views.events import CourseRepeatingEventCreateView
+from dashboard.views.events import CourseRepeatingEventDeleteView
+from dashboard.views.events import CourseRepeatingEventListView
+from dashboard.views.events import CourseRepeatingEventUpdateView
 from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
 
@@ -18,6 +22,12 @@ urlpatterns = [
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
     url(r'^(?P<course_id>\d+)/course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+
+    # Event management for academic staff
+    url(r'^(?P<course_id>\d+)/course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
+    url(r'^(?P<course_id>\d+)/course_repeating_event/$', CourseRepeatingEventCreateView.as_view(), name='add_course_repeating_event'),
+    url(r'^(?P<course_id>\d+)/course_repeating_event/(?P<pk>\d+)/$', CourseRepeatingEventUpdateView.as_view(), name='edit_course_repeating_event'),
+    url(r'^(?P<course_id>\d+)/course_repeating_event/(?P<pk>\d+)/delete/$', CourseRepeatingEventDeleteView.as_view(), name='delete_course_repeating_event'),
 
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),
