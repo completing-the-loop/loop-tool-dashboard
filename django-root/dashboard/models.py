@@ -80,8 +80,8 @@ class CourseRepeatingEvent(models.Model):
 
     title = models.CharField(max_length=255)
     course_offering = models.ForeignKey(CourseOffering)
-    start_week = models.IntegerField(blank=True)
-    end_week = models.IntegerField(blank=True)
+    start_week = models.IntegerField()
+    end_week = models.IntegerField()
     day_of_week = models.IntegerField(choices=EVENT_DAY_CHOICES, default=EVENT_DAY_MON)
     created_at = models.DateTimeField(auto_now_add=True)
 
