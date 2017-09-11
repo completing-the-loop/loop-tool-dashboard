@@ -51,24 +51,6 @@ from dashboard.models import Course
 #     assessmentgrades = models.TextField(blank=True)
 #     sitetree = models.TextField(blank=True)
 
-# CREATE TABLE `dim_dates` (
-#   `id` varchar(11) NOT NULL,
-#   `date_day` int(11) NOT NULL,
-#   `date_year` int(11) NOT NULL,
-#   `date_month` int(11) NOT NULL,
-#   `date_dayinweek` int(11) NOT NULL,
-#   `date_week` int(11) NOT NULL,
-#   `unixtimestamp` int(11) NOT NULL
-# ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimDate(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
-    date_day = models.IntegerField()
-    date_year = models.IntegerField()
-    date_month = models.IntegerField()
-    date_dayinweek = models.IntegerField()
-    date_week = models.IntegerField()
-    unixtimestamp = models.IntegerField()
-
 # CREATE TABLE `dim_users` (
 #   `id` int(11) NOT NULL,
 #   `lms_id` varchar(1000) NOT NULL,
@@ -112,12 +94,11 @@ class DimUser(models.Model):
 #   `session_id` int(11) DEFAULT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class FactCourseVisit(models.Model):
-    date_id = models.CharField(max_length=255)
+    visited_at = models.DateTimeField()
     course = models.ForeignKey(Course)
     user_id = models.IntegerField()
     page_id = models.IntegerField()
     pageview = models.IntegerField(default=1)
-    time_id = models.CharField(max_length=255)
     module = models.CharField(blank=True, max_length=255)
     action = models.CharField(blank=True, max_length=255)
     url = models.TextField(blank=True)
@@ -125,7 +106,6 @@ class FactCourseVisit(models.Model):
     user_pk = models.CharField(blank=True, max_length=255)
     page_pk = models.CharField(blank=True, max_length=255)
     section_pk = models.CharField(blank=True, max_length=255)
-    unixtimestamp = models.IntegerField()
     section_order = models.IntegerField(blank=True, null=True)
     info = models.TextField()
     session_id = models.IntegerField(blank=True, null=True)
@@ -175,14 +155,10 @@ class DimPage(models.Model):
 class DimSession(models.Model):
     course = models.ForeignKey(Course)
     session_id = models.IntegerField()
-    unixtimestamp = models.IntegerField()
-    date_id = models.CharField(max_length=255)
     session_length_in_mins = models.IntegerField()
     pageviews = models.IntegerField()
-    date_year = models.IntegerField()
-    date_week = models.IntegerField()
-    date_dayinweek = models.IntegerField()
     user_id = models.IntegerField()
+    first_visit = models.DateTimeField() # Will be replaced with FK to FactCourseVisit
 
     @staticmethod
     def get_next_session_id():
@@ -190,7 +166,6 @@ class DimSession(models.Model):
         if max_session_dict['max_session_id']:
             return max_session_dict['max_session_id'] + 1
         return 1
-
 
 # CREATE TABLE `dim_sessions` (
 #   `id` int(11) NOT NULL,
@@ -220,11 +195,11 @@ class DimSession(models.Model):
 #   `unixtimestamp` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class DimSubmissionAttempt(models.Model):
+    attempted_at = models.DateTimeField()
     course = models.ForeignKey(Course)
     content_id = models.IntegerField()
     user_id = models.IntegerField()
     grade = models.CharField(max_length=50)
-    unixtimestamp = models.IntegerField()
 
 
 # CREATE TABLE `dim_submissiontypes` (
@@ -240,8 +215,8 @@ class DimSubmissionType(models.Model):
     course = models.ForeignKey(Course)
     content_id = models.IntegerField()
     content_type = models.CharField(max_length=255)
-    timeopen = models.CharField(max_length=255)
-    timeclose = models.CharField(max_length=255)
+    # timeopen = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
+    # timeclose = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
     grade = models.CharField(max_length=50)
 
 
@@ -364,7 +339,7 @@ class SummaryParticipatingUsersByDayInWeek(models.Model):
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SummaryPost(models.Model):
-    date_id = models.CharField(max_length=255)  # Link to DimDate?
+    posted_at = models.DateTimeField()
     course = models.ForeignKey(Course)
     forum_id = models.IntegerField()
     discussion_id = models.IntegerField()

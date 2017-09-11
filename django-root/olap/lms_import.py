@@ -1,15 +1,16 @@
 import csv
-import datetime
+from datetime import datetime
+import re
+import unicodedata
 
 from django.conf import settings
-import unicodedata
+from django.utils import timezone
 
 from django.db import connection
 from unipath.path import Path
 import xml.etree.cElementTree as ET
 
 from dashboard.models import Course
-from olap.models import DimDate
 from olap.models import DimPage
 from olap.models import DimSession
 from olap.models import DimSubmissionAttempt
@@ -42,9 +43,6 @@ class ImportLmsData(object):
         print("Removing old data")
         self.remove_olap_data()
 
-        print('Generating dates')
-        self._generate_dates()
-
         for course in Course.objects.all():
             if course.lms_type == Course.LMS_TYPE_BLACKBOARD:
                 print("Importing course data for {}".format(course))
@@ -54,12 +52,12 @@ class ImportLmsData(object):
                 print("Processing user sessions for {}".format(course))
                 self._process_user_sessions(course)
 
-                print("Populating summary data for {}".format(course))
-                self._populate_summary_tables(course, lms_import.get_assessment_types(), lms_import.get_communication_types())
+                # print("Populating summary data for {}".format(course))
+                # self._populate_summary_tables(course, lms_import.get_assessment_types(), lms_import.get_communication_types())
+                print("Skipping populating summary data for {}".format(course))
 
     def remove_olap_data(self):
         # First the OLAP Tables
-        DimDate.objects.all().delete()
         DimUser.objects.all().delete()
         DimPage.objects.all().delete()
         FactCourseVisit.objects.all().delete()
@@ -85,16 +83,12 @@ class ImportLmsData(object):
         if session_visits_list:
             first_visit = session_visits_list[0]
             last_visit = session_visits_list[len(session_visits_list)-1]
-            session_start = datetime.datetime.fromtimestamp(first_visit.unixtimestamp)
-            session_end = datetime.datetime.fromtimestamp(last_visit.unixtimestamp)
+            session_start = first_visit.visited_at
+            session_end = last_visit.visited_at
             session_duration = (session_end - session_start).seconds / 60
             page_views = len(session_visits_list)
-            date_year = session_start.year
-            date_week = session_start.isocalendar()[1]
-            date_dayinweek = session_start.weekday()
-            dim_session = DimSession(user_id=user.lms_id, date_week=date_week, date_year=date_year,
-                                     date_dayinweek=date_dayinweek, pageviews=page_views, session_length_in_mins=session_duration,
-                                     session_id=session_id, course=course, unixtimestamp=first_visit.unixtimestamp, date_id=first_visit.date_id)
+            dim_session = DimSession(user_id=user.lms_id, pageviews=page_views, session_length_in_mins=session_duration,
+                                     session_id=session_id, course=course, first_visit=session_start)
             dim_session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
             FactCourseVisit.objects.filter(id__in=session_visits_list_ids).update(session_id=session_id)
@@ -113,18 +107,18 @@ class ImportLmsData(object):
         users = DimUser.objects.filter(course=course)
 
         for user in users:
-            visits = FactCourseVisit.objects.filter(user_id=user.lms_id).order_by('unixtimestamp')
+            visits = FactCourseVisit.objects.filter(user_id=user.lms_id).order_by('visited_at')
             session_id = DimSession.get_next_session_id()
 
             session_start = None
             session_visits_list = []
             for visit in visits:
                 if session_start is None:
-                    session_start = datetime.datetime.fromtimestamp(visit.unixtimestamp)
+                    session_start = visit.visited_at
                     session_visits_list = [visit]
                     continue
 
-                session_end = datetime.datetime.fromtimestamp(visit.unixtimestamp)
+                session_end = visit.visited_at
 
                 session_duration = (session_end - session_start).seconds / 60
                 if session_duration >= self.SESSION_LENGTH_MINS:
@@ -230,35 +224,9 @@ class ImportLmsData(object):
                 summary = SummaryUniquePageViewsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
                 summary.save()
 
-
-    def _generate_dates(self):
-        """
-            Generates dates for the date dimension table
-        """
-        start_date =  datetime.datetime.strptime("1-JAN-14", "%d-%b-%y")
-        end_date =  datetime.datetime.strptime("31-DEC-16", "%d-%b-%y")
-
-        cur_date = start_date
-        while cur_date <= end_date:
-            self._insert_date(cur_date)
-            cur_date = cur_date + datetime.timedelta(days=1)
-
-    def _insert_date(self, date_val: datetime):
-        """
-        Inserts a date in the dim_dates dimension table
-
-        Args:
-            year: 4 digit year
-            month: 1 - 12 month value
-            day: day of the month
-            dayinweek: 0 - 6 day in week
-            week: week in year value
-
-        Returns:
-            id of the inserted date
-        """
-        if date_val:
-            date_obj = DimDate(
+    """
+    # This is what's left of the DimDates creation stuff, so we can see
+    # How they generated certain date related stuff.
                 id=datetime.datetime.strftime(date_val, "%d-%b-%y"),
                 date_year=date_val.year,
                 date_month=date_val.month,
@@ -268,19 +236,45 @@ class ImportLmsData(object):
                 unixtimestamp=date_val.timestamp(),
             )
 
+    # Would be good to have unit tests that catch these situations (so we know why this code exists)
             if date_obj.date_month == 12 and date_obj.date_week <= 1:
                 date_obj.date_week = 52
             if date_obj.date_month == 1 and date_obj.date_week >= 52:
                 date_obj.date_week = 1
-
-            date_obj.save()
-
+    """
 
 class BaseLmsImport(object):
 
     def __init__(self, courses_export_path, course):
         self.course = course
         self.course_export_path = Path(courses_export_path, course.id)
+
+        self.our_tz = timezone.get_current_timezone()
+        # Is there a better mechanism for this?
+
+    # https://docs.python.org/3/library/time.html#time.strftime
+    def convert_datetimestr_to_datetime(self, datetimestr):
+        # Data may have Edatetime or EST appended.  Strip this off.
+        datetimestr_without_tz = re.sub(r'( EDT| EST)?$', '', datetimestr)
+        date = datetime.strptime(datetimestr_without_tz, '%Y-%m-%d %H:%M:%S') # eg 2015-07-24 16:52:53
+        return self.our_tz.localize(date, is_dst=None)
+
+    def convert_ddmonyy_to_datetime(self, ddmonyy):
+        dt = datetime.strptime(ddmonyy, "%d-%b-%y %H:%M:%S") # eg 01-SEP-14 09:46:52
+        return self.our_tz.localize(dt, is_dst=None)
+
+    # There was code that asked for these conversions, and so I've moved them here, but
+    # it seems they're never called.
+    """
+    def cvt_datestr_to_date(self, datestr):
+        datetime = datetime.strptime(datestr, '%Y-%m-%d')
+        current_timezone = timezone.get_current_timezone()
+        return self.our_tz.localize(date, is_dst=None)
+
+    def cvt_ddmonyy_to_date(self, ddmonyy):
+        datetime = datetime.strptime(ddmonyy, "%d-%b-%y")
+        return self.our_tz.localize(datetime, is_dst=None)
+    """
 
     def process_import_data(self):
         raise NotImplementedError("'process_import_data' must be implemented")
@@ -501,11 +495,7 @@ class BlackboardImport(BaseLmsImport):
 
             for row in reader:
                 # Process row
-                cur_visit_date = datetime.datetime.strptime(row["TIMESTAMP"], "%d-%b-%y %H:%M:%S")  # eg 01-SEP-14 09:46:52
-                date_id = datetime.datetime.strftime(cur_visit_date, "%d-%b-%y")  # time.strftime("%d-%b-%y", cur_visit_date)
-                time_id = datetime.datetime.strftime(cur_visit_date, "%H:%M:%S")  # time.strftime("%H:%M:%S", cur_visit_date)
-
-                unixtimestamp = cur_visit_date.timestamp()
+                visited_at = self.convert_ddmonyy_to_datetime(row["TIMESTAMP"])
 
                 user_id = row["USER_PK1"]
                 page_id = row["CONTENT_PK1"]
@@ -553,7 +543,7 @@ class BlackboardImport(BaseLmsImport):
                                                    'cp_gradebook_needs_grading']:
                     if not page_id:
                         page_id = 0
-                    fact_visit = FactCourseVisit(date_id=date_id, time_id=time_id, course=self.course, user_id=user_id, module=content_type, action=action, page_id=page_id, user_pk=user_pk, page_pk=page_pk, unixtimestamp=unixtimestamp)
+                    fact_visit = FactCourseVisit(visited_at=visited_at, course=self.course, user_id=user_id, module=content_type, action=action, page_id=page_id, user_pk=user_pk, page_pk=page_pk)
                     fact_visit.save()
 
     def _get_resource_content_type(self, file_path):
@@ -614,14 +604,12 @@ class BlackboardImport(BaseLmsImport):
                     user_id = elem.attrib["value"]
                 for subelem in elem:
                     if subelem.tag == "CREATED":
-                        date_id = subelem.attrib["value"]
+                        date_str = subelem.attrib["value"].strip()
 
-            if (date_id is not None) and (len(date_id) != 0) and (date_id != " ") and (date_id != ""):
-                date_id = date_id[0:len(date_id) - 4]
-                post_date = datetime.datetime.strptime(date_id, "%Y-%m-%d %H:%M:%S")  # 2014-07-11 16:52:53 EST
-                date_id = datetime.datetime.strftime(post_date, "%d-%b-%y")
+            if date_str:
+                posted_at = self.convert_datetimestr_to_datetime(date_str)
                 user_id = user_id[1:len(user_id) - 2]
-                post = SummaryPost(date_id=date_id, user_id=user_id, course=self.course, forum_id=forum_id, discussion_id=conference_id)
+                post = SummaryPost(posted_at=posted_at, user_id=user_id, course=self.course, forum_id=forum_id, discussion_id=conference_id)
                 post.save()
 
     def _process_conferences(self, file_path, content_id):
@@ -643,8 +631,8 @@ class BlackboardImport(BaseLmsImport):
             discussion.save()
 
     def _process_exam(self, file_path, content_id, content_type):
-        timeopen = 0
-        timeclose = 0
+        # timeopen = 0
+        # timeclose = 0
         grade = 0.0
         content_id = content_id[1:-2]
         tree = ET.ElementTree(file=file_path)
@@ -652,7 +640,7 @@ class BlackboardImport(BaseLmsImport):
         for elem in tree.iter(tag='qmd_absolutescore_max'):
             grade = elem.text
 
-        submission_type = DimSubmissionType(course=self.course, content_id=content_id, content_type=content_type, timeopen=timeopen, timeclose=timeclose, grade=grade)
+        submission_type = DimSubmissionType(course=self.course, content_id=content_id, content_type=content_type, grade=grade)
         submission_type.save()
 
     def _process_memberships(self, file_path):
@@ -714,18 +702,12 @@ class BlackboardImport(BaseLmsImport):
                                 if child_child_child_child_child_of_root.tag == "SCORE":
                                     grade = child_child_child_child_child_of_root.attrib['value']
                                 if child_child_child_child_child_of_root.tag == "DATEATTEMPTED":
-                                    date_str = child_child_child_child_child_of_root.attrib['value']
+                                    attempted_at_str = child_child_child_child_child_of_root.attrib['value'] # eg 2014-07-11 16:52:53 EST
 
                     if content_id is not None and grade is not None:  # i.e. 0 attempts -
-                        date_str = date_str[0:len(date_str) - 4]        # 2014-07-11 16:52:53 EST
-                        post_date = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                        attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
-                        unixtimestamp = post_date.timestamp()
-
-                        date_id = datetime.datetime.strftime(post_date, "%d-%b-%y")
-                        time_id = datetime.datetime.strftime(post_date, "%H:%M:%S")
-
-                        attempt = DimSubmissionAttempt(course=self.course, content_id=content_id, grade=grade, user_id=user_id, unixtimestamp=unixtimestamp)
+                        attempt = DimSubmissionAttempt(course=self.course, content_id=content_id, grade=grade, user_id=user_id, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
@@ -735,7 +717,9 @@ class BlackboardImport(BaseLmsImport):
                         user_pk = str(self.course.id) + "_" + user_id
                         page_pk = str(self.course.id) + "_" + content_id
 
-                        fact_visit = FactCourseVisit(date_id=date_id, time_id=time_id, course=self.course,
-                                    user_id=user_id, module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page_id=content_id, pageview=1, user_pk=user_pk,
-                                                     page_pk=page_pk, unixtimestamp=unixtimestamp)
+                        # We need to fetch course to save a DimUser (which is broken because a user can be a member of more than one course)
+                        # This will break unless there is one and only one course in the db.
+                        fact_visit = FactCourseVisit(user_id=user_id, visited_at=attempted_at, course=self.course,
+                            module='assessment/x-bb-qti-test', action='COURSE_ACCESS',
+                            page_id=content_id, pageview=1, user_pk=user_pk, page_pk=page_pk)
                         fact_visit.save()
