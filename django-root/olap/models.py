@@ -65,12 +65,11 @@ from dashboard.models import Course
 class DimUser(models.Model):
     lms_id = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
-    user_pk = models.CharField(max_length=255)  # course_id '_' lms_id
-    course = models.ForeignKey(Course)
+    course = models.ForeignKey(Course) # This is rubbish - A user can be a member of more than one course.  Should traverse through visits/pages/course
     firstname = models.CharField(max_length=255, blank=True)
     lastname = models.CharField(max_length=255, blank=True)
     role = models.CharField(max_length=255, blank=True)
-    email = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(max_length=255, blank=True)
 
     class Meta:
         unique_together = (('course', 'lms_id'), )
@@ -105,20 +104,17 @@ class DimUser(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class FactCourseVisit(models.Model):
     visited_at = models.DateTimeField()
-    course = models.ForeignKey(Course)
     user = models.ForeignKey(DimUser)
-    page_id = models.IntegerField()
-    pageview = models.IntegerField(default=1)
-    module = models.CharField(blank=True, max_length=255)
+    page = models.ForeignKey('DimPage')
+    # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
+    module = models.CharField(blank=True, max_length=255) # Is this always a resource/x-bb-* content type?
     action = models.CharField(blank=True, max_length=255)
     url = models.TextField(blank=True)
     section_id = models.IntegerField(blank=True, null=True)
-    user_pk = models.CharField(blank=True, max_length=255)
-    page_pk = models.CharField(blank=True, max_length=255)
     section_pk = models.CharField(blank=True, max_length=255)
     section_order = models.IntegerField(blank=True, null=True)
     info = models.TextField()
-    session_id = models.IntegerField(blank=True, null=True)
+    session = models.ForeignKey('DimSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
 
 # CREATE TABLE `dim_pages` (
 #   `id` int(11) NOT NULL,
@@ -138,7 +134,6 @@ class DimPage(models.Model):
     parent_id = models.IntegerField(default=0)
     order_no = models.IntegerField(default=0)
     title = models.TextField()
-    page_pk = models.CharField(max_length=255)
 
     class Meta:
         unique_together = (('course', 'content_id'), )
@@ -165,11 +160,11 @@ class DimPage(models.Model):
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class DimSession(models.Model):
+    # Not strictly needed (since we can find course by .first_visit.page.course, but it will make queries easier.
     course = models.ForeignKey(Course)
-    session_id = models.IntegerField()
     session_length_in_mins = models.IntegerField()
     pageviews = models.IntegerField()
-    first_visit = models.DateTimeField() # Will be replaced with FK to FactCourseVisit
+    first_visit = models.ForeignKey(FactCourseVisit)
 
     @staticmethod
     def get_next_session_id():
@@ -208,7 +203,7 @@ class DimSession(models.Model):
 class DimSubmissionAttempt(models.Model):
     attempted_at = models.DateTimeField()
     course = models.ForeignKey(Course)
-    content_id = models.IntegerField()
+    page = models.ForeignKey(DimPage) # Was called content_id
     user = models.ForeignKey(DimUser)
     grade = models.CharField(max_length=50)
 
@@ -224,7 +219,7 @@ class DimSubmissionAttempt(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class DimSubmissionType(models.Model):
     course = models.ForeignKey(Course)
-    content_id = models.IntegerField()
+    content_id = models.IntegerField() # This should be an FK to DimPage, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before DimPages.
     content_type = models.CharField(max_length=255)
     # timeopen = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
     # timeclose = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?

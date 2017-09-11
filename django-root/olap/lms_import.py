@@ -79,7 +79,7 @@ class ImportLmsData(object):
         SummaryParticipatingUsersByDayInWeek.objects.all().delete()
         SummaryUniquePageViewsByDayInWeek.objects.all().delete()
 
-    def _store_session(self, course, session_id, session_visits_list):
+    def _store_session(self, course, session_visits_list):
         if session_visits_list:
             first_visit = session_visits_list[0]
             last_visit = session_visits_list[len(session_visits_list)-1]
@@ -87,11 +87,10 @@ class ImportLmsData(object):
             session_end = last_visit.visited_at
             session_duration = (session_end - session_start).seconds / 60
             page_views = len(session_visits_list)
-            dim_session = DimSession(pageviews=page_views, session_length_in_mins=session_duration,
-                                     session_id=session_id, course=course, first_visit=session_start)
-            dim_session.save()
+            session = DimSession(course=course, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
+            session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
-            FactCourseVisit.objects.filter(id__in=session_visits_list_ids).update(session_id=session_id)
+            FactCourseVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
 
     def _process_user_sessions(self, course):
         """
@@ -107,8 +106,7 @@ class ImportLmsData(object):
         users = DimUser.objects.filter(course=course)
 
         for user in users:
-            visits = FactCourseVisit.objects.filter(user_id=user.lms_id).order_by('visited_at')
-            session_id = DimSession.get_next_session_id()
+            visits = FactCourseVisit.objects.filter(user=user).order_by('visited_at')
 
             session_start = None
             session_visits_list = []
@@ -122,14 +120,13 @@ class ImportLmsData(object):
 
                 session_duration = (session_end - session_start).seconds / 60
                 if session_duration >= self.SESSION_LENGTH_MINS:
-                    self._store_session(course, session_id, session_visits_list)
-                    session_id += 1
+                    self._store_session(course, session_visits_list)
                     session_start = session_end
                     session_visits_list = [visit]
                 else:
                     session_visits_list.append(visit)
 
-            self._store_session(course, session_id, session_visits_list)
+            self._store_session(course, session_visits_list)
 
     def _populate_summary_tables(self, course, assessment_types, communication_types):
         """
@@ -485,8 +482,19 @@ class BlackboardImport(BaseLmsImport):
                 # The likelihood is that users saved here have already been referred to when importing data for the
                 # other models, and were saved as partials.  This fills in the fields that weren't saved when the
                 # partials were saved.
-                details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role, user_pk=user_pk, course=self.course)
+                details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role)
                 user, _ = DimUser.objects.update_or_create(lms_id=user_id, course=self.course, defaults=details_to_use_if_user_doesnt_exist)
+
+    droppable_row_DATA_string_fns = (
+        lambda s: s.endswith('/list_assignments.jsp'),
+        lambda s: s.endswith('/500.jsp'),
+        lambda s: s == '/webapps/discussionboard/do/message',
+        lambda s: s == 'Mobile Course View',
+        lambda s: s == '@X@content.eval_label@X@',
+        lambda s: s == '/webapps/blackboard/content/contentWrapperItem.jsp',
+        lambda s: s == 'Grade Centre',
+        lambda s: s == '/webapps/item-analysis/itemanalysis/showItemAnalysis',
+    )
 
     def _process_access_log(self):
         """
@@ -501,53 +509,55 @@ class BlackboardImport(BaseLmsImport):
                 visited_at = self.convert_ddmonyy_to_datetime(row["TIMESTAMP"])
 
                 user_id = row["USER_PK1"]
-                page_id = row["CONTENT_PK1"]
+                content_id = row["CONTENT_PK1"]
                 action = row["EVENT_TYPE"]
                 forum_id = row["FORUM_PK1"]
 
+                data = row["DATA"]
+                if any((fn(data) for fn in self.droppable_row_DATA_string_fns)):
+                    print("Dropping row, row=", row)
+                    continue
+
                 if forum_id:
-                    page_id = forum_id
+                    content_id = forum_id
+
 
                 # default for module
                 content_type = "blank"
-                if page_id:
-                    if str(page_id) in self.resource_id_type_lookup_dict:
-                        content_type = self.resource_id_type_lookup_dict[str(page_id)]
+                if content_id:
+                    if str(content_id) in self.resource_id_type_lookup_dict:
+                        content_type = self.resource_id_type_lookup_dict[str(content_id)]
                     else:
                         if not row["INTERNAL_HANDLE"]:
                             content_type = row["DATA"]
                             # also add to dim_pages
-                            if not DimPage.objects.filter(content_id=int(page_id)).exists():
+                            if not DimPage.objects.filter(content_id=int(content_id)).exists():
                                 title = "blank"
                                 if content_type == "/webapps/blackboard/execute/blti/launchLink":
                                     title = "LTI Link"
                                 elif content_type == "/webapps/blackboard/execute/manageCourseItem":
                                     title = "Manage Course Item"
-                                dim_page = DimPage(course=self.course, content_type=content_type, content_id=page_id, title=title)
+                                dim_page = DimPage(course=self.course, content_type=content_type, content_id=content_id, title=title)
                                 dim_page.save()
                 elif row["INTERNAL_HANDLE"] == "my_announcements":
                     content_type = "resource/x-bb-announcement"
-                    page_id = str(self.announcements_id)
+                    content_id = str(self.announcements_id)
                 elif row["INTERNAL_HANDLE"] == "check_grade":
                     content_type = "course/x-bb-gradebook"
-                    page_id = str(self.gradebook_id)
-
-                user_pk = str(self.course.id) + "_" + user_id
-                page_pk = str(self.course.id) + "_" + page_id
+                    content_id = str(self.gradebook_id)
 
                 # map all links in content to assessment to actual assessment id
-                if page_id in self.content_link_id_to_content_id_dict:
-                    page_id = self.content_link_id_to_content_id_dict[page_id]
+                if content_id in self.content_link_id_to_content_id_dict:
+                    content_id = self.content_link_id_to_content_id_dict[content_id]
 
                 # Need to exclude forum post creation as this is counted in summary_posts
                 # Exclude admin actions such as entering an announcement
                 if row["INTERNAL_HANDLE"] not in ['discussion_board_entry', 'db_thread_list_entry',
                                                    'db_collection_entry', 'announcements_entry',
                                                    'cp_gradebook_needs_grading']:
-                    if not page_id:
-                        page_id = 0
                     user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
-                    fact_visit = FactCourseVisit(user=user, visited_at=visited_at, course=self.course, module=content_type, action=action, page_id=page_id, user_pk=user_pk, page_pk=page_pk)
+                    page = DimPage.objects.get(content_id=content_id)
+                    fact_visit = FactCourseVisit(user=user, visited_at=visited_at, module=content_type, action=action, page=page)
                     fact_visit.save()
 
     def _get_resource_content_type(self, file_path):
@@ -713,17 +723,15 @@ class BlackboardImport(BaseLmsImport):
                         attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
                         user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
-                        attempt = DimSubmissionAttempt(course=self.course, content_id=content_id, grade=grade, user=user, attempted_at=attempted_at)
+                        page = DimPage.objects.get(content_id=content_id)
+                        attempt = DimSubmissionAttempt(course=self.course, page=page, grade=grade, user=user, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
-                        # save all attempts as pageviews in fact_coursevisits
-                        page_pk = str(self.course.id) + "_" + content_id
-
                         user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
-                        fact_visit = FactCourseVisit(user=user, visited_at=attempted_at, course=self.course,
-                            module='assessment/x-bb-qti-test', action='COURSE_ACCESS',
-                            page_id=content_id, pageview=1, page_pk=page_pk)
+                        page = DimPage.objects.get(content_id=content_id)
+                        fact_visit = FactCourseVisit(user=user, visited_at=attempted_at,
+                            module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
                         fact_visit.save()
