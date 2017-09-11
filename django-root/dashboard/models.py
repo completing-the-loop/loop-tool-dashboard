@@ -47,6 +47,9 @@ class CourseSubmissionEvent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, default=EVENT_TYPE_ASSIGNMENT)
 
+    def get_event_type(self):
+        return dict(self.EVENT_TYPE_CHOICES)[self.event_type]
+
     def __str__(self):
         return self.title
 
