@@ -79,7 +79,7 @@ class ImportLmsData(object):
         SummaryParticipatingUsersByDayInWeek.objects.all().delete()
         SummaryUniquePageViewsByDayInWeek.objects.all().delete()
 
-    def _store_session(self, course, user, session_id, session_visits_list):
+    def _store_session(self, course, session_id, session_visits_list):
         if session_visits_list:
             first_visit = session_visits_list[0]
             last_visit = session_visits_list[len(session_visits_list)-1]
@@ -87,7 +87,7 @@ class ImportLmsData(object):
             session_end = last_visit.visited_at
             session_duration = (session_end - session_start).seconds / 60
             page_views = len(session_visits_list)
-            dim_session = DimSession(user_id=user.lms_id, pageviews=page_views, session_length_in_mins=session_duration,
+            dim_session = DimSession(pageviews=page_views, session_length_in_mins=session_duration,
                                      session_id=session_id, course=course, first_visit=session_start)
             dim_session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
@@ -122,14 +122,14 @@ class ImportLmsData(object):
 
                 session_duration = (session_end - session_start).seconds / 60
                 if session_duration >= self.SESSION_LENGTH_MINS:
-                    self._store_session(course, user, session_id, session_visits_list)
+                    self._store_session(course, session_id, session_visits_list)
                     session_id += 1
                     session_start = session_end
                     session_visits_list = [visit]
                 else:
                     session_visits_list.append(visit)
 
-            self._store_session(course, user, session_id, session_visits_list)
+            self._store_session(course, session_id, session_visits_list)
 
     def _populate_summary_tables(self, course, assessment_types, communication_types):
         """
@@ -482,8 +482,11 @@ class BlackboardImport(BaseLmsImport):
             if not email:
                 email = "blank"
             if role != "STAFF":
-                user = DimUser(lms_id=user_id, firstname=firstname, lastname=lastname, username=username, email=email, role=role, user_pk=user_pk, course=self.course)
-                user.save()
+                # The likelihood is that users saved here have already been referred to when importing data for the
+                # other models, and were saved as partials.  This fills in the fields that weren't saved when the
+                # partials were saved.
+                details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role, user_pk=user_pk, course=self.course)
+                user, _ = DimUser.objects.update_or_create(lms_id=user_id, course=self.course, defaults=details_to_use_if_user_doesnt_exist)
 
     def _process_access_log(self):
         """
@@ -543,7 +546,8 @@ class BlackboardImport(BaseLmsImport):
                                                    'cp_gradebook_needs_grading']:
                     if not page_id:
                         page_id = 0
-                    fact_visit = FactCourseVisit(visited_at=visited_at, course=self.course, user_id=user_id, module=content_type, action=action, page_id=page_id, user_pk=user_pk, page_pk=page_pk)
+                    user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                    fact_visit = FactCourseVisit(user=user, visited_at=visited_at, course=self.course, module=content_type, action=action, page_id=page_id, user_pk=user_pk, page_pk=page_pk)
                     fact_visit.save()
 
     def _get_resource_content_type(self, file_path):
@@ -609,7 +613,8 @@ class BlackboardImport(BaseLmsImport):
             if date_str:
                 posted_at = self.convert_datetimestr_to_datetime(date_str)
                 user_id = user_id[1:len(user_id) - 2]
-                post = SummaryPost(posted_at=posted_at, user_id=user_id, course=self.course, forum_id=forum_id, discussion_id=conference_id)
+                user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                post = SummaryPost(posted_at=posted_at, user=user, course=self.course, forum_id=forum_id, discussion_id=conference_id)
                 post.save()
 
     def _process_conferences(self, file_path, content_id):
@@ -707,19 +712,18 @@ class BlackboardImport(BaseLmsImport):
                     if content_id is not None and grade is not None:  # i.e. 0 attempts -
                         attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
-                        attempt = DimSubmissionAttempt(course=self.course, content_id=content_id, grade=grade, user_id=user_id, attempted_at=attempted_at)
+                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                        attempt = DimSubmissionAttempt(course=self.course, content_id=content_id, grade=grade, user=user, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
                         # save all attempts as pageviews in fact_coursevisits
-                        user_pk = str(self.course.id) + "_" + user_id
                         page_pk = str(self.course.id) + "_" + content_id
 
-                        # We need to fetch course to save a DimUser (which is broken because a user can be a member of more than one course)
-                        # This will break unless there is one and only one course in the db.
-                        fact_visit = FactCourseVisit(user_id=user_id, visited_at=attempted_at, course=self.course,
+                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                        fact_visit = FactCourseVisit(user=user, visited_at=attempted_at, course=self.course,
                             module='assessment/x-bb-qti-test', action='COURSE_ACCESS',
-                            page_id=content_id, pageview=1, user_pk=user_pk, page_pk=page_pk)
+                            page_id=content_id, pageview=1, page_pk=page_pk)
                         fact_visit.save()

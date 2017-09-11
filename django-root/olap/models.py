@@ -75,6 +75,13 @@ class DimUser(models.Model):
     class Meta:
         unique_together = (('course', 'lms_id'), )
 
+    def __str__(self):
+        possible_name = " ".join((self.firstname, self.lastname))
+        if possible_name:
+            return "<DimUser {}: {}>".format(self.lms_id, possible_name)
+        else:
+            return "<DimUser {}: ## Phantom user ##>".format(self.lms_id)
+
 # CREATE TABLE `fact_coursevisits` (
 #   `id` int(11) NOT NULL,
 #   `date_id` varchar(1000) NOT NULL,
@@ -99,7 +106,7 @@ class DimUser(models.Model):
 class FactCourseVisit(models.Model):
     visited_at = models.DateTimeField()
     course = models.ForeignKey(Course)
-    user_id = models.IntegerField()
+    user = models.ForeignKey(DimUser)
     page_id = models.IntegerField()
     pageview = models.IntegerField(default=1)
     module = models.CharField(blank=True, max_length=255)
@@ -162,7 +169,6 @@ class DimSession(models.Model):
     session_id = models.IntegerField()
     session_length_in_mins = models.IntegerField()
     pageviews = models.IntegerField()
-    user_id = models.IntegerField()
     first_visit = models.DateTimeField() # Will be replaced with FK to FactCourseVisit
 
     @staticmethod
@@ -203,7 +209,7 @@ class DimSubmissionAttempt(models.Model):
     attempted_at = models.DateTimeField()
     course = models.ForeignKey(Course)
     content_id = models.IntegerField()
-    user_id = models.IntegerField()
+    user = models.ForeignKey(DimUser)
     grade = models.CharField(max_length=50)
 
 
@@ -348,7 +354,7 @@ class SummaryPost(models.Model):
     course = models.ForeignKey(Course)
     forum_id = models.IntegerField()
     discussion_id = models.IntegerField()
-    user_id = models.IntegerField()     # Ref to lms_id in DimUser?
+    user = models.ForeignKey(DimUser) # Having this is not normalised
 
 # CREATE TABLE `Summary_SessionAverageLengthByDayInWeek` (
 #   `id` int(11) NOT NULL,
