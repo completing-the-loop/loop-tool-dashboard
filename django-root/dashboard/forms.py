@@ -28,9 +28,11 @@ class CourseRepeatingEventForm(ModelForm):
         super().clean()
         start_week = self.cleaned_data.get('start_week')
         end_week = self.cleaned_data.get('end_week')
-        if start_week < 1:
-            self.add_error('start_week', ValidationError('Start week cannot be earlier than week 1'))
-        if end_week > self.course.no_weeks:
-            self.add_error('end_week', ValidationError('End week cannot be longer than the course length of {} weeks'.format(self.course.no_weeks)))
-        if end_week < start_week:
-            self.add_error('end_week', 'End week cannot be before start week')
+
+        if start_week and end_week:
+            if start_week < 1:
+                self.add_error('start_week', ValidationError('Start week cannot be earlier than week 1'))
+            if end_week > self.course.no_weeks:
+                self.add_error('end_week', ValidationError('End week cannot be longer than the course length of {} weeks'.format(self.course.no_weeks)))
+            if end_week < start_week:
+                self.add_error('end_week', 'End week cannot be before start week')
