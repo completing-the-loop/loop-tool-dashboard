@@ -42,10 +42,10 @@ class CourseSubmissionEvent(models.Model):
 
     title = models.CharField(max_length=255)
     course_offering = models.ForeignKey(CourseOffering)
-    start_date = models.DateTimeField(null=True, blank=True)
-    end_date = models.DateTimeField(null=True, blank=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
-    event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, default=EVENT_TYPE_ASSIGNMENT, blank=True)
+    event_type = models.CharField(max_length=50, choices=EVENT_TYPE_CHOICES, default=EVENT_TYPE_ASSIGNMENT)
 
     def __str__(self):
         return self.title
