@@ -14,9 +14,16 @@ const app = express();
 app.use(require('webpack-dev-middleware')(compiler, {
     noInfo: true,
     publicPath: webpackConfigDev.output.publicPath,
+    headers: { "Access-Control-Allow-Origin": "*" },
 }));
 
 app.use(require('webpack-hot-middleware')(compiler));
+
+app.all('/', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+});
 
 const server = app.listen(serverPort, serverHost, err => {
     if (err) {
