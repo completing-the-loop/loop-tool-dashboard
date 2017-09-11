@@ -1,3 +1,4 @@
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from olap.models import DimUser
@@ -10,7 +11,9 @@ class FactCourseVisitSerializer(ModelSerializer):
         fields = '__all__' # TODO: Update this to specify exact fields to return
 
 
-class DimUserSerializer(ModelSerializer):
+class DimTopUserSerializer(ModelSerializer):
+    pageviews = serializers.IntegerField()
+
     class Meta:
         model = DimUser
-        fields = ('firstname', 'lastname', 'role',)
+        fields = ('lms_id', 'firstname', 'lastname', 'role', 'pageviews')
