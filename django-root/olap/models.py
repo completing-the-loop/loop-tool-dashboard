@@ -72,6 +72,9 @@ class DimUser(models.Model):
     role = models.CharField(max_length=255, blank=True)
     email = models.CharField(max_length=255, blank=True)
 
+    class Meta:
+        unique_together = (('course', 'lms_id'), )
+
 # CREATE TABLE `fact_coursevisits` (
 #   `id` int(11) NOT NULL,
 #   `date_id` varchar(1000) NOT NULL,
@@ -110,7 +113,6 @@ class FactCourseVisit(models.Model):
     info = models.TextField()
     session_id = models.IntegerField(blank=True, null=True)
 
-
 # CREATE TABLE `dim_pages` (
 #   `id` int(11) NOT NULL,
 #   `course_id` int(11) NOT NULL,
@@ -130,6 +132,9 @@ class DimPage(models.Model):
     order_no = models.IntegerField(default=0)
     title = models.TextField()
     page_pk = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = (('course', 'content_id'), )
 
     @staticmethod
     def get_next_page_id(course):
