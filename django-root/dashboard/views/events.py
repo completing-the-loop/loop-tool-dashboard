@@ -12,6 +12,7 @@ from dashboard.views.common import CourseMixin
 class CourseRepeatingEventListView(CourseMixin, ListView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/course_repeating_events_list.html'
+    paginate_by = 10
 
 
 class CourseRepeatingEventCreateView(CourseMixin, CreateView):
