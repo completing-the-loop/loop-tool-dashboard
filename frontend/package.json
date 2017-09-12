@@ -55,6 +55,7 @@
     "plotly.js": "^1.30.0",
     "vue": "^2.4.2",
     "vue-async-computed": "^3.3.0",
+    "vue-bootstrap-datetimepicker": "^3.0.0",
     "whatwg-fetch": "^2.0.3"
   }
 }

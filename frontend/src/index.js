@@ -6,6 +6,11 @@ import './styles/main.scss';
 
 Vue.use(AsyncComputed);
 
+import datePicker from 'vue-bootstrap-datetimepicker';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
+Vue.use(datePicker);
+
 Vue.directive('tooltip', (el, binding) => {
     $(el).attr('data-toggle', 'tooltip')
         .attr('data-placement', binding.arg)
