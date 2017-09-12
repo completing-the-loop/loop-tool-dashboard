@@ -202,7 +202,7 @@ class LMSSession(models.Model):
 #   `grade` varchar(50) NOT NULL,
 #   `unixtimestamp` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSubmissionAttempt(models.Model):
+class SubmissionAttempt(models.Model):
     attempted_at = models.DateTimeField()
     page = models.ForeignKey(Page) # Was called content_id
     lms_user = models.ForeignKey(LMSUser)

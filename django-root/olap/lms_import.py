@@ -13,7 +13,7 @@ import xml.etree.cElementTree as ET
 from dashboard.models import CourseOffering
 from olap.models import Page
 from olap.models import LMSSession
-from olap.models import DimSubmissionAttempt
+from olap.models import SubmissionAttempt
 from olap.models import DimSubmissionType
 from olap.models import LMSUser
 from olap.models import PageVisit
@@ -62,7 +62,7 @@ class ImportLmsData(object):
         Page.objects.all().delete()
         PageVisit.objects.all().delete()
         LMSSession.objects.all().delete()
-        DimSubmissionAttempt.objects.all().delete()
+        SubmissionAttempt.objects.all().delete()
         DimSubmissionType.objects.all().delete()
 
         # # Next cleanup the Summary Tables
@@ -723,7 +723,7 @@ class BlackboardImport(BaseLmsImport):
 
                         lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                         page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
-                        attempt = DimSubmissionAttempt(page=page, grade=grade, lms_user=lms_user, attempted_at=attempted_at)
+                        attempt = SubmissionAttempt(page=page, grade=grade, lms_user=lms_user, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
