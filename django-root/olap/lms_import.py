@@ -16,7 +16,7 @@ from olap.models import DimSession
 from olap.models import DimSubmissionAttempt
 from olap.models import DimSubmissionType
 from olap.models import LMSUser
-from olap.models import FactCourseVisit
+from olap.models import PageVisit
 from olap.models import SummaryCourseAssessmentVisitsByDayInWeek
 from olap.models import SummaryCourseCommunicationVisitsByDayInWeek
 from olap.models import SummaryCourseVisitsByDayInWeek
@@ -60,7 +60,7 @@ class ImportLmsData(object):
         # First the OLAP Tables
         LMSUser.objects.all().delete()
         DimPage.objects.all().delete()
-        FactCourseVisit.objects.all().delete()
+        PageVisit.objects.all().delete()
         DimSession.objects.all().delete()
         DimSubmissionAttempt.objects.all().delete()
         DimSubmissionType.objects.all().delete()
@@ -90,7 +90,7 @@ class ImportLmsData(object):
             session = DimSession(course_offering=course_offering, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
             session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
-            FactCourseVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
+            PageVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
 
     def _process_user_sessions(self, course_offering):
         """
@@ -106,7 +106,7 @@ class ImportLmsData(object):
         lms_users = LMSUser.objects.filter(course_offering=course_offering)
 
         for lms_user in lms_users:
-            visits = FactCourseVisit.objects.filter(lms_user=lms_user).order_by('visited_at')
+            visits = PageVisit.objects.filter(lms_user=lms_user).order_by('visited_at')
 
             session_start = None
             session_visits_list = []
@@ -143,7 +143,7 @@ class ImportLmsData(object):
 
         # Populate Summary_CourseVisitsByDayInWeek - only contains content items
         with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module NOT IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(excluded_types_placeholders)
+            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module NOT IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(excluded_types_placeholders)
             cursor.execute(sql, [course_weeks, course_offering.id] + excluded_content_types)
             results = cursor.fetchall()
             for row in results:
@@ -153,7 +153,7 @@ class ImportLmsData(object):
 
         # Populate Summary_CourseCommunicationVisitsByDayInWeek - only contains forums
         with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(communication_types_placeholders)
+            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(communication_types_placeholders)
             cursor.execute(sql, [course_weeks, course_offering.id] + communication_types)
             results = cursor.fetchall()
             for row in results:
@@ -163,7 +163,7 @@ class ImportLmsData(object):
 
         # Populate Summary_CourseAssessmentVisitsByDayInWeek - only contains quiz and assign
         with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(assessment_types_placeholders)
+            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(assessment_types_placeholders)
             cursor.execute(sql, [course_weeks, course_offering.id] + assessment_types)
             results = cursor.fetchall()
             for row in results:
@@ -203,7 +203,7 @@ class ImportLmsData(object):
 
         # Populate Summary_ParticipatingUsersByDayInWeek
         with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview), F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek;"
+            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview), F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek;"
             cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
@@ -213,7 +213,7 @@ class ImportLmsData(object):
 
         # Populate Summary_UniquePageViewsByDayInWeek
         with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, COUNT(DISTINCT F.page_id), F.course_id FROM olap_factcoursevisit F INNER JOIN olap_dimdate D ON F.date_id = D.id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek"
+            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, COUNT(DISTINCT F.page_id), F.course_id FROM olap_pagevisit F INNER JOIN olap_dimdate D ON F.date_id = D.id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek"
             cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
@@ -556,8 +556,8 @@ class BlackboardImport(BaseLmsImport):
                                                    'cp_gradebook_needs_grading']:
                     lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                     page = DimPage.objects.get(content_id=content_id)
-                    fact_visit = FactCourseVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
-                    fact_visit.save()
+                    page_visit = PageVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
+                    page_visit.save()
 
     def _get_resource_content_type(self, file_path):
         tree = ET.ElementTree(file=file_path)
@@ -731,6 +731,6 @@ class BlackboardImport(BaseLmsImport):
 
                         lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                         page = DimPage.objects.get(content_id=content_id)
-                        fact_visit = FactCourseVisit(lms_user=lms_user, visited_at=attempted_at,
-                                                     module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
-                        fact_visit.save()
+                        page_visit = PageVisit(lms_user=lms_user, visited_at=attempted_at,
+                                               module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
+                        page_visit.save()

@@ -102,7 +102,7 @@ class LMSUser(models.Model):
 #   `info` varchar(5000) DEFAULT NULL,
 #   `session_id` int(11) DEFAULT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class FactCourseVisit(models.Model):
+class PageVisit(models.Model):
     visited_at = models.DateTimeField()
     lms_user = models.ForeignKey(LMSUser)
     page = models.ForeignKey('DimPage')
@@ -164,7 +164,7 @@ class DimSession(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     session_length_in_mins = models.IntegerField()
     pageviews = models.IntegerField()
-    first_visit = models.ForeignKey(FactCourseVisit)
+    first_visit = models.ForeignKey(PageVisit)
 
     """
     @staticmethod
