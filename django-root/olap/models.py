@@ -53,7 +53,7 @@ from dashboard.models import CourseOffering
 
 # CREATE TABLE `dim_users` (
 #   `id` int(11) NOT NULL,
-#   `lms_id` varchar(1000) NOT NULL,
+#   `lms_user_id` varchar(1000) NOT NULL,
 #   `firstname` varchar(1000) DEFAULT NULL,
 #   `lastname` varchar(1000) DEFAULT NULL,
 #   `username` varchar(1000) NOT NULL,
@@ -62,8 +62,8 @@ from dashboard.models import CourseOffering
 #   `user_pk` varchar(1000) NOT NULL,
 #   `course_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimUser(models.Model):
-    lms_id = models.CharField(max_length=255)
+class LMSUser(models.Model):
+    lms_user_id = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
     course_offering = models.ForeignKey(CourseOffering)
     firstname = models.CharField(max_length=255, blank=True)
@@ -72,14 +72,14 @@ class DimUser(models.Model):
     email = models.EmailField(max_length=255, blank=True)
 
     class Meta:
-        unique_together = (('course_offering', 'lms_id'), )
+        unique_together = (('course_offering', 'lms_user_id'), )
 
     def __str__(self):
         possible_name = " ".join((self.firstname, self.lastname))
         if possible_name:
-            return "<DimUser {}: {}>".format(self.lms_id, possible_name)
+            return "<LMSUser {}: {}>".format(self.lms_user_id, possible_name)
         else:
-            return "<DimUser {}: ## Phantom user ##>".format(self.lms_id)
+            return "<LMSUser {}: ## Phantom user ##>".format(self.lms_user_id)
 
 # CREATE TABLE `fact_coursevisits` (
 #   `id` int(11) NOT NULL,
@@ -104,7 +104,7 @@ class DimUser(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class FactCourseVisit(models.Model):
     visited_at = models.DateTimeField()
-    user = models.ForeignKey(DimUser)
+    lms_user = models.ForeignKey(LMSUser)
     page = models.ForeignKey('DimPage')
     # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
     module = models.CharField(blank=True, max_length=255) # Is this always a resource/x-bb-* content type?
@@ -205,7 +205,7 @@ class DimSession(models.Model):
 class DimSubmissionAttempt(models.Model):
     attempted_at = models.DateTimeField()
     page = models.ForeignKey(DimPage) # Was called content_id
-    user = models.ForeignKey(DimUser)
+    lms_user = models.ForeignKey(LMSUser)
     grade = models.CharField(max_length=50)
 
 
@@ -350,7 +350,7 @@ class SummaryPost(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     forum_id = models.IntegerField()
     discussion_id = models.IntegerField()
-    user = models.ForeignKey(DimUser) # Having this is not normalised
+    lms_user = models.ForeignKey(LMSUser) # Having this is not normalised
 
 # CREATE TABLE `Summary_SessionAverageLengthByDayInWeek` (
 #   `id` int(11) NOT NULL,

@@ -204,7 +204,7 @@ class CourseDashboardView(TemplateView):
         #     row[1], str(course_id), row[2], row[3], user_cnt, attempts, averagestudentscore)
         #
         # # Top Users/Students
-        # sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_id  WHERE D.DATE_week IN (%d) AND F.course_id=%d AND U.role='Student' GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (
+        # sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_user_id  WHERE D.DATE_week IN (%d) AND F.course_id=%d AND U.role='Student' GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (
         # course_weeks[week_no - 1], course_id)
         # cursor.execute(sql);
         # topusers_resultset = cursor.fetchall()

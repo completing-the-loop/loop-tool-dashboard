@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from olap.models import DimUser
+from olap.models import LMSUser
 from olap.models import FactCourseVisit
 
 
@@ -15,5 +15,5 @@ class DimTopUserSerializer(ModelSerializer):
     pageviews = serializers.IntegerField()
 
     class Meta:
-        model = DimUser
-        fields = ('lms_id', 'firstname', 'lastname', 'role', 'pageviews')
+        model = LMSUser
+        fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')

@@ -201,7 +201,7 @@ def getusers_prepostevent_table(course_id, curr_evt, course_weeks):
     table.append("<tbody>\n")
 
     cursor = connections['default'].cursor()
-    sql = "SELECT user_pk,firstname,lastname,role, lms_id FROM dim_users WHERE course_id=%d ORDER BY lastname;" %(course_id) #need to make dynamic
+    sql = "SELECT user_pk,firstname,lastname,role, lms_user_id FROM dim_users WHERE course_id=%d ORDER BY lastname;" %(course_id) #need to make dynamic
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
     cursor.close()
@@ -639,14 +639,14 @@ def get_usersthatdidnotaccesscontent(content_id, course_id, section_order, unixs
     sql = ""
     if unixstart is None:
         if (section_order==0):
-            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_id WHERE F.page_id=%d AND F.course_id=%d)" %(course_id, content_id, course_id)
+            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_user_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_user_id WHERE F.page_id=%d AND F.course_id=%d)" %(course_id, content_id, course_id)
         else:
-            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_id WHERE F.page_id=%d AND F.course_id=%d AND F.section_order=%d)" %(course_id, content_id, course_id, section_order)
+            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_user_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_user_id WHERE F.page_id=%d AND F.course_id=%d AND F.section_order=%d)" %(course_id, content_id, course_id, section_order)
     else:
         if (section_order==0):
-            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_id WHERE F.page_id=%d AND F.course_id=%d AND F.unixtimestamp BETWEEN %d AND %d)" %(course_id, content_id, course_id, unixstart, unixend)
+            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_user_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_user_id WHERE F.page_id=%d AND F.course_id=%d AND F.unixtimestamp BETWEEN %d AND %d)" %(course_id, content_id, course_id, unixstart, unixend)
         else:
-            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_id WHERE F.page_id=%d AND F.course_id=%d AND F.section_order=%d AND F.unixtimestamp BETWEEN %d AND %d)" %(course_id, content_id, course_id, section_order, unixstart, unixend)
+            sql = "SELECT U.firstname, U.lastname, U.email, U.Role FROM dim_users U WHERE U.course_id=%d AND U.lms_user_id NOT IN (SELECT DISTINCT F.user_id FROM fact_coursevisits F JOIN dim_users U ON F.user_id=U.lms_user_id WHERE F.page_id=%d AND F.course_id=%d AND F.section_order=%d AND F.unixtimestamp BETWEEN %d AND %d)" %(course_id, content_id, course_id, section_order, unixstart, unixend)
     row_count = cursor.execute(sql)
     result = cursor.fetchall()
     table = ""

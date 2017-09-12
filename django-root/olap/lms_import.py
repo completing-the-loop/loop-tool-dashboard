@@ -15,7 +15,7 @@ from olap.models import DimPage
 from olap.models import DimSession
 from olap.models import DimSubmissionAttempt
 from olap.models import DimSubmissionType
-from olap.models import DimUser
+from olap.models import LMSUser
 from olap.models import FactCourseVisit
 from olap.models import SummaryCourseAssessmentVisitsByDayInWeek
 from olap.models import SummaryCourseCommunicationVisitsByDayInWeek
@@ -58,7 +58,7 @@ class ImportLmsData(object):
 
     def remove_olap_data(self):
         # First the OLAP Tables
-        DimUser.objects.all().delete()
+        LMSUser.objects.all().delete()
         DimPage.objects.all().delete()
         FactCourseVisit.objects.all().delete()
         DimSession.objects.all().delete()
@@ -103,10 +103,10 @@ class ImportLmsData(object):
                     create a session record for each block (timestamped with start of session)
                     update all visits in the block with the corresponding session_id
         """
-        users = DimUser.objects.filter(course_offering=course_offering)
+        lms_users = LMSUser.objects.filter(course_offering=course_offering)
 
-        for user in users:
-            visits = FactCourseVisit.objects.filter(user=user).order_by('visited_at')
+        for lms_user in lms_users:
+            visits = FactCourseVisit.objects.filter(lms_user=lms_user).order_by('visited_at')
 
             session_start = None
             session_visits_list = []
@@ -482,7 +482,7 @@ class BlackboardImport(BaseLmsImport):
                 # other models, and were saved as partials.  This fills in the fields that weren't saved when the
                 # partials were saved.
                 details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role)
-                user, _ = DimUser.objects.update_or_create(lms_id=user_id, course_offering=self.course_offering, defaults=details_to_use_if_user_doesnt_exist)
+                lms_user, _ = LMSUser.objects.update_or_create(lms_user_id=user_id, course_offering=self.course_offering, defaults=details_to_use_if_user_doesnt_exist)
 
     droppable_row_DATA_string_fns = (
         lambda s: s.endswith('/list_assignments.jsp'),
@@ -554,9 +554,9 @@ class BlackboardImport(BaseLmsImport):
                 if row["INTERNAL_HANDLE"] not in ['discussion_board_entry', 'db_thread_list_entry',
                                                    'db_collection_entry', 'announcements_entry',
                                                    'cp_gradebook_needs_grading']:
-                    user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
+                    lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                     page = DimPage.objects.get(content_id=content_id)
-                    fact_visit = FactCourseVisit(user=user, visited_at=visited_at, module=content_type, action=action, page=page)
+                    fact_visit = FactCourseVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
                     fact_visit.save()
 
     def _get_resource_content_type(self, file_path):
@@ -622,8 +622,8 @@ class BlackboardImport(BaseLmsImport):
             if date_str:
                 posted_at = self.convert_datetimestr_to_datetime(date_str)
                 user_id = user_id[1:len(user_id) - 2]
-                user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
-                post = SummaryPost(posted_at=posted_at, user=user, course_offering=self.course_offering, forum_id=forum_id, discussion_id=conference_id)
+                lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
+                post = SummaryPost(posted_at=posted_at, lms_user=lms_user, course_offering=self.course_offering, forum_id=forum_id, discussion_id=conference_id)
                 post.save()
 
     def _process_conferences(self, file_path, content_id):
@@ -721,16 +721,16 @@ class BlackboardImport(BaseLmsImport):
                     if content_id is not None and grade is not None:  # i.e. 0 attempts -
                         attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
-                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
+                        lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                         page = DimPage.objects.get(course_offering=self.course_offering, content_id=content_id)
-                        attempt = DimSubmissionAttempt(page=page, grade=grade, user=user, attempted_at=attempted_at)
+                        attempt = DimSubmissionAttempt(page=page, grade=grade, lms_user=lms_user, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
-                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
+                        lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
                         page = DimPage.objects.get(content_id=content_id)
-                        fact_visit = FactCourseVisit(user=user, visited_at=attempted_at,
-                            module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
+                        fact_visit = FactCourseVisit(lms_user=lms_user, visited_at=attempted_at,
+                                                     module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
                         fact_visit.save()
