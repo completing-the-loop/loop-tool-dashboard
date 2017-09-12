@@ -105,7 +105,7 @@ class LMSUser(models.Model):
 class PageVisit(models.Model):
     visited_at = models.DateTimeField()
     lms_user = models.ForeignKey(LMSUser)
-    page = models.ForeignKey('DimPage')
+    page = models.ForeignKey('Page')
     # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
     module = models.CharField(blank=True, max_length=255) # Is this always a resource/x-bb-* content type?
     action = models.CharField(blank=True, max_length=255)
@@ -127,7 +127,7 @@ class PageVisit(models.Model):
 #   `page_pk` varchar(1000) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-class DimPage(models.Model):
+class Page(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     content_type = models.CharField(max_length=255)
     content_id = models.IntegerField()
@@ -140,7 +140,7 @@ class DimPage(models.Model):
 
     @staticmethod
     def get_next_page_id(course_offering):
-        max_page_dict = DimPage.objects.filter(course_offering=course_offering).aggregate(max_page_id=Max('content_id'))
+        max_page_dict = Page.objects.filter(course_offering=course_offering).aggregate(max_page_id=Max('content_id'))
         if max_page_dict['max_page_id']:
             return max_page_dict['max_page_id'] + 1
         return 1
@@ -204,7 +204,7 @@ class DimSession(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class DimSubmissionAttempt(models.Model):
     attempted_at = models.DateTimeField()
-    page = models.ForeignKey(DimPage) # Was called content_id
+    page = models.ForeignKey(Page) # Was called content_id
     lms_user = models.ForeignKey(LMSUser)
     grade = models.CharField(max_length=50)
 
@@ -220,7 +220,7 @@ class DimSubmissionAttempt(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class DimSubmissionType(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
-    content_id = models.IntegerField() # This should be an FK to DimPage, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before DimPages.
+    content_id = models.IntegerField() # This should be an FK to Page, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before Pages.
     content_type = models.CharField(max_length=255)
     # timeopen = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
     # timeclose = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?

@@ -11,7 +11,7 @@ from unipath.path import Path
 import xml.etree.cElementTree as ET
 
 from dashboard.models import CourseOffering
-from olap.models import DimPage
+from olap.models import Page
 from olap.models import DimSession
 from olap.models import DimSubmissionAttempt
 from olap.models import DimSubmissionType
@@ -59,7 +59,7 @@ class ImportLmsData(object):
     def remove_olap_data(self):
         # First the OLAP Tables
         LMSUser.objects.all().delete()
-        DimPage.objects.all().delete()
+        Page.objects.all().delete()
         PageVisit.objects.all().delete()
         DimSession.objects.all().delete()
         DimSubmissionAttempt.objects.all().delete()
@@ -370,7 +370,7 @@ class BlackboardImport(BaseLmsImport):
                     membership_file = resource_file
 
                 if resource_type in ['assessment/x-bb-qti-test', 'resource/x-bb-discussionboard']:
-                    dim_page = DimPage(course_offering=self.course_offering, content_type=resource_type, content_id=real_id, title=resource_title)
+                    dim_page = Page(course_offering=self.course_offering, content_type=resource_type, content_id=real_id, title=resource_title)
                     dim_page.save()
 
         parent_map = {}
@@ -417,23 +417,23 @@ class BlackboardImport(BaseLmsImport):
                         current_node_type = "course/x-bb-gradebook"
 
                 if current_node_type != "resource/x-bb-asmt-test-link":
-                    dim_page = DimPage(course_offering=self.course_offering, content_type=current_node_type, content_id=current_node_id, title=current_node_name, order_no=order, parent_id=parent_resource_no)
+                    dim_page = Page(course_offering=self.course_offering, content_type=current_node_type, content_id=current_node_id, title=current_node_name, order_no=order, parent_id=parent_resource_no)
                     dim_page.save()
             order += 1
 
         # store single announcements item to match announcements coming from log
-        self.announcements_id = DimPage.get_next_page_id(self.course_offering)
-        announcements_page = DimPage(course_offering=self.course_offering, content_type="resource/x-bb-announcement", content_id=self.announcements_id, title="Announcements")
+        self.announcements_id = Page.get_next_page_id(self.course_offering)
+        announcements_page = Page(course_offering=self.course_offering, content_type="resource/x-bb-announcement", content_id=self.announcements_id, title="Announcements")
         announcements_page.save()
 
         # store single view gradebook to match check_gradebook coming from log
-        self.gradebook_id = DimPage.get_next_page_id(self.course_offering)
-        gradebook_page = DimPage(course_offering=self.course_offering, content_type="course/x-bb-gradebook", content_id=self.gradebook_id, title="View Gradebook")
+        self.gradebook_id = Page.get_next_page_id(self.course_offering)
+        gradebook_page = Page(course_offering=self.course_offering, content_type="course/x-bb-gradebook", content_id=self.gradebook_id, title="View Gradebook")
         gradebook_page.save()
 
         # remap /x-bbstaffinfo and discussion boards
         if toc_dict['staff_information'] != 0:
-            DimPage.objects.filter(course_offering=self.course_offering, content_type="resource/x-bb-staffinfo").update(parent_id=toc_dict['staff_information'])
+            Page.objects.filter(course_offering=self.course_offering, content_type="resource/x-bb-staffinfo").update(parent_id=toc_dict['staff_information'])
 
         # process memberships
         member_to_user_dict = self._process_memberships(Path(self.course_export_path, membership_file))
@@ -530,13 +530,13 @@ class BlackboardImport(BaseLmsImport):
                         if not row["INTERNAL_HANDLE"]:
                             content_type = row["DATA"]
                             # also add to dim_pages
-                            if not DimPage.objects.filter(content_id=int(content_id)).exists():
+                            if not Page.objects.filter(content_id=int(content_id)).exists():
                                 title = "blank"
                                 if content_type == "/webapps/blackboard/execute/blti/launchLink":
                                     title = "LTI Link"
                                 elif content_type == "/webapps/blackboard/execute/manageCourseItem":
                                     title = "Manage Course Item"
-                                dim_page = DimPage(course_offering=self.course_offering, content_type=content_type, content_id=content_id, title=title)
+                                dim_page = Page(course_offering=self.course_offering, content_type=content_type, content_id=content_id, title=title)
                                 dim_page.save()
                 elif row["INTERNAL_HANDLE"] == "my_announcements":
                     content_type = "resource/x-bb-announcement"
@@ -555,7 +555,7 @@ class BlackboardImport(BaseLmsImport):
                                                    'db_collection_entry', 'announcements_entry',
                                                    'cp_gradebook_needs_grading']:
                     lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                    page = DimPage.objects.get(content_id=content_id)
+                    page = Page.objects.get(content_id=content_id)
                     page_visit = PageVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
                     page_visit.save()
 
@@ -722,7 +722,7 @@ class BlackboardImport(BaseLmsImport):
                         attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
                         lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                        page = DimPage.objects.get(course_offering=self.course_offering, content_id=content_id)
+                        page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
                         attempt = DimSubmissionAttempt(page=page, grade=grade, lms_user=lms_user, attempted_at=attempted_at)
                         attempt.save()
 
@@ -730,7 +730,7 @@ class BlackboardImport(BaseLmsImport):
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
                         lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                        page = DimPage.objects.get(content_id=content_id)
+                        page = Page.objects.get(content_id=content_id)
                         page_visit = PageVisit(lms_user=lms_user, visited_at=attempted_at,
                                                module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
                         page_visit.save()
