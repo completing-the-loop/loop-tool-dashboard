@@ -12,7 +12,7 @@ import xml.etree.cElementTree as ET
 
 from dashboard.models import CourseOffering
 from olap.models import Page
-from olap.models import DimSession
+from olap.models import LMSSession
 from olap.models import DimSubmissionAttempt
 from olap.models import DimSubmissionType
 from olap.models import LMSUser
@@ -61,7 +61,7 @@ class ImportLmsData(object):
         LMSUser.objects.all().delete()
         Page.objects.all().delete()
         PageVisit.objects.all().delete()
-        DimSession.objects.all().delete()
+        LMSSession.objects.all().delete()
         DimSubmissionAttempt.objects.all().delete()
         DimSubmissionType.objects.all().delete()
 
@@ -87,7 +87,7 @@ class ImportLmsData(object):
             session_end = last_visit.visited_at
             session_duration = (session_end - session_start).seconds / 60
             page_views = len(session_visits_list)
-            session = DimSession(course_offering=course_offering, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
+            session = LMSSession(course_offering=course_offering, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
             session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
             PageVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)

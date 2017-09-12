@@ -114,7 +114,7 @@ class PageVisit(models.Model):
     section_pk = models.CharField(blank=True, max_length=255)
     section_order = models.IntegerField(blank=True, null=True)
     info = models.TextField()
-    session = models.ForeignKey('DimSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
+    session = models.ForeignKey('LMSSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
 
 # CREATE TABLE `dim_pages` (
 #   `id` int(11) NOT NULL,
@@ -159,7 +159,7 @@ class Page(models.Model):
 #   `date_dayinweek` int(11) NOT NULL,
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSession(models.Model):
+class LMSSession(models.Model):
     # Not strictly needed (since we can find course_offering by .first_visit.page.course_offering, but it will make queries easier.
     course_offering = models.ForeignKey(CourseOffering)
     session_length_in_mins = models.IntegerField()
@@ -169,7 +169,7 @@ class DimSession(models.Model):
     """
     @staticmethod
     def get_next_session_id():
-        max_session_dict = DimSession.objects.all().aggregate(max_session_id=Max('session_id'))
+        max_session_dict = LMSSession.objects.all().aggregate(max_session_id=Max('session_id'))
         if max_session_dict['max_session_id']:
             return max_session_dict['max_session_id'] + 1
         return 1
