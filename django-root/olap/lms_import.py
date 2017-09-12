@@ -10,7 +10,7 @@ from django.db import connection
 from unipath.path import Path
 import xml.etree.cElementTree as ET
 
-from dashboard.models import Course
+from dashboard.models import CourseOffering
 from olap.models import DimPage
 from olap.models import DimSession
 from olap.models import DimSubmissionAttempt
@@ -43,18 +43,18 @@ class ImportLmsData(object):
         print("Removing old data")
         self.remove_olap_data()
 
-        for course in Course.objects.all():
-            if course.lms_type == Course.LMS_TYPE_BLACKBOARD:
-                print("Importing course data for {}".format(course))
-                lms_import = BlackboardImport(self.courses_export_path, course)
+        for course_offering in CourseOffering.objects.all():
+            if course_offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
+                print("Importing course offering data for {}".format(course_offering))
+                lms_import = BlackboardImport(self.courses_export_path, course_offering)
                 lms_import.process_import_data()
 
-                print("Processing user sessions for {}".format(course))
-                self._process_user_sessions(course)
+                print("Processing user sessions for {}".format(course_offering))
+                self._process_user_sessions(course_offering)
 
-                # print("Populating summary data for {}".format(course))
-                # self._populate_summary_tables(course, lms_import.get_assessment_types(), lms_import.get_communication_types())
-                print("Skipping populating summary data for {}".format(course))
+                # print("Populating summary data for {}".format(course_offering))
+                # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
+                print("Skipping populating summary data for {}".format(course_offering))
 
     def remove_olap_data(self):
         # First the OLAP Tables
@@ -79,7 +79,7 @@ class ImportLmsData(object):
         SummaryParticipatingUsersByDayInWeek.objects.all().delete()
         SummaryUniquePageViewsByDayInWeek.objects.all().delete()
 
-    def _store_session(self, course, session_visits_list):
+    def _store_session(self, course_offering, session_visits_list):
         if session_visits_list:
             first_visit = session_visits_list[0]
             last_visit = session_visits_list[len(session_visits_list)-1]
@@ -87,12 +87,12 @@ class ImportLmsData(object):
             session_end = last_visit.visited_at
             session_duration = (session_end - session_start).seconds / 60
             page_views = len(session_visits_list)
-            session = DimSession(course=course, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
+            session = DimSession(course_offering=course_offering, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
             session.save()
             session_visits_list_ids = [v.id for v in session_visits_list]
             FactCourseVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
 
-    def _process_user_sessions(self, course):
+    def _process_user_sessions(self, course_offering):
         """
             Gets each user (i.e., student) and calls method to process to split visits into a session.
             A session includes all pageviews where the time access difference does not exceed SESSION_LENGTH_MINS
@@ -103,7 +103,7 @@ class ImportLmsData(object):
                     create a session record for each block (timestamped with start of session)
                     update all visits in the block with the corresponding session_id
         """
-        users = DimUser.objects.filter(course=course)
+        users = DimUser.objects.filter(course_offering=course_offering)
 
         for user in users:
             visits = FactCourseVisit.objects.filter(user=user).order_by('visited_at')
@@ -120,15 +120,15 @@ class ImportLmsData(object):
 
                 session_duration = (session_end - session_start).seconds / 60
                 if session_duration >= self.SESSION_LENGTH_MINS:
-                    self._store_session(course, session_visits_list)
+                    self._store_session(course_offering, session_visits_list)
                     session_start = session_end
                     session_visits_list = [visit]
                 else:
                     session_visits_list.append(visit)
 
-            self._store_session(course, session_visits_list)
+            self._store_session(course_offering, session_visits_list)
 
-    def _populate_summary_tables(self, course, assessment_types, communication_types):
+    def _populate_summary_tables(self, course_offering, assessment_types, communication_types):
         """
             Produces summary tables Summary_CourseVisitsByDayInWeek, Summary_CourseCommunicationVisitsByDayInWeek
             Summary_CourseAssessmentVisitsByDayInWeek, Summary_SessionAverageLengthByDayInWeek, Summary_SessionAveragePagesPerSessionByDayInWeek
@@ -136,7 +136,7 @@ class ImportLmsData(object):
         """
 
         excluded_content_types = communication_types + assessment_types
-        course_weeks = course.get_weeks()
+        course_weeks = course_offering.get_weeks()
         excluded_types_placeholders = ",".join(['%s' for s in excluded_content_types])
         communication_types_placeholders = ','.join("%s" for s in communication_types)
         assessment_types_placeholders = ','.join("%s" for s in assessment_types)
@@ -144,81 +144,81 @@ class ImportLmsData(object):
         # Populate Summary_CourseVisitsByDayInWeek - only contains content items
         with connection.cursor() as cursor:
             sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module NOT IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(excluded_types_placeholders)
-            cursor.execute(sql, [course_weeks, course.id] + excluded_content_types)
+            cursor.execute(sql, [course_weeks, course_offering.id] + excluded_content_types)
             results = cursor.fetchall()
             for row in results:
                 pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
+                summary = SummaryCourseVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_CourseCommunicationVisitsByDayInWeek - only contains forums
         with connection.cursor() as cursor:
             sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(communication_types_placeholders)
-            cursor.execute(sql, [course_weeks, course.id] + communication_types)
+            cursor.execute(sql, [course_weeks, course_offering.id] + communication_types)
             results = cursor.fetchall()
             for row in results:
                 pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseCommunicationVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
+                summary = SummaryCourseCommunicationVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_CourseAssessmentVisitsByDayInWeek - only contains quiz and assign
         with connection.cursor() as cursor:
             sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(assessment_types_placeholders)
-            cursor.execute(sql, [course_weeks, course.id] + assessment_types)
+            cursor.execute(sql, [course_weeks, course_offering.id] + assessment_types)
             results = cursor.fetchall()
             for row in results:
                 pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseAssessmentVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
+                summary = SummaryCourseAssessmentVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_SessionAverageLengthByDayInWeek
         with connection.cursor() as cursor:
             sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, AVG(S.session_length_in_mins), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course.id])
+            cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
                 session_average_in_minutes = row[3] if row[3] is not None else 0
-                summary = SummarySessionAverageLengthByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], session_average_in_minutes=session_average_in_minutes, course=course)
+                summary = SummarySessionAverageLengthByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], session_average_in_minutes=session_average_in_minutes, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_SessionAveragePagesPerSessionByDayInWeek
         with connection.cursor() as cursor:
             sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, AVG(S.pageviews), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course.id])
+            cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
                 pages_per_session = row[3] if row[3] is not None else 0
-                summary = SummarySessionAveragePagesPerSessionByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], pages_per_session=pages_per_session, course=course)
+                summary = SummarySessionAveragePagesPerSessionByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], pages_per_session=pages_per_session, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_SessionsByDayInWeek
         with connection.cursor() as cursor:
             sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, COUNT(DISTINCT S.session_id), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course.id])
+            cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
                 sessions = row[3] if row[3] is not None else 0
-                summary = SummarySessionsByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], sessions=sessions, course=course)
+                summary = SummarySessionsByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], sessions=sessions, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_ParticipatingUsersByDayInWeek
         with connection.cursor() as cursor:
             sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview), F.course_id FROM olap_dimdate D LEFT JOIN olap_factcoursevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek;"
-            cursor.execute(sql, [course_weeks, course.id])
+            cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
                 pageview = row[4] if row[4] is not None else 0
-                summary = SummaryParticipatingUsersByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
+                summary = SummaryParticipatingUsersByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
                 summary.save()
 
         # Populate Summary_UniquePageViewsByDayInWeek
         with connection.cursor() as cursor:
             sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, COUNT(DISTINCT F.page_id), F.course_id FROM olap_factcoursevisit F INNER JOIN olap_dimdate D ON F.date_id = D.id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course.id])
+            cursor.execute(sql, [course_weeks, course_offering.id])
             results = cursor.fetchall()
             for row in results:
                 pageview = row[4] if row[4] is not None else 0
-                summary = SummaryUniquePageViewsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course=course)
+                summary = SummaryUniquePageViewsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
                 summary.save()
 
     """
@@ -242,9 +242,9 @@ class ImportLmsData(object):
 
 class BaseLmsImport(object):
 
-    def __init__(self, courses_export_path, course):
-        self.course = course
-        self.course_export_path = Path(courses_export_path, course.id)
+    def __init__(self, courses_export_path, course_offering):
+        self.course_offering = course_offering
+        self.course_export_path = Path(courses_export_path, course_offering.id)
 
         self.our_tz = timezone.get_current_timezone()
         # Is there a better mechanism for this?
@@ -370,7 +370,7 @@ class BlackboardImport(BaseLmsImport):
                     membership_file = resource_file
 
                 if resource_type in ['assessment/x-bb-qti-test', 'resource/x-bb-discussionboard']:
-                    dim_page = DimPage(course=self.course, content_type=resource_type, content_id=real_id, title=resource_title)
+                    dim_page = DimPage(course_offering=self.course_offering, content_type=resource_type, content_id=real_id, title=resource_title)
                     dim_page.save()
 
         parent_map = {}
@@ -417,23 +417,23 @@ class BlackboardImport(BaseLmsImport):
                         current_node_type = "course/x-bb-gradebook"
 
                 if current_node_type != "resource/x-bb-asmt-test-link":
-                    dim_page = DimPage(course=self.course, content_type=current_node_type, content_id=current_node_id, title=current_node_name, order_no=order, parent_id=parent_resource_no)
+                    dim_page = DimPage(course_offering=self.course_offering, content_type=current_node_type, content_id=current_node_id, title=current_node_name, order_no=order, parent_id=parent_resource_no)
                     dim_page.save()
             order += 1
 
         # store single announcements item to match announcements coming from log
-        self.announcements_id = DimPage.get_next_page_id(self.course)
-        announcements_page = DimPage(course=self.course, content_type="resource/x-bb-announcement", content_id=self.announcements_id, title="Announcements")
+        self.announcements_id = DimPage.get_next_page_id(self.course_offering)
+        announcements_page = DimPage(course_offering=self.course_offering, content_type="resource/x-bb-announcement", content_id=self.announcements_id, title="Announcements")
         announcements_page.save()
 
         # store single view gradebook to match check_gradebook coming from log
-        self.gradebook_id = DimPage.get_next_page_id(self.course)
-        gradebook_page = DimPage(course=self.course, content_type="course/x-bb-gradebook", content_id=self.gradebook_id, title="View Gradebook")
+        self.gradebook_id = DimPage.get_next_page_id(self.course_offering)
+        gradebook_page = DimPage(course_offering=self.course_offering, content_type="course/x-bb-gradebook", content_id=self.gradebook_id, title="View Gradebook")
         gradebook_page.save()
 
         # remap /x-bbstaffinfo and discussion boards
         if toc_dict['staff_information'] != 0:
-            DimPage.objects.filter(course=self.course, content_type="resource/x-bb-staffinfo").update(parent_id=toc_dict['staff_information'])
+            DimPage.objects.filter(course_offering=self.course_offering, content_type="resource/x-bb-staffinfo").update(parent_id=toc_dict['staff_information'])
 
         # process memberships
         member_to_user_dict = self._process_memberships(Path(self.course_export_path, membership_file))
@@ -471,7 +471,6 @@ class BlackboardImport(BaseLmsImport):
                     elif child_child_child_of_root.tag == "ROLEID":
                         role = child_child_child_of_root.attrib["value"]
 
-            user_pk = str(self.course.id) + "_" + user_id
             if not firstname:
                 firstname = "blank"
             if not lastname:
@@ -483,7 +482,7 @@ class BlackboardImport(BaseLmsImport):
                 # other models, and were saved as partials.  This fills in the fields that weren't saved when the
                 # partials were saved.
                 details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role)
-                user, _ = DimUser.objects.update_or_create(lms_id=user_id, course=self.course, defaults=details_to_use_if_user_doesnt_exist)
+                user, _ = DimUser.objects.update_or_create(lms_id=user_id, course_offering=self.course_offering, defaults=details_to_use_if_user_doesnt_exist)
 
     droppable_row_DATA_string_fns = (
         lambda s: s.endswith('/list_assignments.jsp'),
@@ -498,7 +497,7 @@ class BlackboardImport(BaseLmsImport):
 
     def _process_access_log(self):
         """
-            Extract entries from the csv log file from a Blackboard course and inserts each entry as a row in the fact_coursevisits table
+            Extract entries from the csv log file from a Blackboard course offering and inserts each entry as a row in the fact_coursevisits table
         """
         course_log_file = Path(self.course_export_path, 'log.csv')
         with open(course_log_file, 'rU') as f:
@@ -537,7 +536,7 @@ class BlackboardImport(BaseLmsImport):
                                     title = "LTI Link"
                                 elif content_type == "/webapps/blackboard/execute/manageCourseItem":
                                     title = "Manage Course Item"
-                                dim_page = DimPage(course=self.course, content_type=content_type, content_id=content_id, title=title)
+                                dim_page = DimPage(course_offering=self.course_offering, content_type=content_type, content_id=content_id, title=title)
                                 dim_page.save()
                 elif row["INTERNAL_HANDLE"] == "my_announcements":
                     content_type = "resource/x-bb-announcement"
@@ -555,7 +554,7 @@ class BlackboardImport(BaseLmsImport):
                 if row["INTERNAL_HANDLE"] not in ['discussion_board_entry', 'db_thread_list_entry',
                                                    'db_collection_entry', 'announcements_entry',
                                                    'cp_gradebook_needs_grading']:
-                    user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                    user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
                     page = DimPage.objects.get(content_id=content_id)
                     fact_visit = FactCourseVisit(user=user, visited_at=visited_at, module=content_type, action=action, page=page)
                     fact_visit.save()
@@ -623,12 +622,12 @@ class BlackboardImport(BaseLmsImport):
             if date_str:
                 posted_at = self.convert_datetimestr_to_datetime(date_str)
                 user_id = user_id[1:len(user_id) - 2]
-                user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
-                post = SummaryPost(posted_at=posted_at, user=user, course=self.course, forum_id=forum_id, discussion_id=conference_id)
+                user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
+                post = SummaryPost(posted_at=posted_at, user=user, course_offering=self.course_offering, forum_id=forum_id, discussion_id=conference_id)
                 post.save()
 
     def _process_conferences(self, file_path, content_id):
-        forum = SummaryForum(course=self.course, forum_id=content_id, title='Conferences', no_discussions=0)
+        forum = SummaryForum(course_offering=self.course_offering, forum_id=content_id, title='Conferences', no_discussions=0)
         forum.save()
 
         tree = ET.ElementTree(file=file_path)
@@ -642,7 +641,7 @@ class BlackboardImport(BaseLmsImport):
                 if child_of_root.tag == "TITLE":
                     title = child_of_root.attrib["value"]
 
-            discussion = SummaryDiscussion(course=self.course, forum_id=conference_id, discussion_id=content_id, title=title, no_posts=0)
+            discussion = SummaryDiscussion(course_offering=self.course_offering, forum_id=conference_id, discussion_id=content_id, title=title, no_posts=0)
             discussion.save()
 
     def _process_exam(self, file_path, content_id, content_type):
@@ -655,7 +654,7 @@ class BlackboardImport(BaseLmsImport):
         for elem in tree.iter(tag='qmd_absolutescore_max'):
             grade = elem.text
 
-        submission_type = DimSubmissionType(course=self.course, content_id=content_id, content_type=content_type, grade=grade)
+        submission_type = DimSubmissionType(course_offering=self.course_offering, content_id=content_id, content_type=content_type, grade=grade)
         submission_type.save()
 
     def _process_memberships(self, file_path):
@@ -722,15 +721,15 @@ class BlackboardImport(BaseLmsImport):
                     if content_id is not None and grade is not None:  # i.e. 0 attempts -
                         attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
 
-                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
-                        page = DimPage.objects.get(content_id=content_id)
-                        attempt = DimSubmissionAttempt(course=self.course, page=page, grade=grade, user=user, attempted_at=attempted_at)
+                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
+                        page = DimPage.objects.get(course_offering=self.course_offering, content_id=content_id)
+                        attempt = DimSubmissionAttempt(page=page, grade=grade, user=user, attempted_at=attempted_at)
                         attempt.save()
 
                         if content_link_id is not None:
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
-                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course=self.course)
+                        user, _ = DimUser.objects.get_or_create(lms_id=user_id, course_offering=self.course_offering)
                         page = DimPage.objects.get(content_id=content_id)
                         fact_visit = FactCourseVisit(user=user, visited_at=attempted_at,
                             module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)

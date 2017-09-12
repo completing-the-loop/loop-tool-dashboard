@@ -6,8 +6,6 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 """
 import os as _os
 import sys as _sys
-import datetime
-import pytz
 
 from unipath import Path as _Path
 
@@ -586,8 +584,4 @@ if _start_time:
     import freezegun as _freezegun
     _freezegun.freeze_time(_start_time, tick=True).start()
     print("Mocked out system clock to start at %s\n" % _start_time, file=_sys.stderr)
-
-# Ultimately replace this with lookups based on when a course was run
-DIMDATE_START = pytz.timezone(TIME_ZONE).localize(datetime.datetime.strptime("1-JAN-14", "%d-%b-%y"))
-DIMDATE_END = pytz.timezone(TIME_ZONE).localize(datetime.datetime.strptime("31-DEC-16", "%d-%b-%y"))
 

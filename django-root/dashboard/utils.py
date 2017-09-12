@@ -18,7 +18,7 @@ from django.db import connections
 import pandas as pd
 from sqlalchemy import create_engine
 
-from dashboard.models import Course
+from dashboard.models import CourseOffering
 from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
 
@@ -308,18 +308,18 @@ def scale_chart(total_counts):
     return width, height
 
 def getSingleCourseEvents(course_id):
-    course = Course.objects.get(pk=course_id)
-    single_evt = CourseSingleEvent.objects.filter(course=course)
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    single_evt = CourseSingleEvent.objects.filter(course_offering=course_offering)
     evt_lst = ""
     for evt in single_evt:
         dte = evt.event_date
         evt_lst = evt_lst + "{x: Date.UTC(%d, %d, %d), title: '%s'}," % (dte.year, (dte.month - 1), dte.day, evt.title)
-    evt = "{type: 'flags', name: 'Single Course Events', data:[%s], shape: 'squarepin'}" % (evt_lst)
+    evt = "{type: 'flags', name: 'Single CourseOffering Events', data:[%s], shape: 'squarepin'}" % (evt_lst)
     return evt
 
 def getSubmissionCourseEvents(course_id):
-    course = Course.objects.get(pk=course_id)
-    sub_evt = CourseSubmissionEvent.objects.filter(course=course)
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    sub_evt = CourseSubmissionEvent.objects.filter(course_offering=course_offering)
     evt_lst = ""
     for evt in sub_evt:
         sdte = evt.start_date
