@@ -14,7 +14,7 @@ from dashboard.models import CourseOffering
 from olap.models import Page
 from olap.models import LMSSession
 from olap.models import SubmissionAttempt
-from olap.models import DimSubmissionType
+from olap.models import SubmissionType
 from olap.models import LMSUser
 from olap.models import PageVisit
 from olap.models import SummaryCourseAssessmentVisitsByDayInWeek
@@ -63,7 +63,7 @@ class ImportLmsData(object):
         PageVisit.objects.all().delete()
         LMSSession.objects.all().delete()
         SubmissionAttempt.objects.all().delete()
-        DimSubmissionType.objects.all().delete()
+        SubmissionType.objects.all().delete()
 
         # # Next cleanup the Summary Tables
         # connection.execute("DELETE FROM Summary_Courses");
@@ -654,7 +654,7 @@ class BlackboardImport(BaseLmsImport):
         for elem in tree.iter(tag='qmd_absolutescore_max'):
             grade = elem.text
 
-        submission_type = DimSubmissionType(course_offering=self.course_offering, content_id=content_id, content_type=content_type, grade=grade)
+        submission_type = SubmissionType(course_offering=self.course_offering, content_id=content_id, content_type=content_type, grade=grade)
         submission_type.save()
 
     def _process_memberships(self, file_path):

@@ -218,7 +218,7 @@ class SubmissionAttempt(models.Model):
 #   `timeclose` varchar(1000) NOT NULL,
 #   `grade` varchar(50) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSubmissionType(models.Model):
+class SubmissionType(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     content_id = models.IntegerField() # This should be an FK to Page, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before Pages.
     content_type = models.CharField(max_length=255)
