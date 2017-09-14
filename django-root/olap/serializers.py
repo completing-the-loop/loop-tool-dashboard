@@ -1,4 +1,4 @@
-from rest_framework import serializers
+from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ModelSerializer
 
 from olap.models import LMSUser
@@ -11,8 +11,8 @@ class PageVisitSerializer(ModelSerializer):
         fields = '__all__' # TODO: Update this to specify exact fields to return
 
 
-class DimTopUserSerializer(ModelSerializer):
-    pageviews = serializers.IntegerField()
+class TopCourseUsersSerializer(ModelSerializer):
+    pageviews = IntegerField()
 
     class Meta:
         model = LMSUser

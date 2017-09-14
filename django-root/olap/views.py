@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 
@@ -6,10 +5,10 @@ from rest_framework.generics import ListAPIView
 
 from dashboard.models import CourseOffering
 
-from .models import LMSUser
-from .models import PageVisit
-from .serializers import DimTopUserSerializer
-from .serializers import PageVisitSerializer
+from olap.models import LMSUser
+from olap.models import PageVisit
+from olap.serializers import PageVisitSerializer
+from olap.serializers import TopCourseUsersSerializer
 
 
 class PageVisitsViewSet(ListAPIView):
@@ -20,8 +19,8 @@ class PageVisitsViewSet(ListAPIView):
         return PageVisit.objects.filter(course__id=course_id)
 
 
-class DimTopUserViewSet(ListAPIView):
-    serializer_class = DimTopUserSerializer
+class TopCourseUsersViewSet(ListAPIView):
+    serializer_class = TopCourseUsersSerializer
 
     def get_queryset(self):
         course_offering = get_object_or_404(CourseOffering, pk=self.kwargs['course_id'])

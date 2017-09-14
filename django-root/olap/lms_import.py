@@ -11,12 +11,12 @@ from unipath.path import Path
 import xml.etree.cElementTree as ET
 
 from dashboard.models import CourseOffering
-from olap.models import Page
 from olap.models import LMSSession
+from olap.models import LMSUser
+from olap.models import Page
+from olap.models import PageVisit
 from olap.models import SubmissionAttempt
 from olap.models import SubmissionType
-from olap.models import LMSUser
-from olap.models import PageVisit
 from olap.models import SummaryCourseAssessmentVisitsByDayInWeek
 from olap.models import SummaryCourseCommunicationVisitsByDayInWeek
 from olap.models import SummaryCourseVisitsByDayInWeek
@@ -251,7 +251,7 @@ class BaseLmsImport(object):
 
     # https://docs.python.org/3/library/time.html#time.strftime
     def convert_datetimestr_to_datetime(self, datetimestr):
-        # Data may have Edatetime or EST appended.  Strip this off.
+        # Data may have EDT or EST appended.  Strip this off.
         datetimestr_without_tz = re.sub(r'( EDT| EST)?$', '', datetimestr)
         date = datetime.strptime(datetimestr_without_tz, '%Y-%m-%d %H:%M:%S') # eg 2015-07-24 16:52:53
         return self.our_tz.localize(date, is_dst=None)
@@ -555,7 +555,7 @@ class BlackboardImport(BaseLmsImport):
                                                    'db_collection_entry', 'announcements_entry',
                                                    'cp_gradebook_needs_grading']:
                     lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                    page = Page.objects.get(content_id=content_id)
+                    page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
                     page_visit = PageVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
                     page_visit.save()
 
@@ -730,7 +730,7 @@ class BlackboardImport(BaseLmsImport):
                             self.content_link_id_to_content_id_dict[content_link_id] = content_id
 
                         lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                        page = Page.objects.get(content_id=content_id)
+                        page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
                         page_visit = PageVisit(lms_user=lms_user, visited_at=attempted_at,
                                                module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
                         page_visit.save()
