@@ -7,6 +7,7 @@ from django.forms import ValidationError
 from django.forms.models import ModelForm
 
 from dashboard.models import CourseRepeatingEvent
+from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
 
 
@@ -70,3 +71,30 @@ class CourseSubmissionEventForm(ModelForm):
                 self.add_error('end_date', ValidationError('End date cannot be after the end of the course'))
             if end_date < start_date:
                 self.add_error('end_date', 'End date cannot be before the start date')
+
+
+class CourseSingleEventForm(ModelForm):
+    class Meta:
+        model = CourseSingleEvent
+        fields = ['title', 'event_date']
+
+    def __init__(self, *args, **kwargs):
+        self.course = kwargs.pop('course')
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        self.instance.course = self.course
+        return super().save(commit)
+
+    def clean(self):
+        super().clean()
+        event_date = self.cleaned_data.get('event_date')
+
+        if event_date:
+            calc_end_date = self.course.get_end_date()
+            course_start_date = datetime(self.course.start_date.year, self.course.start_date.month, self.course.start_date.day, tzinfo=timezone.utc)
+            course_end_date = datetime(calc_end_date.year, calc_end_date.month, calc_end_date.day, tzinfo=timezone.utc)
+            if event_date < course_start_date:
+                self.add_error('event_date', ValidationError('Event date cannot be earlier than the start of the course'))
+            if event_date > course_end_date:
+                self.add_error('event_date', ValidationError('Event date cannot be after the end of the course'))

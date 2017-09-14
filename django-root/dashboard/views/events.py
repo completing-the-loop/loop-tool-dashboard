@@ -5,8 +5,10 @@ from django.views.generic.edit import UpdateView
 from django.views.generic.list import ListView
 
 from dashboard.forms import CourseRepeatingEventForm
+from dashboard.forms import CourseSingleEventForm
 from dashboard.forms import CourseSubmissionEventForm
 from dashboard.models import CourseRepeatingEvent
+from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
 from dashboard.views.common import CourseMixin
 
@@ -101,3 +103,49 @@ class CourseSubmissionEventDeleteView(CourseMixin, DeleteView):
 
     def get_success_url(self):
         return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.course.id})
+
+
+class CourseSingleEventListView(CourseMixin, ListView):
+    model = CourseSingleEvent
+    template_name = 'dashboard/course_single_events_list.html'
+    paginate_by = 10
+
+
+class CourseSingleEventCreateView(CourseMixin, CreateView):
+    model = CourseSingleEvent
+    template_name = 'dashboard/course_single_event_form.html'
+    form_class = CourseSingleEventForm
+
+    def get_success_url(self):
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({
+            'course': self.course,
+        })
+        return kwargs
+
+
+class CourseSingleEventUpdateView(CourseMixin, UpdateView):
+    model = CourseSingleEvent
+    template_name = 'dashboard/course_single_event_form.html'
+    form_class = CourseSingleEventForm
+
+    def get_success_url(self):
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({
+            'course': self.course,
+        })
+        return kwargs
+
+
+class CourseSingleEventDeleteView(CourseMixin, DeleteView):
+    model = CourseSingleEvent
+    template_name = 'dashboard/confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
