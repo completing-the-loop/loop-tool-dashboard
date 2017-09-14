@@ -30,7 +30,7 @@
                 <td>{{ object.get_event_day }}</td>
                 <td class="text-right">{{ object.start_week }}</td>
                 <td class="text-right">{{ object.end_week }}</td>
-                <td class="center">
+                <td>
                    <a href="{% url 'dashboard:delete_course_repeating_event' course_id=course.id pk=object.id %}" class="btn btn-link">Delete</a>
                 </td>
               </tr>

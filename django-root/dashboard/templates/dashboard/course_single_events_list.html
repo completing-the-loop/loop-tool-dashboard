@@ -26,7 +26,7 @@
                   <a href="{% url 'dashboard:edit_course_single_event' course_id=course.id pk=object.id %}" class="btn btn-link">{{ object.title }}</a>
                 </td>
                 <td class="text-right">{{ object.event_date|date:datetime_output_format }}</td>
-                <td class="center">
+                <td>
                    <a href="{% url 'dashboard:delete_course_single_event' course_id=course.id pk=object.id %}" class="btn btn-link">Delete</a>
                 </td>
               </tr>

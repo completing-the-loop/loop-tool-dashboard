@@ -30,7 +30,7 @@
                 <td class="text-right">{{ object.start_date|date:datetime_output_format }}</td>
                 <td class="text-right">{{ object.end_date|date:datetime_output_format }}</td>
                 <td>{{ object.get_event_type }}</td>
-                <td class="center">
+                <td>
                    <a href="{% url 'dashboard:delete_course_submission_event' course_id=course.id pk=object.id %}" class="btn btn-link">Delete</a>
                 </td>
               </tr>

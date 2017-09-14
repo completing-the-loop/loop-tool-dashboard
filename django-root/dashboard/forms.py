@@ -24,6 +24,8 @@ class CourseRepeatingEventForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.course = kwargs.pop('course')
         super().__init__(*args, **kwargs)
+        for _, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         self.instance.course = self.course
@@ -51,6 +53,8 @@ class CourseSubmissionEventForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.course = kwargs.pop('course')
         super().__init__(*args, **kwargs)
+        for _, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         self.instance.course = self.course
@@ -81,6 +85,8 @@ class CourseSingleEventForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.course = kwargs.pop('course')
         super().__init__(*args, **kwargs)
+        for _, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
         self.instance.course = self.course
