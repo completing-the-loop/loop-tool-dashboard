@@ -1,16 +1,19 @@
+from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ModelSerializer
 
-from olap.models import DimUser
-from olap.models import FactCourseVisit
+from olap.models import LMSUser
+from olap.models import PageVisit
 
 
-class FactCourseVisitSerializer(ModelSerializer):
+class PageVisitSerializer(ModelSerializer):
     class Meta:
-        model = FactCourseVisit
+        model = PageVisit
         fields = '__all__' # TODO: Update this to specify exact fields to return
 
 
-class DimUserSerializer(ModelSerializer):
+class TopCourseUsersSerializer(ModelSerializer):
+    pageviews = IntegerField()
+
     class Meta:
-        model = DimUser
-        fields = ('firstname', 'lastname', 'role',)
+        model = LMSUser
+        fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')

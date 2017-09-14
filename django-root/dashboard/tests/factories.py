@@ -2,7 +2,7 @@ import factory
 from authtools.models import User
 from factory import faker
 
-from dashboard.models import Course
+from dashboard.models import CourseOffering
 
 
 class LecturerFactory(factory.DjangoModelFactory):
@@ -15,7 +15,7 @@ class LecturerFactory(factory.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'Lecturer %d' % n)
     email = factory.Sequence(lambda n: 'lecturer_%d@test.com' % n)
     password = factory.PostGenerationMethodCall('set_password', 'password')
-    
+
     @classmethod
     def _setup_next_sequence(cls):
         return 1
@@ -23,11 +23,11 @@ class LecturerFactory(factory.DjangoModelFactory):
 
 class CourseFactory(factory.DjangoModelFactory):
     class Meta:
-        model = Course
+        model = CourseOffering
 
-    lms_type = Course.LMS_TYPE_BLACKBOARD
+    lms_type = CourseOffering.LMS_TYPE_BLACKBOARD
     code = factory.Sequence(lambda n: 'C%d' % n)
-    title = factory.Sequence(lambda n: 'Course %d' % n)
+    title = factory.Sequence(lambda n: 'CourseOffering %d' % n)
     offering = 'Sem X'
     start_date = faker.Faker('date_object')
     no_weeks = 14

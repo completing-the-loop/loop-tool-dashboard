@@ -11,7 +11,7 @@ from django.shortcuts import redirect
 from django.template import RequestContext
 from docx import Document
 
-from dashboard.models import Course
+from dashboard.models import CourseOffering
 from dashboard.models import CourseRepeatingEvent
 from dashboard.models import PedagogyHelper
 from dashboard.utils import generate_userbycourse_histogram
@@ -62,17 +62,17 @@ def pedagogyhelper(request):
     else:
         course_id = int(request.GET.get('course_id'))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
 
     if save_pedagogyhelper_json:
-        pedagogyhelper_obj, created = PedagogyHelper.objects.update_or_create(course=course,defaults={'pedagogyhelper_json': pedagogyhelper_json})
+        pedagogyhelper_obj, created = PedagogyHelper.objects.update_or_create(course_offering=course_offering,defaults={'pedagogyhelper_json': pedagogyhelper_json})
         #pedagogyhelper_obj = PedagogyHelper(pedagogyhelper_json=pedagogyhelper_json, )
         #pedagogyhelper_obj.save()
     else:
-        pedagogyhelper_objs = PedagogyHelper.objects.filter(course=course_id)
+        pedagogyhelper_objs = PedagogyHelper.objects.filter(course_offering=course_id)
         print("pedagogyhelper_objs", pedagogyhelper_objs)
         if (len(pedagogyhelper_objs) > 0):
             pedagogyhelper_json = pedagogyhelper_objs[0].pedagogyhelper_json
@@ -117,17 +117,17 @@ def pedagogyhelperdownload(request):
     else:
         course_id = int(request.GET.get('course_id'))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
 
     if save_pedagogyhelper_json:
-        pedagogyhelper_obj, created = PedagogyHelper.objects.update_or_create(course=course,defaults={'pedagogyhelper_json': pedagogyhelper_json})
-        #pedagogyhelper_obj = PedagogyHelper(pedagogyhelper_json=pedagogyhelper_json, course=course)
+        pedagogyhelper_obj, created = PedagogyHelper.objects.update_or_create(course_offering=course_offering,defaults={'pedagogyhelper_json': pedagogyhelper_json})
+        #pedagogyhelper_obj = PedagogyHelper(pedagogyhelper_json=pedagogyhelper_json, course_offering=course_offering)
         #pedagogyhelper_obj.save()
 
-    pedagogyhelper_objs = PedagogyHelper.objects.filter(course=course_id)
+    pedagogyhelper_objs = PedagogyHelper.objects.filter(course_offering=course_id)
 
     pedagogyhelper_json = "{}"
     if (len(pedagogyhelper_objs) > 0):
@@ -180,10 +180,10 @@ def coursedashboard(request):
     if (week_id == -1):
         return redirect('/overallcoursedashboard?course_id=' + str(course_id))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -355,7 +355,7 @@ def coursedashboard(request):
         topquizcontent_table = topquizcontent_table + '<tr><td><a href="/coursepage?page_id=%s&course_id=%s">%s</a></td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td></tr>' %(row[1],str(course_id), row[2], row[3], user_cnt, attempts, averagestudentscore)
 
     #Top Users/Students
-    sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_id  WHERE D.DATE_week IN (%d) AND F.course_id=%d AND U.role='Student' GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (course_weeks[week_no-1], course_id)
+    sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_user_id  WHERE D.DATE_week IN (%d) AND F.course_id=%d AND U.role='Student' GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (course_weeks[week_no-1], course_id)
     cursor.execute(sql);
     topusers_resultset = cursor.fetchall()
     topusers_table = ""
@@ -363,7 +363,7 @@ def coursedashboard(request):
         topusers_table = topusers_table + '<tr><td class="center"><a href="/coursemember?user_id=%s_%s&course_id=%s">%s</a></td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td></tr>' %(str(course_id), row[4],str(course_id), row[1], row[2], row[3], row[0])
 
     #get repeating events
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
     rpt_evt_lst = ""
     for evt in repeating_evt:
        rpt_evt_lst = rpt_evt_lst + "{ value: %s, color: 'green', width: 2, label: { text: '%s'}}," % (evt.day_of_week, evt.title)
@@ -380,10 +380,10 @@ def overallcoursedashboard(request):
 
     course_id = int(request.GET.get('course_id'))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -441,7 +441,7 @@ def overallcoursedashboard(request):
         #topquizcontent_table = topquizcontent_table + '<tr><td><a href="/coursepage?page_id=%s&course_id=%s">%s</a></td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td><td class="center">%s</td></tr>' %(row[1],str(course_id), row[2], row[3], user_cnt, row[0], attempts, averagestudentscore)
 
     #Top Users/Students
-    sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_id  WHERE F.course_id=%d GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (course_id)
+    sql = "SELECT COUNT(F.pageview) AS Pageviews, U.Firstname, U.Lastname, U.Role, F.user_id FROM dim_dates  D LEFT JOIN fact_coursevisits F ON D.Id = F.Date_Id JOIN dim_users U ON F.user_id=U.lms_user_id  WHERE F.course_id=%d GROUP BY F.user_id ORDER BY Pageviews DESC LIMIT 10;" % (course_id)
     cursor.execute(sql);
     topusers_resultset = cursor.fetchall()
     topusers_table = ""
@@ -474,10 +474,10 @@ def coursemembers(request):
 
     weeks = ','.join(map(str, course_weeks))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -491,7 +491,7 @@ def coursemembers(request):
 
     #get repeating events
     weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
     opts = ""
     count = 0
     first_evt_day = None
@@ -522,10 +522,10 @@ def coursestructure(request):
 
     course_id = int(request.GET.get('course_id'))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -538,7 +538,7 @@ def coursestructure(request):
     access_counts_table =  rows[0][0]
     access_vis_table =  rows[0][1]
 
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
 
     context_dict = {'repeating_evt': repeating_evt, 'course_id': course_id, 'course_code': course_code, 'course_title': course_title, 'access_counts_table': access_counts_table, 'access_vis_table': access_vis_table}
 
@@ -575,10 +575,10 @@ def coursemember(request):
         unixstart = time.mktime(datetime.strptime(startdte, "%Y-%m-%d").timetuple())
         unixend = time.mktime(datetime.strptime(enddte, "%Y-%m-%d").timetuple())
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -662,10 +662,10 @@ def coursepage(request):
 
     section_order = 0
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -737,10 +737,10 @@ def content(request):
 
     weeks = ','.join(map(str, course_weeks))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -759,7 +759,7 @@ def content(request):
 
     #get repeating events
     weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
     opts = ""
     count = 0
     first_evt_day = None
@@ -801,10 +801,10 @@ def communication(request):
 
     weeks = ','.join(map(str, course_weeks))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -819,7 +819,7 @@ def communication(request):
 
     #get repeating events
     weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
     opts = ""
     count = 0
     first_evt_day = None
@@ -861,10 +861,10 @@ def assessment(request):
 
     weeks = ','.join(map(str, course_weeks))
 
-    course = Course.objects.get(pk=course_id)
-    course_code = course.code
-    course_title = course.title
-    course_type = course.lms_type
+    course_offering = CourseOffering.objects.get(pk=course_id)
+    course_code = course_offering.code
+    course_title = course_offering.title
+    course_type = course_offering.lms_type
     if course_type == "Macquarie Uni Moodle":
         course_type = "MoodleMacquarie"
 
@@ -879,7 +879,7 @@ def assessment(request):
 
     #get repeating events
     weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    repeating_evt = CourseRepeatingEvent.objects.filter(course=course)
+    repeating_evt = CourseRepeatingEvent.objects.filter(course_offering=course_offering)
     opts = ""
     count = 0
     first_evt_day = None

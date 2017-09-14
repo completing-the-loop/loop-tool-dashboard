@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import models
 
 
-class Course(models.Model):
+class CourseOffering(models.Model):
     LMS_TYPE_BLACKBOARD = 'blackboard'
     LMS_TYPE_MOODLE = 'moodle'
     LMS_TYPE_CHOICES = (
@@ -41,7 +41,7 @@ class CourseSubmissionEvent(models.Model):
     )
 
     title = models.CharField(max_length=255)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -53,7 +53,7 @@ class CourseSubmissionEvent(models.Model):
 
 class CourseSingleEvent(models.Model):
     title = models.CharField(max_length=255)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     event_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -79,7 +79,7 @@ class CourseRepeatingEvent(models.Model):
     )
 
     title = models.CharField(max_length=255)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     start_week = models.IntegerField(blank=True)
     end_week = models.IntegerField(blank=True)
     day_of_week = models.CharField(max_length=50, choices=EVENT_DAY_CHOICES, default=EVENT_DAY_MON)
@@ -91,4 +91,4 @@ class CourseRepeatingEvent(models.Model):
 
 class PedagogyHelper(models.Model):
     pedagogyhelper_json = models.TextField(blank=False)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)

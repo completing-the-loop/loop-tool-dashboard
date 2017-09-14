@@ -59,9 +59,8 @@ const init = async (
                 ];
             },
             async getTopUsers() {
-                // This is getting all users without page views rather than top users with page views filtered by week
-                // as we need to refactor the olap models first. It's more to demo/test the Vue setup
-                this.topUsers = await get(`${this.courseId}/course_users`);
+                // This is getting top users with page views filtered by week
+                this.topUsers = await get(`${this.courseId}/top_users`);
             },
             async plotGraph() {
                 const data = [{

@@ -9,7 +9,6 @@ import sys as _sys
 
 from unipath import Path as _Path
 
-
 def get_env_setting(setting, default=None):
     """ Get the environment setting or return exception """
     x = _os.environ.get(setting, default)

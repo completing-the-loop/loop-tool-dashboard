@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.aggregates import Max
 
-from dashboard.models import Course
+from dashboard.models import CourseOffering
 
 
 # CREATE TABLE `summary_courses` (
@@ -29,7 +29,7 @@ from dashboard.models import Course
 #   `sitetree` longtext
 # ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 # class SummaryCourse(models.Model):
-#     course = models.ForeignKey(Course)
+#     course_offering = models.ForeignKey(CourseOffering)
 #     weekly_json = models.TextField(blank=True)
 #     users_counts_table = models.TextField(blank=True)
 #     users_vis_table = models.TextField(blank=True)
@@ -51,27 +51,9 @@ from dashboard.models import Course
 #     assessmentgrades = models.TextField(blank=True)
 #     sitetree = models.TextField(blank=True)
 
-# CREATE TABLE `dim_dates` (
-#   `id` varchar(11) NOT NULL,
-#   `date_day` int(11) NOT NULL,
-#   `date_year` int(11) NOT NULL,
-#   `date_month` int(11) NOT NULL,
-#   `date_dayinweek` int(11) NOT NULL,
-#   `date_week` int(11) NOT NULL,
-#   `unixtimestamp` int(11) NOT NULL
-# ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimDate(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
-    date_day = models.IntegerField()
-    date_year = models.IntegerField()
-    date_month = models.IntegerField()
-    date_dayinweek = models.IntegerField()
-    date_week = models.IntegerField()
-    unixtimestamp = models.IntegerField()
-
 # CREATE TABLE `dim_users` (
 #   `id` int(11) NOT NULL,
-#   `lms_id` varchar(1000) NOT NULL,
+#   `lms_user_id` varchar(1000) NOT NULL,
 #   `firstname` varchar(1000) DEFAULT NULL,
 #   `lastname` varchar(1000) DEFAULT NULL,
 #   `username` varchar(1000) NOT NULL,
@@ -80,15 +62,24 @@ class DimDate(models.Model):
 #   `user_pk` varchar(1000) NOT NULL,
 #   `course_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimUser(models.Model):
-    lms_id = models.CharField(max_length=255)
+class LMSUser(models.Model):
+    lms_user_id = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
-    user_pk = models.CharField(max_length=255)  # course_id '_' lms_id
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     firstname = models.CharField(max_length=255, blank=True)
     lastname = models.CharField(max_length=255, blank=True)
     role = models.CharField(max_length=255, blank=True)
-    email = models.CharField(max_length=255, blank=True)
+    email = models.EmailField(max_length=255, blank=True)
+
+    class Meta:
+        unique_together = (('course_offering', 'lms_user_id'), )
+
+    def __str__(self):
+        possible_name = " ".join((self.firstname, self.lastname))
+        if possible_name:
+            return "<LMSUser {}: {}>".format(self.lms_user_id, possible_name)
+        else:
+            return "<LMSUser {}: ## Phantom user ##>".format(self.lms_user_id)
 
 # CREATE TABLE `fact_coursevisits` (
 #   `id` int(11) NOT NULL,
@@ -111,25 +102,19 @@ class DimUser(models.Model):
 #   `info` varchar(5000) DEFAULT NULL,
 #   `session_id` int(11) DEFAULT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class FactCourseVisit(models.Model):
-    date_id = models.CharField(max_length=255)
-    course = models.ForeignKey(Course)
-    user_id = models.IntegerField()
-    page_id = models.IntegerField()
-    pageview = models.IntegerField(default=1)
-    time_id = models.CharField(max_length=255)
-    module = models.CharField(blank=True, max_length=255)
+class PageVisit(models.Model):
+    visited_at = models.DateTimeField()
+    lms_user = models.ForeignKey(LMSUser)
+    page = models.ForeignKey('Page')
+    # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
+    module = models.CharField(blank=True, max_length=255) # Is this always a resource/x-bb-* content type?
     action = models.CharField(blank=True, max_length=255)
     url = models.TextField(blank=True)
     section_id = models.IntegerField(blank=True, null=True)
-    user_pk = models.CharField(blank=True, max_length=255)
-    page_pk = models.CharField(blank=True, max_length=255)
     section_pk = models.CharField(blank=True, max_length=255)
-    unixtimestamp = models.IntegerField()
     section_order = models.IntegerField(blank=True, null=True)
     info = models.TextField()
-    session_id = models.IntegerField(blank=True, null=True)
-
+    session = models.ForeignKey('LMSSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
 
 # CREATE TABLE `dim_pages` (
 #   `id` int(11) NOT NULL,
@@ -142,18 +127,20 @@ class FactCourseVisit(models.Model):
 #   `page_pk` varchar(1000) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-class DimPage(models.Model):
-    course = models.ForeignKey(Course)
+class Page(models.Model):
+    course_offering = models.ForeignKey(CourseOffering)
     content_type = models.CharField(max_length=255)
     content_id = models.IntegerField()
     parent_id = models.IntegerField(default=0)
     order_no = models.IntegerField(default=0)
     title = models.TextField()
-    page_pk = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = (('course_offering', 'content_id'), )
 
     @staticmethod
-    def get_next_page_id(course):
-        max_page_dict = DimPage.objects.filter(course=course).aggregate(max_page_id=Max('content_id'))
+    def get_next_page_id(course_offering):
+        max_page_dict = Page.objects.filter(course_offering=course_offering).aggregate(max_page_id=Max('content_id'))
         if max_page_dict['max_page_id']:
             return max_page_dict['max_page_id'] + 1
         return 1
@@ -172,25 +159,21 @@ class DimPage(models.Model):
 #   `date_dayinweek` int(11) NOT NULL,
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSession(models.Model):
-    course = models.ForeignKey(Course)
-    session_id = models.IntegerField()
-    unixtimestamp = models.IntegerField()
-    date_id = models.CharField(max_length=255)
+class LMSSession(models.Model):
+    # Not strictly needed (since we can find course_offering by .first_visit.page.course_offering, but it will make queries easier.
+    course_offering = models.ForeignKey(CourseOffering)
     session_length_in_mins = models.IntegerField()
     pageviews = models.IntegerField()
-    date_year = models.IntegerField()
-    date_week = models.IntegerField()
-    date_dayinweek = models.IntegerField()
-    user_id = models.IntegerField()
+    first_visit = models.ForeignKey(PageVisit)
 
+    """
     @staticmethod
     def get_next_session_id():
-        max_session_dict = DimSession.objects.all().aggregate(max_session_id=Max('session_id'))
+        max_session_dict = LMSSession.objects.all().aggregate(max_session_id=Max('session_id'))
         if max_session_dict['max_session_id']:
             return max_session_dict['max_session_id'] + 1
         return 1
-
+    """
 
 # CREATE TABLE `dim_sessions` (
 #   `id` int(11) NOT NULL,
@@ -203,7 +186,7 @@ class DimSession(models.Model):
 #   `course_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 # class DimSessions(models.Model):
-#     course = models.ForeignKey(Course)
+#     course_offering = models.ForeignKey(CourseOffering)
 #     session_id = models.IntegerField()
 #     session_length_in_mins = models.IntegerField()
 #     pageviews = models.IntegerField(default=0)
@@ -219,12 +202,11 @@ class DimSession(models.Model):
 #   `grade` varchar(50) NOT NULL,
 #   `unixtimestamp` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSubmissionAttempt(models.Model):
-    course = models.ForeignKey(Course)
-    content_id = models.IntegerField()
-    user_id = models.IntegerField()
+class SubmissionAttempt(models.Model):
+    attempted_at = models.DateTimeField()
+    page = models.ForeignKey(Page) # Was called content_id
+    lms_user = models.ForeignKey(LMSUser)
     grade = models.CharField(max_length=50)
-    unixtimestamp = models.IntegerField()
 
 
 # CREATE TABLE `dim_submissiontypes` (
@@ -236,12 +218,12 @@ class DimSubmissionAttempt(models.Model):
 #   `timeclose` varchar(1000) NOT NULL,
 #   `grade` varchar(50) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-class DimSubmissionType(models.Model):
-    course = models.ForeignKey(Course)
-    content_id = models.IntegerField()
+class SubmissionType(models.Model):
+    course_offering = models.ForeignKey(CourseOffering)
+    content_id = models.IntegerField() # This should be an FK to Page, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before Pages.
     content_type = models.CharField(max_length=255)
-    timeopen = models.CharField(max_length=255)
-    timeclose = models.CharField(max_length=255)
+    # timeopen = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
+    # timeclose = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
     grade = models.CharField(max_length=50)
 
 
@@ -260,7 +242,7 @@ class SummaryCourseAssessmentVisitsByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pageviews = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 
 # CREATE TABLE `Summary_CourseCommunicationVisitsByDayInWeek` (
@@ -278,7 +260,7 @@ class SummaryCourseCommunicationVisitsByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pageviews = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 
 # CREATE TABLE `Summary_CourseVisitsByDayInWeek` (
@@ -296,7 +278,7 @@ class SummaryCourseVisitsByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pageviews = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 # CREATE TABLE `summary_discussion` (
 #   `id` int(11) NOT NULL,
@@ -310,7 +292,7 @@ class SummaryCourseVisitsByDayInWeek(models.Model):
 #   `discussion_pk` text NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SummaryDiscussion(models.Model):
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     forum_id = models.IntegerField()
     title = models.TextField()
     no_posts = models.IntegerField()
@@ -330,7 +312,7 @@ class SummaryDiscussion(models.Model):
 #   `all_content` text NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SummaryForum(models.Model):
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
     forum_id = models.IntegerField()
     title = models.TextField()
     no_discussions = models.IntegerField()
@@ -352,7 +334,7 @@ class SummaryParticipatingUsersByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pageviews = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 
 # CREATE TABLE `summary_posts` (
@@ -364,11 +346,11 @@ class SummaryParticipatingUsersByDayInWeek(models.Model):
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SummaryPost(models.Model):
-    date_id = models.CharField(max_length=255)  # Link to DimDate?
-    course = models.ForeignKey(Course)
+    posted_at = models.DateTimeField()
+    course_offering = models.ForeignKey(CourseOffering)
     forum_id = models.IntegerField()
     discussion_id = models.IntegerField()
-    user_id = models.IntegerField()     # Ref to lms_id in DimUser?
+    lms_user = models.ForeignKey(LMSUser) # Having this is not normalised
 
 # CREATE TABLE `Summary_SessionAverageLengthByDayInWeek` (
 #   `id` int(11) NOT NULL,
@@ -384,7 +366,7 @@ class SummarySessionAverageLengthByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     session_average_in_minutes = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 
 # CREATE TABLE `Summary_SessionAveragePagesPerSessionByDayInWeek` (
@@ -401,7 +383,7 @@ class SummarySessionAveragePagesPerSessionByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pages_per_session = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 
 # CREATE TABLE `Summary_SessionsByDayInWeek` (
@@ -418,7 +400,7 @@ class SummarySessionsByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     sessions = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
 
 # CREATE TABLE `Summary_UniquePageViewsByDayInWeek` (
 #   `id` int(11) NOT NULL,
@@ -435,4 +417,4 @@ class SummaryUniquePageViewsByDayInWeek(models.Model):
     date_week = models.IntegerField()
     date_dayinweek = models.IntegerField()
     pageviews = models.IntegerField(default=0)
-    course = models.ForeignKey(Course)
+    course_offering = models.ForeignKey(CourseOffering)
