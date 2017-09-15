@@ -89,7 +89,7 @@ class CourseRepeatingEvent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_event_day(self):
-        return self.EVENT_DAY_CHOICES[self.day_of_week][1]
+        return dict(self.EVENT_DAY_CHOICES)[self.day_of_week]
 
     def __str__(self):
         return self.title
