@@ -28,7 +28,7 @@ class CourseRepeatingEventForm(ModelForm):
             field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
-        self.instance.course = self.course
+        self.instance.course_offering = self.course
         return super().save(commit)
 
     def clean(self):
@@ -57,7 +57,7 @@ class CourseSubmissionEventForm(ModelForm):
             field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
-        self.instance.course = self.course
+        self.instance.course_offering = self.course
         return super().save(commit)
 
     def clean(self):
@@ -89,7 +89,7 @@ class CourseSingleEventForm(ModelForm):
             field.widget.attrs.update({'class': 'form-control'})
 
     def save(self, commit=True):
-        self.instance.course = self.course
+        self.instance.course_offering = self.course
         return super().save(commit)
 
     def clean(self):
