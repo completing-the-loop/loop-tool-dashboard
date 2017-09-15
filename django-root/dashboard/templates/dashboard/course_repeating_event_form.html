@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Add/Edit Repeating Event{% endblock %}
+{% block title %}{% if object.id %}Edit{% else %}Add{% endif %} Repeating Event{% endblock %}
 
 {% block content %}
   <div class="row-fluid">
     <div class="col-md-12">
-      <h2>Add/Edit Repeating Event</h2>
+      <h2>{% if object.id %}Edit{% else %}Add{% endif %} Repeating Event</h2>
 
       <form method="post" class="form-horizontal">
         {% csrf_token %}
@@ -39,7 +39,7 @@
         </div>
         <div class="form-group">
           <div class="col-sm-offset-2 col-sm-8">
-            <button type="submit" class="btn btn-primary">Add/Edit</button>
+            <button type="submit" class="btn btn-primary">{% if object.id %}Update{% else %}Create{% endif %}</button>
           </div>
         </div>
       </form>
