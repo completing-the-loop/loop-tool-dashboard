@@ -123,6 +123,18 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Celery and RabbitMQ
+
+RABBITMQ_USER = 'guest'
+RABBITMQ_PASSWORD = 'guest'
+RABBITMQ_HOSTNAME = 'localhost'
+RABBITMQ_PORT = 5672
+RABBITMQ_VHOST = '/'
+
+CELERY_BROKER_URL = 'amqp://{}:{}@{}:{}/{}'.format(RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_HOSTNAME, RABBITMQ_PORT, RABBITMQ_VHOST)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Note that manage.py runserver forks processes so this will unavoidably display multiple times
 _dev_notice_printed = False
 if not _dev_notice_printed:

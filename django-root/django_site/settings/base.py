@@ -92,6 +92,7 @@ INSTALLED_APPS = (
     # 'compat',
     # 'compressor',
     # 'django_admin_bootstrapped',    # Must come before django.contrib.admin
+    'django_celery_results',
     'django_extensions',
     # 'django_select2',
     # 'django_tables2',
@@ -539,6 +540,12 @@ REST_FRAMEWORK = {
         #'allianceutils.api.permissions.SimpleDjangoObjectPermissions',
     ),
 }
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Celery and RabbitMQ
+
+CELERY_RESULT_BACKEND = 'django-db'
 
 
 # ----------------------------------------------------------------------------------------------------------------------

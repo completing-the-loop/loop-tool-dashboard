@@ -13,10 +13,12 @@ master: [![build status](https://gitlab.internal.alliancesoftware.com.au/melbuni
 
 ### Purpose
 
-A web app for generating widgets
+A web application to provide insights and visualisations on the use of a Learning Management System by students.
 
 Key functionality
-* Do things
+* Import resource and usage data for courses from an LMS (currently only Blackboard is supported)
+* Allow the definition of various events throughout a course
+* Display summaries and visualisations of the usage and event data
 
 
 ### Tech Stack
@@ -27,16 +29,17 @@ Key functionality
 * MySQL 5.6
 * node 6 (dev only)
 * Bootstrap
+* RabbitMQ (http://www.rabbitmq.com/) - for Celery broker
 
 
 ## Architecture
 
-* Standard django app
- * Not a single page app (No React or Angular)
-* Interesting things
-* Javascript for the entire site is aggregated using `django-compress`
-* Admin is accessible only to staff
+* Standard django app with Vue instances on many pages
+* Course data is accessible only to assigned course owners
+* Admin is accessible only to system administrators
   * `django-stronghold` means login required by default
+* Celery (with RAbbitMQ broker) used to process the LMS export data
+  
 
 ## Development
 
@@ -53,9 +56,7 @@ ln -s ../git-hooks hooks
 * Install OS packages
 
 ```bash
-brew install nonstandard-package1
-brew install nonstandard-package2
-# (Don't need to list DB packages or core python here; they are assumed)
+brew install rabbitmq
 ```
 
 * Create & activate a python 3 virtualenv
@@ -150,7 +151,7 @@ yarn run build
 
 #### Live
 
-* Tag and push the release: `git tag sendlive/YYYYMMDD-hhmm && git push`
+* Tag and push the release: `git tag sendlive/YYYY/MMDD-hhmm && git push`
 * SSH to the server using details at tt:accountId=1234
 * Create a DB backup
  * `~/bin/dbdump.sh`
@@ -162,7 +163,7 @@ yarn run build
 ```bash
 cd ~/livesite
 git fetch
-git checkout sendlive/YYYYMMDD-hhmm
+git checkout sendlive/YYYY/MMDD-hhmm
 cd django-root
 ./manage.py migrate
 ./manage.py collectstatic

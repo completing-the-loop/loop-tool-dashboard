@@ -6,8 +6,14 @@ Django==1.11.*
 # AWS interface (esp access to S3 storage)
 #boto
 
+# Used for concurrent task processing
+celery
+
 # Django authentication tools
 django-authtools
+
+# Use Django ORM to record celery results
+django-celery-results
 
 # HTML editor
 #django-ckeditor
