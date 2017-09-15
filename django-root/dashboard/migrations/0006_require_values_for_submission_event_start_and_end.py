@@ -9,7 +9,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboard', '0004_require_values_for_start_and_end_week'),
+        ('dashboard', '0005_require_values_for_start_and_end_week'),
     ]
 
     operations = [

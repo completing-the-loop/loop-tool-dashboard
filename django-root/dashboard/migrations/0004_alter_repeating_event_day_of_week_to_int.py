@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboard', '0002_rename_owner_to_owners'),
+        ('dashboard', '0003_rename_course_to_course_offering'),
     ]
 
     operations = [

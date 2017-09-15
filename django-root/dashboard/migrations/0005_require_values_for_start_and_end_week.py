@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboard', '0003_alter_repeating_event_day_of_week_to_int'),
+        ('dashboard', '0004_alter_repeating_event_day_of_week_to_int'),
     ]
 
     operations = [
