@@ -36,13 +36,10 @@ class ImportLmsData(object):
     staff_list = []
     sitetree = {}
 
-    def __init__(self, course_code, just_clear=False):
+    def __init__(self, course_offering, just_clear=False):
         self.just_clear = just_clear
         self.courses_export_path = Path(settings.PROJECT_DIR, 'data')
-        try:
-            self.course_offering = CourseOffering.objects.get(code=course_code)
-        except:
-            raise ValueError("There's no course offering with a code of '{}'.".format(course_code))
+        self.course_offering = course_offering
 
     def process(self):
         offering = self.course_offering
