@@ -6,7 +6,6 @@ from factory import fuzzy
 from django.utils.timezone import get_current_timezone
 
 from dashboard.tests.factories import CourseFactory
-
 from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit

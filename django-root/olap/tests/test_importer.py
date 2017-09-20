@@ -4,15 +4,13 @@ from django.test.testcases import TestCase
 from django.utils.timezone import get_current_timezone
 
 from dashboard.tests.factories import CourseFactory
-
 from olap.lms_import import ImportLmsData
-
 from olap.models import LMSSession
 from olap.models import PageVisit
-
 from olap.tests.factories import LMSUserFactory
 from olap.tests.factories import PageFactory
 from olap.tests.factories import PageVisitFactory
+
 
 class ImporterSessionCalcTests(TestCase):
     """
