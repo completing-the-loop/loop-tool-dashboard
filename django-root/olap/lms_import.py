@@ -36,48 +36,53 @@ class ImportLmsData(object):
     staff_list = []
     sitetree = {}
 
-    def __init__(self):
+    def __init__(self, course_offering, just_clear=False):
+        self.just_clear = just_clear
         self.courses_export_path = Path(settings.PROJECT_DIR, 'data')
+        self.course_offering = course_offering
 
     def process(self):
-        print("Removing old data")
+        offering = self.course_offering
+        print("Removing old data for", offering)
         self.remove_olap_data()
+        if self.just_clear:
+            return
 
-        for course_offering in CourseOffering.objects.all():
-            if course_offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
-                print("Importing course offering data for {}".format(course_offering))
-                lms_import = BlackboardImport(self.courses_export_path, course_offering)
-                lms_import.process_import_data()
+        if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
+            print("Importing course offering data for", offering)
+            lms_import = BlackboardImport(self.courses_export_path, offering)
+            lms_import.process_import_data()
 
-                print("Processing user sessions for {}".format(course_offering))
-                self._process_user_sessions(course_offering)
+            print("Processing user sessions for", offering)
+            self._process_user_sessions(offering)
 
-                # print("Populating summary data for {}".format(course_offering))
-                # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
-                print("Skipping populating summary data for {}".format(course_offering))
+            # print("Populating summary data for {}".format(course_offering))
+            # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
+            print("Skipping populating summary data for", offering)
 
     def remove_olap_data(self):
+        offering = self.course_offering
         # First the OLAP Tables
-        LMSUser.objects.all().delete()
-        Page.objects.all().delete()
-        PageVisit.objects.all().delete()
-        LMSSession.objects.all().delete()
-        SubmissionAttempt.objects.all().delete()
-        SubmissionType.objects.all().delete()
+        LMSUser.objects.filter(course_offering=offering).delete()
+        Page.objects.filter(course_offering=offering).delete()
+        PageVisit.objects.filter(page__course_offering=offering).delete()
+        LMSSession.objects.filter(course_offering=offering).delete()
+        SubmissionAttempt.objects.filter(page__course_offering=offering).delete()
+        SubmissionType.objects.filter(course_offering=offering).delete()
 
         # # Next cleanup the Summary Tables
         # connection.execute("DELETE FROM Summary_Courses");
-        SummaryForum.objects.all().delete()
-        SummaryDiscussion.objects.all().delete()
-        SummaryPost.objects.all().delete()
-        SummaryCourseVisitsByDayInWeek.objects.all().delete()
-        SummaryCourseCommunicationVisitsByDayInWeek.objects.all().delete()
-        SummaryCourseAssessmentVisitsByDayInWeek.objects.all().delete()
-        SummarySessionsByDayInWeek.objects.all().delete()
-        SummarySessionAverageLengthByDayInWeek.objects.all().delete()
-        SummarySessionAveragePagesPerSessionByDayInWeek.objects.all().delete()
-        SummaryParticipatingUsersByDayInWeek.objects.all().delete()
-        SummaryUniquePageViewsByDayInWeek.objects.all().delete()
+        SummaryForum.objects.filter(course_offering=offering).delete()
+        SummaryDiscussion.objects.filter(course_offering=offering).delete()
+        SummaryPost.objects.filter(course_offering=offering).delete()
+        SummaryCourseVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummaryCourseCommunicationVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummaryCourseAssessmentVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummarySessionsByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummarySessionAverageLengthByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummarySessionAveragePagesPerSessionByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummaryParticipatingUsersByDayInWeek.objects.filter(course_offering=offering).delete()
+        SummaryUniquePageViewsByDayInWeek.objects.filter(course_offering=offering).delete()
 
     def _store_session(self, course_offering, session_visits_list):
         if session_visits_list:
