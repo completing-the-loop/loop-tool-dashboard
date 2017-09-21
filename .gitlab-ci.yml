@@ -6,6 +6,11 @@
 # set your variables here
 variables:
   DJANGO_SETTINGS_MODULE: django_site.settings.ci
+  RABBITMQ_USER: guest
+  RABBITMQ_PASSWORD: guest
+  RABBITMQ_HOSTNAME: localhost
+  RABBITMQ_PORT: 5672
+  RABBITMQ_VHOST: /
 
 
 cache:
