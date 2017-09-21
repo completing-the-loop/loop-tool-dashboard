@@ -104,7 +104,7 @@ yarn run dev
 
 ```bash
 cd django-root
-./mange.py runserver_plus
+./manage.py runserver_plus
 ```
 
 ### Testing

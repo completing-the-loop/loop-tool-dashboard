@@ -4,6 +4,7 @@ import platform as _platform
 
 _dev_hosts = [
     ('MacBook-Pro', 'darwin'),
+    ('MacBook-Pro.local', 'darwin'),
     ('.internal.alliancesoftware.com.au', 'darwin'), # general catch-all
 ]
 

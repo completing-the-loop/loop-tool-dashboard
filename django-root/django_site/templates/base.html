@@ -74,6 +74,26 @@
                   <i class="icon-user"></i><span class="hidden-tablet">Students</span>
                 </a>
               </li>
+              <li>
+                <a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> Course Events</span></a>
+                <ul>
+                  <li>
+                    <a class="submenu" href="{% url 'dashboard:list_course_repeating_events' course_id=course.id %}">
+                      <i class="icon-file-alt"></i><span class="hidden-tablet"> Repeating Events</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="submenu" href="{% url 'dashboard:list_course_submission_events' course_id=course.id %}">
+                      <i class="icon-file-alt"></i><span class="hidden-tablet">Submission Events</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a class="submenu" href="{% url 'dashboard:list_course_single_events' course_id=course.id %}">
+                      <i class="icon-file-alt"></i><span class="hidden-tablet">Single Events</span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </div>
         </div>

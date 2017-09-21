@@ -167,6 +167,7 @@ TEMPLATES = [
 
                 # project-specific custom global context processors
                 'django_site.context_processors.constants',
+                'dashboard.context_processors.datetime_formats',
             ],
             'debug': DEBUG,
             # Only one of APP_DIRS and loaders should be set
@@ -240,6 +241,13 @@ FORMAT_DATETIME_ISO = '%Y-%m-%d %H:%M:%S'   # 2017-10-05 01:23:45
 FORMAT_DATE_COMPACT = '%Y%m%d'              # 20171005
 FORMAT_DATETIME_COMPACT = '%Y%m%.d%H%M%S'   # 20171005.012345
 
+DATETIME_INPUT_FORMATS = [
+    '%d-%m-%Y %H:%M',  # '25-10-2006 14:30'
+    '%Y-%m-%d %H:%M:%S',  # '2006-10-25 14:30:59'
+    '%Y-%m-%d %H:%M:%S.%f',  # '2006-10-25 14:30:59.000200'
+    '%Y-%m-%d %H:%M',  # '2006-10-25 14:30'
+    '%Y-%m-%d',  # '2006-10-25'
+]
 if not USE_L10N:
     # Django date formats (used in templates only)
     # These only apply if USE_L10N is off
