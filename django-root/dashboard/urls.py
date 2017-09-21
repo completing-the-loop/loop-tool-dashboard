@@ -1,8 +1,13 @@
+from functools import wraps
+
 from authtools.views import LogoutView
+from decorator_include import decorator_include
 from django.conf.urls import url
 from django.contrib.auth.views import logout
+from django.shortcuts import get_object_or_404
 from stronghold.decorators import public
 
+from dashboard.models import CourseOffering
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.events import CourseRepeatingEventCreateView
@@ -23,13 +28,21 @@ from dashboard.views.users import DashboardRedirectView
 from dashboard.views import views
 
 
+def course_access_wrapper(view_func):
+    @wraps(view_func)
+    def course_access_func(request, course_id, *args, **kwargs):
+        request.course_offering = get_object_or_404(CourseOffering, pk=course_id)
+        request.user.has_perm('dashboard.is_course_offering_owner', request.course_offering)
+        return view_func(request, *args, **kwargs)
+    return course_access_func
+
+
 urlpatterns = [
     url(r'^$', DashboardRedirectView.as_view(), name='dashboard_redirect'),
     url(r'^login/', public(CustomLoginView.as_view()), name='login'),
     url(r'^logout/', LogoutView.as_view(), name='logout'),
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
-    url(r'^(?P<course_id>\d+)/course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
 
     # Event management for academic staff
     url(r'^(?P<course_id>\d+)/course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
@@ -44,6 +57,10 @@ urlpatterns = [
     url(r'^(?P<course_id>\d+)/course_single_event/$', CourseSingleEventCreateView.as_view(), name='add_course_single_event'),
     url(r'^(?P<course_id>\d+)/course_single_event/(?P<pk>\d+)/$', CourseSingleEventUpdateView.as_view(), name='edit_course_single_event'),
     url(r'^(?P<course_id>\d+)/course_single_event/(?P<pk>\d+)/delete/$', CourseSingleEventDeleteView.as_view(), name='delete_course_single_event'),
+
+    url(r'^(?P<course_id>\d+)/', decorator_include(course_access_wrapper, [
+        url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+    ])),
 
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),
