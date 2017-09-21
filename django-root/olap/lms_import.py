@@ -84,54 +84,65 @@ class ImportLmsData(object):
         SummaryParticipatingUsersByDayInWeek.objects.filter(course_offering=offering).delete()
         SummaryUniquePageViewsByDayInWeek.objects.filter(course_offering=offering).delete()
 
-    def _store_session(self, course_offering, session_visits_list):
-        if session_visits_list:
-            first_visit = session_visits_list[0]
-            last_visit = session_visits_list[len(session_visits_list)-1]
-            session_start = first_visit.visited_at
-            session_end = last_visit.visited_at
-            session_duration = (session_end - session_start).seconds / 60
-            page_views = len(session_visits_list)
-            session = LMSSession(course_offering=course_offering, pageviews=page_views, session_length_in_mins=session_duration, first_visit=first_visit)
-            session.save()
-            session_visits_list_ids = [v.id for v in session_visits_list]
-            PageVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
+    def _store_session(self, session_visits_list):
+        first_visit = session_visits_list[0]
+        session_start = first_visit.visited_at
+        session_end = session_visits_list[-1].visited_at
+        session_duration = int((session_end - session_start).total_seconds() / 60)
+        pageviews = len(session_visits_list)
+        session = LMSSession(course_offering=self.course_offering, first_visit=first_visit, pageviews=pageviews, session_length_in_mins=session_duration)
+        session.save()
+        session_visits_list_ids = (v.id for v in session_visits_list)
+        PageVisit.objects.filter(id__in=session_visits_list_ids).update(session=session)
 
-    def _process_user_sessions(self, course_offering):
+    def calculate_session_for_user(self, lms_user):
+
         """
-            Gets each user (i.e., student) and calls method to process to split visits into a session.
-            A session includes all pageviews where the time access difference does not exceed SESSION_LENGTH_MINS
+            For a given LMS user, aggregate page views into sessions.
+            A session includes all visits by a user, where the time difference between subsequent views
+            does not exceed SESSION_LENGTH_MINS.  Sessions don't care about which page got visited, only that there
+            were visits.
+
             Algorithm to Determine Sessions:
-                get all visits for a user in order
-                loop through all visits for the user
-                    group visits into blocks of SESSION_LENGTH_MINS
-                    create a session record for each block (timestamped with start of session)
-                    update all visits in the block with the corresponding session_id
+             - iterate over visits looking for a gap between visits greater than SESSION_LENGTH_MINS
+             - take the views with gaps shorter than SESSION_LENGTH_MINS and create a session to span them
+             - update the session FK in each visit spanned by the session, to the session
         """
-        lms_users = LMSUser.objects.filter(course_offering=course_offering)
+        visits = PageVisit.objects.filter(lms_user=lms_user).order_by('visited_at')
 
+        if len(visits) == 0:
+            # No visits => no sessions.
+            return
+
+        prev_visit_time = None
+        visits_list_for_this_session = []
+        for visit in visits:
+            if prev_visit_time is None:
+                prev_visit_time = visit.visited_at
+                visits_list_for_this_session = [visit]
+                continue
+
+            this_visit_time = visit.visited_at
+            td = this_visit_time - prev_visit_time
+            total_seconds = td.total_seconds()
+            session_duration = int(total_seconds / 60)
+            if session_duration > self.SESSION_LENGTH_MINS:
+                # Time since previous visit is greater than max session length, so we should start a new session.
+                # Save the visits we found so far.
+                self._store_session(visits_list_for_this_session)
+                visits_list_for_this_session = [visit]
+            else:
+                visits_list_for_this_session.append(visit)
+            prev_visit_time = this_visit_time
+
+        # If that was the final visit, store it as a session.
+        self._store_session(visits_list_for_this_session)
+
+    def _calculate_sessions(self):
+        # For each user (i.e., student), calculate visit sessions.
+        lms_users = LMSUser.objects.filter(course_offering=self.course_offering)
         for lms_user in lms_users:
-            visits = PageVisit.objects.filter(lms_user=lms_user).order_by('visited_at')
-
-            session_start = None
-            session_visits_list = []
-            for visit in visits:
-                if session_start is None:
-                    session_start = visit.visited_at
-                    session_visits_list = [visit]
-                    continue
-
-                session_end = visit.visited_at
-
-                session_duration = (session_end - session_start).seconds / 60
-                if session_duration >= self.SESSION_LENGTH_MINS:
-                    self._store_session(course_offering, session_visits_list)
-                    session_start = session_end
-                    session_visits_list = [visit]
-                else:
-                    session_visits_list.append(visit)
-
-            self._store_session(course_offering, session_visits_list)
+            self.calculate_session_for_user(lms_user)
 
     def _populate_summary_tables(self, course_offering, assessment_types, communication_types):
         """
