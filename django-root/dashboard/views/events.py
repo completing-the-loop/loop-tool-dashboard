@@ -10,142 +10,141 @@ from dashboard.forms import CourseSubmissionEventForm
 from dashboard.models import CourseRepeatingEvent
 from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
-from dashboard.views.common import CourseMixin
 
 
-class CourseRepeatingEventListView(CourseMixin, ListView):
+class CourseRepeatingEventListView(ListView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/course_repeating_events_list.html'
     paginate_by = 10
 
 
-class CourseRepeatingEventCreateView(CourseMixin, CreateView):
+class CourseRepeatingEventCreateView(CreateView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/course_repeating_event_form.html'
     form_class = CourseRepeatingEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseRepeatingEventUpdateView(CourseMixin, UpdateView):
+class CourseRepeatingEventUpdateView(UpdateView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/course_repeating_event_form.html'
     form_class = CourseRepeatingEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseRepeatingEventDeleteView(CourseMixin, DeleteView):
+class CourseRepeatingEventDeleteView(DeleteView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/confirm_delete.html'
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering.id})
 
 
-class CourseSubmissionEventListView(CourseMixin, ListView):
+class CourseSubmissionEventListView(ListView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/course_submission_events_list.html'
     paginate_by = 10
 
 
-class CourseSubmissionEventCreateView(CourseMixin, CreateView):
+class CourseSubmissionEventCreateView(CreateView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/course_submission_event_form.html'
     form_class = CourseSubmissionEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseSubmissionEventUpdateView(CourseMixin, UpdateView):
+class CourseSubmissionEventUpdateView(UpdateView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/course_submission_event_form.html'
     form_class = CourseSubmissionEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseSubmissionEventDeleteView(CourseMixin, DeleteView):
+class CourseSubmissionEventDeleteView(DeleteView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/confirm_delete.html'
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
 
 
-class CourseSingleEventListView(CourseMixin, ListView):
+class CourseSingleEventListView(ListView):
     model = CourseSingleEvent
     template_name = 'dashboard/course_single_events_list.html'
     paginate_by = 10
 
 
-class CourseSingleEventCreateView(CourseMixin, CreateView):
+class CourseSingleEventCreateView(CreateView):
     model = CourseSingleEvent
     template_name = 'dashboard/course_single_event_form.html'
     form_class = CourseSingleEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseSingleEventUpdateView(CourseMixin, UpdateView):
+class CourseSingleEventUpdateView(UpdateView):
     model = CourseSingleEvent
     template_name = 'dashboard/course_single_event_form.html'
     form_class = CourseSingleEventForm
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs.update({
-            'course': self.course,
+            'course': self.request.course_offering,
         })
         return kwargs
 
 
-class CourseSingleEventDeleteView(CourseMixin, DeleteView):
+class CourseSingleEventDeleteView(DeleteView):
     model = CourseSingleEvent
     template_name = 'dashboard/confirm_delete.html'
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.course.id})
+        return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
