@@ -1,14 +1,9 @@
-from functools import wraps
-
 from authtools.views import LogoutView
 from decorator_include import decorator_include
 from django.conf.urls import url
 from django.contrib.auth.views import logout
-from django.http.response import HttpResponseForbidden
-from django.shortcuts import get_object_or_404
 from stronghold.decorators import public
 
-from dashboard.models import CourseOffering
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.events import CourseRepeatingEventCreateView
@@ -27,18 +22,7 @@ from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
 
 from dashboard.views import views
-
-
-def course_access_wrapper(view_func):
-    @wraps(view_func)
-    def course_access_func(request, course_id, *args, **kwargs):
-        request.course_offering = get_object_or_404(CourseOffering, pk=course_id)
-        if request.user.has_perm('dashboard.is_course_offering_owner', request.course_offering):
-            return view_func(request, *args, **kwargs)
-        else:
-            return HttpResponseForbidden('You do not have access to that course')
-
-    return course_access_func
+from django_site.permissions import course_access_url_wrapper
 
 
 urlpatterns = [
@@ -48,7 +32,7 @@ urlpatterns = [
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
 
-    url(r'^(?P<course_id>\d+)/', decorator_include(course_access_wrapper, [
+    url(r'^(?P<course_id>\d+)/', decorator_include(course_access_url_wrapper, [
         url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
 
         # Event management for academic staff
