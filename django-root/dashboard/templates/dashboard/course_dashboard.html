@@ -8,7 +8,7 @@
   <p>
     <form id="weekselector" method="get">
       Course Weekly Dashboard: Week {{ week_no }} ({{ weekbeg }} - {{weekend}})
-      <input type="hidden" name="course_id" value={{ course.id }} />
+      <input type="hidden" name="course_id" value="{{ request.course_offering.id }}" />
       <div style="float: right;">
         <select id="weekfilter" name="week_filter">
           <option value="-1"> View All</option>
@@ -210,6 +210,6 @@
 
 {% block javascript %}
   <script>
-      window.pages.dashboard.init({{ course.id }});
+      window.pages.dashboard.init({{ request.course_offering.id }});
   </script>
 {% endblock javascript %}
