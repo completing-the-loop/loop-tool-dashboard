@@ -2,7 +2,6 @@ from django.db import connections
 from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 
-from dashboard.models import CourseOffering
 from dashboard.utils import weekbegend
 from olap.models import SummaryCourseVisitsByDayInWeek
 
@@ -11,20 +10,17 @@ class CourseDashboardView(TemplateView):
     template_name = 'dashboard/course_dashboard.html'
 
     def get(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
-        self.course_offering = CourseOffering.objects.get(pk=course_id)
-
         self.week_id = int(self.request.GET.get('week_filter', 0))
 
         if self.week_id == -1:
-            return redirect('/overallcoursedashboard?course_id=' + str(self.course_offering.id))
+            return redirect('/overallcoursedashboard?course_id=' + str(request.course_offering.id))
 
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        course_weeks = self.course_offering.get_weeks()
+        course_weeks = self.request.course_offering.get_weeks()
 
         if self.week_id == 0:
             self.week_id = course_weeks[0]
@@ -37,7 +33,7 @@ class CourseDashboardView(TemplateView):
 
         # Pageview Graph - Content
         daytotal = [0, 0, 0, 0, 0, 0, 0]
-        summary_course_visits = SummaryCourseVisitsByDayInWeek.objects.filter(date_week=course_weeks[week_no-1], course_offering=self.course_offering).order_by('date_dayinweek')
+        summary_course_visits = SummaryCourseVisitsByDayInWeek.objects.filter(date_week=course_weeks[week_no-1], course_offering=self.request.course_offering).order_by('date_dayinweek')
         for visit in summary_course_visits:
             daytotal[visit.date_dayinweek] = visit.pageviews
 
@@ -239,7 +235,6 @@ class CourseDashboardView(TemplateView):
         context['week_id'] = self.week_id
         context['weekbeg'] = weekbeg
         context['weekend'] = weekend
-        context['course'] = self.course_offering
         context['week_no'] = week_no
         context['PageViewGraphContentList'] = PageViewGraphContentList
 

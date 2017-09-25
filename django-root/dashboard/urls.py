@@ -1,4 +1,5 @@
 from authtools.views import LogoutView
+from decorator_include import decorator_include
 from django.conf.urls import url
 from django.contrib.auth.views import logout
 from stronghold.decorators import public
@@ -21,6 +22,7 @@ from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
 
 from dashboard.views import views
+from django_site.permissions import course_access_url_wrapper
 
 
 urlpatterns = [
@@ -29,21 +31,24 @@ urlpatterns = [
     url(r'^logout/', LogoutView.as_view(), name='logout'),
 
     url(r'^courses/', CourseListView.as_view(), name='course_list'),
-    url(r'^(?P<course_id>\d+)/course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
 
-    # Event management for academic staff
-    url(r'^(?P<course_id>\d+)/course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
-    url(r'^(?P<course_id>\d+)/course_repeating_event/$', CourseRepeatingEventCreateView.as_view(), name='add_course_repeating_event'),
-    url(r'^(?P<course_id>\d+)/course_repeating_event/(?P<pk>\d+)/$', CourseRepeatingEventUpdateView.as_view(), name='edit_course_repeating_event'),
-    url(r'^(?P<course_id>\d+)/course_repeating_event/(?P<pk>\d+)/delete/$', CourseRepeatingEventDeleteView.as_view(), name='delete_course_repeating_event'),
-    url(r'^(?P<course_id>\d+)/course_submission_events/$', CourseSubmissionEventListView.as_view(), name='list_course_submission_events'),
-    url(r'^(?P<course_id>\d+)/course_submission_event/$', CourseSubmissionEventCreateView.as_view(), name='add_course_submission_event'),
-    url(r'^(?P<course_id>\d+)/course_submission_event/(?P<pk>\d+)/$', CourseSubmissionEventUpdateView.as_view(), name='edit_course_submission_event'),
-    url(r'^(?P<course_id>\d+)/course_submission_event/(?P<pk>\d+)/delete/$', CourseSubmissionEventDeleteView.as_view(), name='delete_course_submission_event'),
-    url(r'^(?P<course_id>\d+)/course_single_events/$', CourseSingleEventListView.as_view(), name='list_course_single_events'),
-    url(r'^(?P<course_id>\d+)/course_single_event/$', CourseSingleEventCreateView.as_view(), name='add_course_single_event'),
-    url(r'^(?P<course_id>\d+)/course_single_event/(?P<pk>\d+)/$', CourseSingleEventUpdateView.as_view(), name='edit_course_single_event'),
-    url(r'^(?P<course_id>\d+)/course_single_event/(?P<pk>\d+)/delete/$', CourseSingleEventDeleteView.as_view(), name='delete_course_single_event'),
+    url(r'^(?P<course_id>\d+)/', decorator_include(course_access_url_wrapper, [
+        url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+
+        # Event management for academic staff
+        url(r'^course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
+        url(r'^course_repeating_event/$', CourseRepeatingEventCreateView.as_view(), name='add_course_repeating_event'),
+        url(r'^course_repeating_event/(?P<pk>\d+)/$', CourseRepeatingEventUpdateView.as_view(), name='edit_course_repeating_event'),
+        url(r'^course_repeating_event/(?P<pk>\d+)/delete/$', CourseRepeatingEventDeleteView.as_view(), name='delete_course_repeating_event'),
+        url(r'^course_submission_events/$', CourseSubmissionEventListView.as_view(), name='list_course_submission_events'),
+        url(r'^course_submission_event/$', CourseSubmissionEventCreateView.as_view(), name='add_course_submission_event'),
+        url(r'^course_submission_event/(?P<pk>\d+)/$', CourseSubmissionEventUpdateView.as_view(), name='edit_course_submission_event'),
+        url(r'^course_submission_event/(?P<pk>\d+)/delete/$', CourseSubmissionEventDeleteView.as_view(), name='delete_course_submission_event'),
+        url(r'^course_single_events/$', CourseSingleEventListView.as_view(), name='list_course_single_events'),
+        url(r'^course_single_event/$', CourseSingleEventCreateView.as_view(), name='add_course_single_event'),
+        url(r'^course_single_event/(?P<pk>\d+)/$', CourseSingleEventUpdateView.as_view(), name='edit_course_single_event'),
+        url(r'^course_single_event/(?P<pk>\d+)/delete/$', CourseSingleEventDeleteView.as_view(), name='delete_course_single_event'),
+    ])),
 
     url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),

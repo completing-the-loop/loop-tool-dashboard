@@ -18,6 +18,9 @@ django-celery-results
 # HTML editor
 #django-ckeditor
 
+# Wraps URL views with a decorator
+django-decorator-include
+
 # Useful extensions (eg reset_db, shell_plus, runserver_plus)
 # 1.7.5 required for picking up mysql database settings correctly
 django-extensions>=1.7.5

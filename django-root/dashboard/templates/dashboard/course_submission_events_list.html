@@ -6,10 +6,10 @@
   <div class="row-fluid">
     <div class="box span12">
       <div class="box-header" data-original-title>
-        <h2><i class="halflings-icon user"></i><span class="break"></span>Submission Events for {{ course.name }}</h2>
+        <h2><i class="halflings-icon user"></i><span class="break"></span>Submission Events for {{ request.course_offering.name }}</h2>
       </div>
       <div class="box-content">
-        <a href="{% url 'dashboard:add_course_submission_event' course_id=course.id %}" class="btn btn-primary">Add Submission Event</a>
+        <a href="{% url 'dashboard:add_course_submission_event' course_id=request.course_offering.id %}" class="btn btn-primary">Add Submission Event</a>
 
         <table class="table table-striped table-bordered bootstrap-datatable datatable">
           <thead>
@@ -25,13 +25,13 @@
             {% for object in object_list %}
               <tr>
                 <td>
-                  <a href="{% url 'dashboard:edit_course_submission_event' course_id=course.id pk=object.id %}" class="btn btn-link">{{ object.title }}</a>
+                  <a href="{% url 'dashboard:edit_course_submission_event' course_id=request.course_offering.id pk=object.id %}" class="btn btn-link">{{ object.title }}</a>
                 </td>
                 <td class="text-right">{{ object.start_date|date:datetime_output_format }}</td>
                 <td class="text-right">{{ object.end_date|date:datetime_output_format }}</td>
                 <td>{{ object.get_event_type }}</td>
                 <td>
-                   <a href="{% url 'dashboard:delete_course_submission_event' course_id=course.id pk=object.id %}" class="btn btn-link">Delete</a>
+                   <a href="{% url 'dashboard:delete_course_submission_event' course_id=request.course_offering.id pk=object.id %}" class="btn btn-link">Delete</a>
                 </td>
               </tr>
             {% endfor %}
