@@ -156,12 +156,7 @@
 
 {% block javascript %}
   <script>
-    eventfilter = document.getElementById('eventfilter');
-    if (eventfilter.options.length > 0) {
-        eventId = eventfilter.options[0].value;
-    } else {
-        eventId = null;
-    }
-    window.pages.contentList.init({{ request.course_offering.id }}, {{ no_weeks }}, eventId, 19);
+    window.__APP_CONTEXT__.INDENT_PIXELS = 19;
+    window.pages.contentList.init(JSON.parse('{{ initial_data | escapejs }}'));
   </script>
 {% endblock javascript %}

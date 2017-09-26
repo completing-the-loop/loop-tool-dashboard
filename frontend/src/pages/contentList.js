@@ -3,21 +3,19 @@ import _ from 'lodash';
 import { get } from '../api';
 
 const init = async (
-    courseId,
-    numWeeks,
-    eventId,
+    initialData,
     indentPixels,
 ) => {
     new Vue({
         el: '#course-content-list',
         data: {
-            indentPixels: indentPixels,
-            courseId: courseId,
-            numWeeks: numWeeks,
+            indentPixels: window.__APP_CONTEXT__.INDENT_PIXELS,
+            courseId: initialData.courseId,
+            numWeeks: initialData.numWeeks,
             pageViews: {},
             students: {},
             events: {},
-            eventId: eventId,
+            eventId: initialData.eventId,
         },
         mounted: async function mounted() {
             this.getPageViews();

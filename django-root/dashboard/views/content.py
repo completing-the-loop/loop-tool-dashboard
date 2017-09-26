@@ -1,4 +1,5 @@
 from django.views.generic.base import TemplateView
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from dashboard.models import CourseRepeatingEvent
 from olap.models import Page
@@ -12,7 +13,13 @@ class CourseContentView(TemplateView):
 
         repeating_events = CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
 
-        context['no_weeks'] = self.request.course_offering.no_weeks
+        initial_data = {
+            'num_weeks': self.request.course_offering.no_weeks,
+            'event_id': repeating_events.first().id,
+            'course_id': self.request.course_offering.id,
+        }
+
+        context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
         context['repeating_events'] = repeating_events
 
         return context
