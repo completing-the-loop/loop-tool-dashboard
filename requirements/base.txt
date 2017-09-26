@@ -39,6 +39,7 @@ django-webpack-loader
 
 # Django APIs
 djangorestframework
+djangorestframework-camel-case
 
 # Mysql database support
 mysqlclient
