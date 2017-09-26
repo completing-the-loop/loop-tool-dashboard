@@ -15,7 +15,7 @@ const init = async (
     new Vue({
         el: '#course-content-list',
         data: {
-            indentPixels: window.__APP_CONTEXT__.INDENT_PIXELS,
+            indentPixels: window.__APP_CONTEXT__.PAGE_INDENT_PIXELS,
             courseId: initialData.courseId,
             numWeeks: initialData.numWeeks,
             pageViews: {},
