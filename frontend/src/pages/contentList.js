@@ -1,11 +1,17 @@
 import Vue from 'vue';
 import _ from 'lodash';
+import Plotly from 'plotly';
+
 import { get } from '../api';
 
 const init = async (
     initialData,
-    indentPixels,
 ) => {
+    const maxPieSize = window.__APP_CONTEXT__.PAGE_MAX_PIE_GRAPH_PIXELS;
+    const minPieSize = window.__APP_CONTEXT__.PAGE_MIN_PIE_GRAPH_PIXELS;
+    const pieBeforeColor = window.__APP_CONTEXT__.PAGE_PIE_CHART_BEFORE_COLOR;
+    const pieAfterColor = window.__APP_CONTEXT__.PAGE_PIE_CHART_AFTER_COLOR;
+
     new Vue({
         el: '#course-content-list',
         data: {
@@ -166,20 +172,20 @@ const init = async (
                         module: 'module',
                         parentId: null,
                         weeks: [
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
+                            {before: 1, after: 4},
+                            {before: 2, after: 4},
+                            {before: 3, after: 4},
+                            {before: 4, after: 4},
+                            {before: 1, after: 4},
+                            {before: 2, after: 4},
+                            {before: 3, after: 4},
+                            {before: 4, after: 4},
+                            {before: 1, after: 4},
+                            {before: 2, after: 4},
+                            {before: 3, after: 4},
+                            {before: 4, after: 4},
+                            {before: 1, after: 4},
+                            {before: 2, after: 4},
                         ]
                     },
                     {
@@ -228,6 +234,54 @@ const init = async (
                     },
                 ];
                 this.events = this.processPages(apiEvents);
+
+                this.$nextTick(function () {
+                    let maxVisits = 0;
+                    _.forEach(this.events, function(event) {
+                        _.forEach(event.weeks, function (eventWeek) {
+                            if (eventWeek.before + eventWeek.after > maxVisits) {
+                                maxVisits = eventWeek.before + eventWeek.after;
+                            }
+                        });
+                    });
+
+                    const pieLayout = {
+                        showlegend: false,
+                        autosize: false,
+                        margin: {
+                            l: 0,
+                            r: 0,
+                            t: 0,
+                            b: 0,
+                        },
+                    };
+                    const pieConfig = {
+                        staticPlot: true,
+                    };
+                    const pieData = {
+                        marker: {
+                            colors: [pieBeforeColor, pieAfterColor],
+                        },
+                        type: 'pie',
+                        textinfo: 'none',
+                        hoverinfo: 'none',
+                    };
+                    const vue = this;
+
+                    _.forEach(this.events, function(event) {
+                        _.forEach(event.weeks, function(eventWeek, index) {
+                            const pieProportion = (eventWeek.before + eventWeek.after) / maxVisits;
+                            const pieSize = pieProportion * (maxPieSize - minPieSize) + minPieSize;
+                            Plotly.newPlot(
+                                vue.$refs["pie_" + event.id][index],
+                                [Object.assign({}, pieData, {values: [eventWeek.before, eventWeek.after,],}),],
+                                Object.assign({}, pieLayout, {width: pieSize, height: pieSize,}),
+                                pieConfig,
+                            );
+                        });
+                    });
+                });
+
             },
         },
         watch: {

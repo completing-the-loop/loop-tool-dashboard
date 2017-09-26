@@ -130,7 +130,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                  <tr v-for="resource in sortedEvents" class="stats-row" v-if="resource.visible">
+                  <tr v-for="resource in sortedEvents" class="stats-row" v-show="resource.visible">
                     <td class="stats-title" @click.prevent="toggleNode(events, resource.id)">
                       <span :style="{ paddingLeft: `${resource.indentLevel * indentPixels}px` }">
                         <span v-if="resource.children.length && resource.expanded" class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
@@ -140,9 +140,7 @@
                     </td>
                     <td class="stats-title">{{ resource.module }}</td>
                     <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
-                    <td v-for="(week, i) in numWeeks" v-if="resource.weeks[i]">
-                      {{ resource.weeks[i].before }} / {{ resource.weeks[i].after }}
-                    </td>
+                    <td v-for="(week, i) in numWeeks" :ref="`pie_${resource.id}`"></td>
                   </tr>
                   </tbody>
                 </table>
@@ -158,7 +156,6 @@
 
 {% block javascript %}
   <script>
-    window.__APP_CONTEXT__.INDENT_PIXELS = 19;
     window.pages.contentList.init(JSON.parse('{{ initial_data | escapejs }}'));
   </script>
 {% endblock javascript %}
