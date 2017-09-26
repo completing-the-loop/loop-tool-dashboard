@@ -61,7 +61,7 @@
                     </td>
                     <td class="stats-title">{{ resource.module }}</td>
                     <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
-                    <td v-for="(week, i) in numWeeks">{{ resource.weeks[i+1] }}</td>
+                    <td v-for="(week, i) in numWeeks">{{ resource.weeks[i] }}</td>
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
                   </tr>
@@ -100,7 +100,7 @@
                     </td>
                     <td class="stats-title">{{ resource.module }}</td>
                     <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
-                    <td v-for="(week, i) in numWeeks">{{ resource.weeks[i+1] }}</td>
+                    <td v-for="(week, i) in numWeeks">{{ resource.weeks[i] }}</td>
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
                   </tr>
@@ -140,7 +140,9 @@
                     </td>
                     <td class="stats-title">{{ resource.module }}</td>
                     <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
-                    <td v-for="(week, i) in numWeeks" v-if="resource.weeks[i+1]">{{ resource.weeks[i+1].before }} / {{ resource.weeks[i+1].after }}</td><td v-else>-/-</td>
+                    <td v-for="(week, i) in numWeeks" v-if="resource.weeks[i]">
+                      {{ resource.weeks[i].before }} / {{ resource.weeks[i].after }}
+                    </td>
                   </tr>
                   </tbody>
                 </table>

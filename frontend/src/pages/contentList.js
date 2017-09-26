@@ -134,26 +134,26 @@ const init = async (
 
             async getPageViews() {
                 const apiPageViews = [
-                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
                 ];
 
                 this.pageViews = this.processPages(apiPageViews);
             },
             async getStudents() {
                 const apiStudents = [
-                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
+                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
                 ];
 
                 this.students = this.processPages(apiStudents);
@@ -165,66 +165,66 @@ const init = async (
                         title: 'Page 1',
                         module: 'module',
                         parentId: null,
-                        weeks: {
-                            1: {before: 0, after: 4},
-                            2: {before: 0, after: 4},
-                            3: {before: 0, after: 4},
-                            4: {before: 0, after: 4},
-                            5: {before: 0, after: 4},
-                            6: {before: 0, after: 4},
-                            7: {before: 0, after: 4},
-                            8: {before: 0, after: 4},
-                            9: {before: 0, after: 4},
-                            10: {before: 0, after: 4},
-                            11: {before: 0, after: 4},
-                            12: {before: 0, after: 4},
-                            13: {before: 0, after: 4},
-                            14: {before: 0, after: 4}
-                        }
+                        weeks: [
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                        ]
                     },
                     {
                         id: 2,
                         title: 'Page 2',
                         module: 'module',
                         parentId: null,
-                        weeks: {
-                            1: {before: 0, after: 4},
-                            2: {before: 0, after: 4},
-                            3: {before: 0, after: 4},
-                            4: {before: 0, after: 4},
-                            5: {before: 0, after: 4},
-                            6: {before: 0, after: 4},
-                            7: {before: 0, after: 4},
-                            8: {before: 0, after: 4},
-                            9: {before: 0, after: 4},
-                            10: {before: 0, after: 4},
-                            11: {before: 0, after: 4},
-                            12: {before: 0, after: 4},
-                            13: {before: 0, after: 4},
-                            14: {before: 0, after: 4}
-                        }
+                        weeks: [
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                        ]
                     },
                     {
                         id: 3,
                         title: 'Page 1a',
                         module: 'module',
                         parentId: 1,
-                        weeks: {
-                            1: {before: 0, after: 4},
-                            2: {before: 0, after: 4},
-                            3: {before: 0, after: 4},
-                            4: {before: 0, after: 4},
-                            5: {before: 0, after: 4},
-                            6: {before: 0, after: 4},
-                            7: {before: 0, after: 4},
-                            8: {before: 0, after: 4},
-                            9: {before: 0, after: 4},
-                            10: {before: 0, after: 4},
-                            11: {before: 0, after: 4},
-                            12: {before: 0, after: 4},
-                            13: {before: 0, after: 4},
-                            14: {before: 0, after: 4}
-                        }
+                        weeks: [
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                            {before: 0, after: 4},
+                        ]
                     },
                 ];
                 this.events = this.processPages(apiEvents);
