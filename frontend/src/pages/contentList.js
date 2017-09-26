@@ -6,10 +6,12 @@ const init = async (
     courseId,
     numWeeks,
     eventId,
+    indentPixels,
 ) => {
     new Vue({
         el: '#course-content-list',
         data: {
+            indentPixels: indentPixels,
             courseId: courseId,
             numWeeks: numWeeks,
             pageViews: {},

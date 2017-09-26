@@ -53,14 +53,14 @@
                   <tbody>
                   <tr v-for="resource in sortedPageViews" class="stats-row" v-if="resource.visible">
                     <td class="stats-title" @click.prevent="toggleNode(pageViews, resource.id)">
-                      <span v-bind:style="{ paddingLeft: resource.indentLevel + 'px' }">
+                      <span :style="{ paddingLeft: `${resource.indentLevel * indentPixels}px` }">
                         <span v-if="resource.children.length && resource.expanded" class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
                         <span v-if="resource.children.length && !resource.expanded" class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
                         {{ resource.title }}
                       </span>
                     </td>
                     <td class="stats-title">{{ resource.module }}</td>
-                    <td class="stats-title"><a v-bind:href="'/' + courseId + '/course_page/' + resource.id + '/'" class="btn btn-small btn-primary">View</a></td>
+                    <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
                     <td v-for="(week, i) in numWeeks">{{ resource.weeks[i+1] }}</td>
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
@@ -144,6 +144,6 @@
     } else {
         eventId = null;
     }
-    window.pages.contentList.init({{ request.course_offering.id }}, {{ no_weeks }}, eventId);
+    window.pages.contentList.init({{ request.course_offering.id }}, {{ no_weeks }}, eventId, 19);
   </script>
 {% endblock javascript %}
