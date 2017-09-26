@@ -1,15 +1,11 @@
 from authtools.views import LogoutView
 from decorator_include import decorator_include
 from django.conf.urls import url
-from django.contrib.auth.views import logout
 from stronghold.decorators import public
 
-<<<<<<< HEAD
 from dashboard.views.communication import CourseCommunicationView
-||||||| merged common ancestors
-=======
 from dashboard.views.content import CourseContentView
->>>>>>> feat: Course content view with collapse/expand tree on page views
+from dashboard.views.content import CoursePageView
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.events import CourseRepeatingEventCreateView
@@ -41,6 +37,8 @@ urlpatterns = [
         url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
         url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communications'),
         url(r'^course_content/$', CourseContentView.as_view(), name='course_content'),
+
+        url(r'^course_page/(?P<pk>\d+)/$', CoursePageView.as_view(), name='course_page'),
 
         # Event management for academic staff
         url(r'^course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
