@@ -72,6 +72,10 @@
             <div class="tab-pane fade" id="unique-students">
               Number of unique students who viewed each content item.
               {% verbatim %}
+                <div>
+                  <a href="#" @click.prevent="expandAll(students)">Expand All</a> |
+                  <a href="#" @click.prevent="collapseAll(students)">Collapse All</a>
+                </div>
                 <table id="studentsTable" class="table table-striped table-bordered heat-map">
                   <thead>
                     <tr>
@@ -86,10 +90,16 @@
                     </tr>
                   </thead>
                   <tbody>
-                  <tr v-for="resource in students" class="stats-row">
-                    <td class="stats-title"><span>{{ resource.title }}</span></td>
+                  <tr v-for="resource in sortedStudents" class="stats-row" v-if="resource.visible">
+                    <td class="stats-title" @click.prevent="toggleNode(students, resource.id)">
+                      <span :style="{ paddingLeft: `${resource.indentLevel * indentPixels}px` }">
+                        <span v-if="resource.children.length && resource.expanded" class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+                        <span v-if="resource.children.length && !resource.expanded" class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                        {{ resource.title }}
+                      </span>
+                    </td>
                     <td class="stats-title">{{ resource.module }}</td>
-                    <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.page_id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
+                    <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
                     <td v-for="(week, i) in numWeeks">{{ resource.weeks[i+1] }}</td>
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
@@ -106,22 +116,30 @@
                 {% endfor %}
               </select>
               {% verbatim %}
+                <div>
+                  <a href="#" @click.prevent="expandAll(events)">Expand All</a> |
+                  <a href="#" @click.prevent="collapseAll(events)">Collapse All</a>
+                </div>
                 <table id="eventsTable" class="table table-striped table-bordered heat-map">
                   <thead>
                     <tr>
                       <th>Name</th>
                       <th>Type</th>
                       <th>View</th>
-
                       <th v-for="week in numWeeks">Week {{ week }}</th>
-
                     </tr>
                   </thead>
                   <tbody>
-                  <tr v-for="resource in events" class="stats-row">
-                    <td class="stats-title"><span>{{ resource.title }}</span></td>
+                  <tr v-for="resource in sortedEvents" class="stats-row" v-if="resource.visible">
+                    <td class="stats-title" @click.prevent="toggleNode(events, resource.id)">
+                      <span :style="{ paddingLeft: `${resource.indentLevel * indentPixels}px` }">
+                        <span v-if="resource.children.length && resource.expanded" class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+                        <span v-if="resource.children.length && !resource.expanded" class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
+                        {{ resource.title }}
+                      </span>
+                    </td>
                     <td class="stats-title">{{ resource.module }}</td>
-                    <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.page_id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
+                    <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
                     <td v-for="(week, i) in numWeeks" v-if="resource.weeks[i+1]">{{ resource.weeks[i+1].before }} / {{ resource.weeks[i+1].after }}</td><td v-else>-/-</td>
                   </tr>
                   </tbody>
