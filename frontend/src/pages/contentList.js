@@ -57,7 +57,6 @@ const init = async (
                         vue.expandNode(pageList, childId);
                     }
                 });
-                console.log('Expanded ' + pageId);
                 pageList[pageId].expanded = true;
             },
             collapseNode(pageList, pageId) {
@@ -69,7 +68,6 @@ const init = async (
                     pageList[childId].visible = false;
                     vue.collapseNode(pageList, childId);
                 });
-                console.log('Collapsed ' + pageId);
                 pageList[pageId].expanded = false;
             },
             toggleNode(pageList, pageId) {
@@ -89,205 +87,57 @@ const init = async (
                 return _.orderBy(sortedList, ['sortOrder'], ['asc']);
             },
 
+            setSortOrder(pageViews, currentLevelPages, nextOrder, indentLevel) {
+                const vue = this;
+                _.forEach(currentLevelPages, function(pageId) {
+                    pageViews[pageId].indentLevel = indentLevel;
+                    pageViews[pageId].sortOrder = nextOrder;
+                    nextOrder += 1;
+                    if (pageViews[pageId].children.length) {
+                        nextOrder = vue.setSortOrder(pageViews, pageViews[pageId].children, nextOrder, indentLevel+1);
+                    }
+                });
+                return nextOrder;
+            },
+
             async getPageViews() {
-                this.pageViews = {
-                    1: {
-                        id: 1,
-                        title: 'Page 1',
-                        children: [],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: true,
-                        expanded: false,
-                        sortOrder: 1,
-                        indentLevel: 0,
-                    },
-                    2: {
-                        id: 2,
-                        title: 'Page 2',
-                        children: [4, 5],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: true,
-                        expanded: false,
-                        sortOrder: 2,
-                        indentLevel: 0,
-                    },
-                    3: {
-                        id: 3,
-                        title: 'Page 3',
-                        children: [6],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: true,
-                        expanded: false,
-                        sortOrder: 5,
-                        indentLevel: 0,
-                    },
-                    4: {
-                        id: 4,
-                        title: 'Page 2a',
-                        children: [],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: false,
-                        expanded: false,
-                        sortOrder: 3,
-                        indentLevel: 19,
-                    },
-                    5: {
-                        id: 5,
-                        title: 'Page 2b',
-                        children: [],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: false,
-                        expanded: false,
-                        sortOrder: 4,
-                        indentLevel: 19,
-                    },
-                    6: {
-                        id: 6,
-                        title: 'Page 3a',
-                        children: [7],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: false,
-                        expanded: false,
-                        sortOrder: 6,
-                        indentLevel: 19,
-                    },
-                    7: {
-                        id: 7,
-                        title: 'Page 3ai',
-                        children: [],
-                        module: 'module',
-                        weeks: {
-                            1: 0,
-                            2: 1,
-                            3: 6,
-                            4: 7,
-                            5: 3,
-                            6: 8,
-                            7: 4,
-                            8: 22,
-                            9: 11,
-                            10: 12,
-                            11: 33,
-                            12: 7,
-                            13: 4,
-                            14: 7
-                        },
-                        total: 72,
-                        percent: 91,
-                        visible: false,
-                        expanded: false,
-                        sortOrder: 7,
-                        indentLevel: 38,
-                    },
-                };
+                const apiPageViews = [
+                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
+                ];
+
+                const pageViews = {};
+
+                _.forEach(apiPageViews, function(pageView) {
+                    pageView.expanded = false;
+                    pageView.children = [];
+                    pageView.sortOrder = 1;
+                    pageView.indentLevel = 0;
+                    if (!pageView.parentId) {
+                        pageView.visible = true;
+                    } else {
+                        pageView.visible = false;
+                    }
+                    pageViews[pageView.id] = pageView;
+                });
+
+                const topLevelPages = [];
+                _.forEach(pageViews, function(pageView) {
+                    if (pageView.parentId) {
+                        pageViews[pageView.parentId].children.push(pageView.id)
+                    } else {
+                        topLevelPages.push(pageView.id);
+                    }
+                });
+
+                this.setSortOrder(pageViews, topLevelPages, 1, 0);
+
+                this.pageViews = pageViews;
             },
             async getStudents() {
                 this.students = [
