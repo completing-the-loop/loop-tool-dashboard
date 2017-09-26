@@ -115,6 +115,11 @@
                   <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
                 {% endfor %}
               </select>
+              <p>
+                <strong>Note: </strong>
+                Blue indicates the content was viewed before the selected event, and Red after the event. The size of the circle is
+                related to the number of views. Bigger circles indicate higher number of views.
+              </p>
               {% verbatim %}
                 <div>
                   <a href="#" @click.prevent="expandAll(events)">Expand All</a> |
