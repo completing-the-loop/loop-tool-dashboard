@@ -7,7 +7,6 @@ from olap.views import CourseImportsApiView
 from olap.views import PageVisitsViewSet
 from olap.views import TopCourseUsersViewSet
 
-
 urlpatterns = [
     # This endpoint is protected with Token Authentication
     url(r'^course_imports/$', public(CourseImportsApiView.as_view()), name='course_imports'),
