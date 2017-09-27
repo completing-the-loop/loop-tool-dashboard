@@ -16,6 +16,18 @@ class CourseOffering(models.Model):
         (LMS_TYPE_MOODLE, 'Moodle'),
     )
 
+    # Types for Blackboard.  See utils.get_contenttypes for other LMS
+    COMMUNICATION_TYPES = (
+        'resource/x-bb-discussionboard',
+        'course/x-bb-collabsession', # TODO: Check if this is course/ or resource/.
+        'resource/x-bb-discussionfolder',
+    )
+    ASSESSMENT_TYPES = (
+        'assessment/x-bb-qti-test',
+        'course/x-bb-courseassessment',
+        'resource/x-turnitin-assignment',
+    )
+
     code = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=255)
     offering = models.CharField(max_length=255)

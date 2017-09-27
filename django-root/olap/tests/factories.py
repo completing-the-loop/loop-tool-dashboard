@@ -27,17 +27,28 @@ class LMSUserFactory(factory.DjangoModelFactory):
     def _setup_next_sequence(cls):
         return 1000000
 
+
+PAGE_CONTENT_TYPE_CHOICES = tuple("resource/%s" % s for s in (
+    'x-bb-document',
+    'x-bb-youtube-mashup',
+    'lo-podcast',
+    'x-bb-image',
+    'x-bb-announcement',
+))
+
 class PageFactory(factory.DjangoModelFactory):
     class Meta:
         model = Page
 
     class Params:
-        CONTENT_TYPE_CHOICES = ("resource/%s" % s for s in
-            ('x-bb-document', 'x-bb-youtube-mashup', 'lo-podcast', 'x-bb-image', 'x-bb-announcement')
-        )
+        CONTENT_TYPE_CHOICES = PAGE_CONTENT_TYPE_CHOICES
         TITLE_CHOICES = (
-            'Practical Debauchery', 'Finding Part-Time Work', 'Making Eyes at your Classmate',
-            'Tolerable Sins', 'Nix Your Hangover Now!',
+            'Practical Debauchery',
+            'Finding Part-Time Work',
+            'Making Eyes at your Classmate',
+            'Tolerable Sins',
+            'Forty Great Hangover Cures',
+            'Housemates from Hell Volume IV',
         )
 
     course_offering = factory.SubFactory(CourseOfferingFactory)

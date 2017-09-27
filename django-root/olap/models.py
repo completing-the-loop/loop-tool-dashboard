@@ -138,6 +138,9 @@ class Page(models.Model):
     class Meta:
         unique_together = (('course_offering', 'content_id'), )
 
+    def __str__(self):
+        return '<Page {}: {}>'.format(self.id, self.title)
+
     @staticmethod
     def get_next_page_id(course_offering):
         max_page_dict = Page.objects.filter(course_offering=course_offering).aggregate(max_page_id=Max('content_id'))

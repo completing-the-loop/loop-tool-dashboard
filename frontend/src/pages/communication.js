@@ -25,10 +25,7 @@ const init = async (
         },
         methods: {
             async getAccesses() {
-                this.accesses = [
-                    {page_id: 1, title: 'Page 1', module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-
-                ];
+                this.accesses = await get(`${this.courseId}/communication_accesses/`);
             },
             async getPosts() {
                 this.posts = [
