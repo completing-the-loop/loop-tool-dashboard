@@ -21,7 +21,7 @@ class LecturerFactory(factory.DjangoModelFactory):
         return 1
 
 
-class CourseFactory(factory.DjangoModelFactory):
+class CourseOfferingFactory(factory.DjangoModelFactory):
     class Meta:
         model = CourseOffering
 

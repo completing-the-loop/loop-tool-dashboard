@@ -5,7 +5,7 @@ from factory import fuzzy
 
 from django.utils.timezone import get_current_timezone
 
-from dashboard.tests.factories import CourseFactory
+from dashboard.tests.factories import CourseOfferingFactory
 from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
@@ -17,7 +17,7 @@ class LMSUserFactory(factory.DjangoModelFactory):
 
     lms_user_id = factory.Sequence(lambda n: "%d" % n)
     username = factory.Sequence(lambda n: "u%d" % n)
-    course_offering = factory.SubFactory(CourseFactory)
+    course_offering = factory.SubFactory(CourseOfferingFactory)
     firstname = faker.Faker('first_name')
     lastname = faker.Faker('last_name')
     role = 'STUDENT' # Might also be '', associated with staff members.
@@ -40,7 +40,7 @@ class PageFactory(factory.DjangoModelFactory):
             'Tolerable Sins', 'Nix Your Hangover Now!',
         )
 
-    course_offering = factory.SubFactory(CourseFactory)
+    course_offering = factory.SubFactory(CourseOfferingFactory)
     content_type = fuzzy.FuzzyChoice(choices=Params.CONTENT_TYPE_CHOICES)
     content_id = factory.Sequence(lambda n: n)
     parent_id = 0
