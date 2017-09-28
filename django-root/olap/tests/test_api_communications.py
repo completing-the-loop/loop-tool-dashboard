@@ -52,7 +52,7 @@ class APICommunicationAccessesTests(TestCase):
                 {
                     'id': page.id,
                     'title': page.title,
-                    'module': page.content_type,
+                    'content_type': page.content_type,
                     'weeks': [1] * self.course_offering.no_weeks, # One visit per week
                     'total': self.course_offering.no_weeks, # One visit per week
                     'percent': 100.0,

@@ -47,7 +47,7 @@
               <tbody>
               <tr v-for="resource in accesses.pageSet" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.module }}</td>
+                <td class="stats-title">{{ resource.content_type }}</td>
                 <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
                 <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
                 <td class="stats-title">{{ resource.total }}</td>
