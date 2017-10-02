@@ -22,6 +22,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+DATA_IMPORT_DIR = get_env_setting('DATA_IMPORT_DIR')
+
 # ----------------------------------------------------------------------------------------------------------------------
 if not _strtobool(get_env_setting('CI_SERVER', '0')):
     assert len(ADMINS) > 0

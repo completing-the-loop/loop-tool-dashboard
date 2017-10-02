@@ -5,6 +5,7 @@ Should be kept as close as possible to prod
 from distutils.util import strtobool as _strtobool
 import os as _os
 import sys as _sys
+from unipath import Path as _Path
 
 from .production_base import *
 
@@ -57,6 +58,8 @@ EMAIL_SUBJECT_PREFIX = '[Django Template CI] '
 
 SERVER_EMAIL = 'server-error@example.com'
 
+
+DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Turn on sql logging; useful if you can't figure out why test cases are failing

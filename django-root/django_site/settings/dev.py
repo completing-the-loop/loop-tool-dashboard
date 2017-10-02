@@ -134,6 +134,8 @@ RABBITMQ_VHOST = '/'
 CELERY_BROKER_URL = 'amqp://{}:{}@{}:{}/{}'.format(RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_HOSTNAME, RABBITMQ_PORT, RABBITMQ_VHOST)
 
 
+DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Note that manage.py runserver forks processes so this will unavoidably display multiple times
 _dev_notice_printed = False
