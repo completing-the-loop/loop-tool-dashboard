@@ -102,6 +102,7 @@ INSTALLED_APPS = (
     'hijack',
     # 'import_export',
     'rest_framework',
+    'rest_framework.authtoken',
     'rules.apps.AutodiscoverRulesConfig',
     'stronghold',
     'webpack_loader',
