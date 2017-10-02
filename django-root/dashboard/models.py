@@ -19,6 +19,8 @@ class CourseOffering(models.Model):
     no_weeks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
+    last_activity_at = models.DateTimeField(blank=True, null=True)
+    is_importing = models.BooleanField(default=False)
 
     def get_end_date(self):
         return self.start_date + timedelta(weeks=self.no_weeks)
