@@ -59,7 +59,12 @@ EMAIL_SUBJECT_PREFIX = '[Django Template CI] '
 SERVER_EMAIL = 'server-error@example.com'
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Custom Project Configuration
+
 DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
+DATA_PROCESSING_DIR = _Path(PROJECT_DIR, 'data')
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Turn on sql logging; useful if you can't figure out why test cases are failing
