@@ -35,7 +35,7 @@ def process_data_exports(self):
     processing_data_folder = settings.DATA_PROCESSING_DIR
     export_data = get_course_export_data()
 
-    export_data_mapping = { course_offering['filename']: course_offering['id'] for course_offering in export_data['courses'] }
+    export_data_mapping = { course_offering['filename']: course_offering['id'] for course_offering in export_data['courses'].values() }
 
     import_files = Path(export_data['import_location']).listdir()
 
