@@ -8,7 +8,7 @@ from dashboard.models import CourseOffering
 
 
 def get_course_export_data():
-    course_offerings = []
+    course_offerings = {}
     for course_offering in CourseOffering.objects.filter(is_importing=False):
         last_activity_at = course_offering.last_activity_at
         if not last_activity_at:
@@ -19,12 +19,12 @@ def get_course_export_data():
                 course_offering.start_date.day
             ), local_tz)
 
-        course_offerings.append({
+        course_offerings[course_offering.code] = {
             'id': course_offering.id,
             'course_code': course_offering.code,
             'last_activity': last_activity_at.isoformat(),
             'filename': '{}_{}.zip'.format(course_offering.code, int(last_activity_at.timestamp()))
-        })
+        }
 
     api_data = {
         'import_location': settings.DATA_IMPORT_DIR,
