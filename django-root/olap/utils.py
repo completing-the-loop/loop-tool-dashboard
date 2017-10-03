@@ -20,8 +20,10 @@ def get_course_export_data():
             ), local_tz)
 
         course_offerings.append({
+            'id': course_offering.id,
             'course_code': course_offering.code,
-            'last_activity': last_activity_at,
+            'last_activity': last_activity_at.isoformat(),
+            'filename': '{}_{}.zip'.format(course_offering.code, int(last_activity_at.timestamp()))
         })
 
     api_data = {
