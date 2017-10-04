@@ -19,12 +19,25 @@ def import_olap_task(self, course_id, filename):
         importer = ImportLmsData(course_offering, file_path)
         importer.process()
 
-        latest_activity = [
-            PageVisit.objects.filter(page__course_offering=course_offering).latest('visited_at').visited_at,
-            SubmissionAttempt.objects.filter(page__course_offering=course_offering).latest('attempted_at').attempted_at,
-            SummaryPost.objects.filter(course_offering=course_offering).latest('posted_at').posted_at,
-        ]
-        course_offering.last_activity_at = max(latest_activity)
+        latest_activity = []
+
+        try:
+            latest_activity.append(PageVisit.objects.filter(page__course_offering=course_offering).latest('visited_at').visited_at)
+        except PageVisit.DoesNotExist:
+            pass
+
+        try:
+            latest_activity.append(SubmissionAttempt.objects.filter(page__course_offering=course_offering).latest('attempted_at').attempted_at)
+        except SubmissionAttempt.DoesNotExist:
+            pass
+
+        try:
+            latest_activity.append(SummaryPost.objects.filter(course_offering=course_offering).latest('posted_at').posted_at)
+        except SummaryPost.DoesNotExist:
+            pass
+
+        if len(latest_activity):
+            course_offering.last_activity_at = max(latest_activity)
     finally:
         course_offering.is_importing = False
         course_offering.save()
