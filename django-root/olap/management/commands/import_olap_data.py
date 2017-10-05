@@ -6,7 +6,7 @@ from django.core.management.base import CommandError
 
 from dashboard.models import CourseOffering
 from olap.tasks import import_olap_task
-from olap.utils import get_course_export_data
+from olap.utils import get_course_import_metadata
 
 
 class Command(BaseCommand):
@@ -40,8 +40,8 @@ class Command(BaseCommand):
         course_codes = []
         requested_course_codes = options['offering_code']
         verb = 'clear' if options['clear'] else 'import'
-        course_export_data = get_course_export_data()
-        all_course_codes = course_export_data['courses'].keys()
+        course_import_metadata = get_course_import_metadata()
+        all_course_codes = course_import_metadata['courses'].keys()
 
         if options['all']:
             if len(requested_course_codes) > 0:
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                 course_offering = CourseOffering.objects.get(code=course_code)
                 course_offering.is_importing = True
                 course_offering.save()
-                import_olap_task.delay(course_offering.id, course_export_data['courses'][course_code]['filename'], just_clear=options['clear'])
+                import_olap_task.delay(course_offering.id, course_import_metadata['courses'][course_code]['filename'], just_clear=options['clear'])
             except:
                 error_count += 1
                 self.stderr.write('An error occurred when {}ing the data for {}:'.format(verb, course_code))

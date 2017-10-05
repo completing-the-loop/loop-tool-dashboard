@@ -7,7 +7,7 @@ from olap.lms_import import ImportLmsData
 from olap.models import PageVisit
 from olap.models import SubmissionAttempt
 from olap.models import SummaryPost
-from olap.utils import get_course_export_data
+from olap.utils import get_course_import_metadata
 
 
 @app.task(bind=True)
@@ -44,17 +44,17 @@ def import_olap_task(self, course_id, filename, just_clear=False):
 
 
 @app.task(bind=True)
-def process_data_exports(self):
+def preprocess_data_imports(self):
     processing_data_folder = settings.DATA_PROCESSING_DIR
-    export_data = get_course_export_data()
+    import_metadata = get_course_import_metadata()
 
-    export_data_mapping = { course_offering['filename']: course_offering['id'] for course_offering in export_data['courses'].values() }
+    import_metadata_mapping = { course_offering['filename']: course_offering['id'] for course_offering in import_metadata['courses'].values() }
 
-    import_files = Path(export_data['import_location']).listdir()
+    import_files = Path(import_metadata['import_location']).listdir()
 
     for import_file in import_files:
         try:
-            course_offering = CourseOffering.objects.get(id=export_data_mapping[import_file.name])
+            course_offering = CourseOffering.objects.get(id=import_metadata_mapping[import_file.name])
             import_file.move(processing_data_folder)
             course_offering.is_importing = True
             course_offering.save()

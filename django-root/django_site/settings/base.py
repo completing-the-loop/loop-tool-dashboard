@@ -565,9 +565,9 @@ REST_FRAMEWORK = {
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
-    'olap.process_data_exports': {
-            'task': 'olap.tasks.process_data_exports',
-            'schedule': crontab(minute='0'),
+    'olap.preprocess_data_imports': {
+            'task': 'olap.tasks.preprocess_data_imports',
+            'schedule': crontab(minute='0'),    # Run hourly, see http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html#crontab-schedules
         },
 }
 

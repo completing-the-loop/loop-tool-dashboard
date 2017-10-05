@@ -8,14 +8,14 @@ from olap.models import LMSUser
 from olap.models import PageVisit
 from olap.serializers import PageVisitSerializer
 from olap.serializers import TopCourseUsersSerializer
-from olap.utils import get_course_export_data
+from olap.utils import get_course_import_metadata
 
 
-class CourseExportsApiView(APIView):
+class CourseImportsApiView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request, format=None):
-        api_data = get_course_export_data()
+        api_data = get_course_import_metadata()
         return Response(api_data)
 
 

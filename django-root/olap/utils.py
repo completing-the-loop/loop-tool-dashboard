@@ -7,7 +7,7 @@ from django.utils import timezone
 from dashboard.models import CourseOffering
 
 
-def get_course_export_data():
+def get_course_import_metadata():
     course_offerings = {}
     for course_offering in CourseOffering.objects.filter(is_importing=False):
         last_activity_at = course_offering.last_activity_at
