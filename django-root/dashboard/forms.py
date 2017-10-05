@@ -1,12 +1,7 @@
-from datetime import datetime
-import pytz
-
 from authtools.forms import AuthenticationForm
 from django import forms
-from django.conf import settings
 from django.forms import ValidationError
 from django.forms.models import ModelForm
-from django.utils import timezone
 
 from dashboard.models import CourseRepeatingEvent
 from dashboard.models import CourseSingleEvent
@@ -68,13 +63,9 @@ class CourseSubmissionEventForm(ModelForm):
         end_date = self.cleaned_data.get('end_date')
 
         if start_date and end_date:
-            local_tz = pytz.timezone(settings.TIME_ZONE)
-            calc_end_date = self.course.get_end_date()
-            course_start_date = timezone.make_aware(datetime(self.course.start_date.year, self.course.start_date.month, self.course.start_date.day), local_tz)
-            course_end_date = timezone.make_aware(datetime(calc_end_date.year, calc_end_date.month, calc_end_date.day), local_tz)
-            if start_date < course_start_date:
+            if start_date < self.course.start_datetime:
                 self.add_error('start_date', ValidationError('Start date cannot be earlier than the start of the course'))
-            if end_date > course_end_date:
+            if end_date > self.course.end_datetime:
                 self.add_error('end_date', ValidationError('End date cannot be after the end of the course'))
             if end_date < start_date:
                 self.add_error('end_date', 'End date cannot be before the start date')
@@ -100,11 +91,7 @@ class CourseSingleEventForm(ModelForm):
         event_date = self.cleaned_data.get('event_date')
 
         if event_date:
-            local_tz = pytz.timezone(settings.TIME_ZONE)
-            calc_end_date = self.course.get_end_date()
-            course_start_date =  timezone.make_aware(datetime(self.course.start_date.year, self.course.start_date.month, self.course.start_date.day), local_tz)
-            course_end_date = timezone.make_aware(datetime(calc_end_date.year, calc_end_date.month, calc_end_date.day), local_tz)
-            if event_date < course_start_date:
+            if event_date < self.course.start_datetime:
                 self.add_error('event_date', ValidationError('Event date cannot be earlier than the start of the course'))
-            if event_date > course_end_date:
+            if event_date > self.course.end_datetime:
                 self.add_error('event_date', ValidationError('Event date cannot be after the end of the course'))

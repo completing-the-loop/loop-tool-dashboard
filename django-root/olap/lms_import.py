@@ -3,9 +3,7 @@ from datetime import datetime
 import re
 import unicodedata
 
-from django.conf import settings
 from django.utils import timezone
-
 from django.db import connection
 from unipath.path import Path
 import xml.etree.cElementTree as ET
@@ -36,9 +34,9 @@ class ImportLmsData(object):
     staff_list = []
     sitetree = {}
 
-    def __init__(self, course_offering, just_clear=False):
+    def __init__(self, course_offering, file_path, just_clear=False):
         self.just_clear = just_clear
-        self.courses_export_path = Path(settings.PROJECT_DIR, 'data')
+        self.course_export_path = file_path
         self.course_offering = course_offering
 
     def process(self):
@@ -50,7 +48,7 @@ class ImportLmsData(object):
 
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
-            lms_import = BlackboardImport(self.courses_export_path, offering)
+            lms_import = BlackboardImport(self.course_export_path, offering)
             lms_import.process_import_data()
 
             print("Processing user sessions for", offering)
@@ -258,9 +256,9 @@ class ImportLmsData(object):
 
 class BaseLmsImport(object):
 
-    def __init__(self, courses_export_path, course_offering):
+    def __init__(self, course_export_path, course_offering):
         self.course_offering = course_offering
-        self.course_export_path = Path(courses_export_path, course_offering.id)
+        self.course_export_path = course_export_path
 
         self.our_tz = timezone.get_current_timezone()
         # Is there a better mechanism for this?

@@ -4,6 +4,7 @@ billiard==3.5.0.3
 celery==4.1.0
 Django==1.11.5
 django-authtools==1.6.0
+django-celery-beat==1.0.1
 django-celery-results==1.0.1
 django-compat==1.0.14
 django-decorator-include==1.3

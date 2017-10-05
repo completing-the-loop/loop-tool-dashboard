@@ -12,6 +12,9 @@ celery
 # Django authentication tools
 django-authtools
 
+# Scheduler extension for celery
+django-celery-beat
+
 # Use Django ORM to record celery results
 django-celery-results
 

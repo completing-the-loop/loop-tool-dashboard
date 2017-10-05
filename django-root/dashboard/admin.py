@@ -6,7 +6,11 @@ from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
 
 
-admin.site.register(CourseOffering)
+@admin.register(CourseOffering)
+class CourseOfferingAdmin(admin.ModelAdmin):
+    readonly_fields = ('last_activity_at',)
+
+
 admin.site.register(CourseSubmissionEvent)
 admin.site.register(CourseSingleEvent)
 admin.site.register(CourseRepeatingEvent)

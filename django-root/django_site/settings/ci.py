@@ -5,6 +5,7 @@ Should be kept as close as possible to prod
 from distutils.util import strtobool as _strtobool
 import os as _os
 import sys as _sys
+from unipath import Path as _Path
 
 from .production_base import *
 
@@ -56,6 +57,13 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 EMAIL_SUBJECT_PREFIX = '[Django Template CI] '
 
 SERVER_EMAIL = 'server-error@example.com'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Custom Project Configuration
+
+DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
+DATA_PROCESSING_DIR = _Path(PROJECT_DIR, 'data')
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -7,6 +7,7 @@ https://docs.djangoproject.com/en/dev/topics/settings/
 import os as _os
 import sys as _sys
 
+from celery.schedules import crontab
 from unipath import Path as _Path
 
 def get_env_setting(setting, default=None):
@@ -92,6 +93,7 @@ INSTALLED_APPS = (
     # 'compat',
     # 'compressor',
     # 'django_admin_bootstrapped',    # Must come before django.contrib.admin
+    'django_celery_beat',
     'django_celery_results',
     'django_extensions',
     # 'django_select2',
@@ -102,6 +104,7 @@ INSTALLED_APPS = (
     'hijack',
     # 'import_export',
     'rest_framework',
+    'rest_framework.authtoken',
     'rules.apps.AutodiscoverRulesConfig',
     'stronghold',
     'webpack_loader',
@@ -560,7 +563,13 @@ REST_FRAMEWORK = {
 # Celery and RabbitMQ
 
 CELERY_RESULT_BACKEND = 'django-db'
-
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULE = {
+    'olap.preprocess_data_imports': {
+            'task': 'olap.tasks.preprocess_data_imports',
+            'schedule': crontab(minute='0'),    # Run hourly, see http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html#crontab-schedules
+        },
+}
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Form Rendering

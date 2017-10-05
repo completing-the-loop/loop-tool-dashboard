@@ -45,7 +45,7 @@ class ImporterSessionCalcTests(TestCase):
         lms_user = LMSUserFactory(course_offering=self.offering)
         page = PageFactory()
 
-        importer = ImportLmsData(self.offering)
+        importer = ImportLmsData(self.offering, 'ignore.txt')
 
         for visit_event_times, expected_outputs in cases:
             # Erase results from last case
@@ -95,7 +95,7 @@ class ImporterSessionCalcTests(TestCase):
         v_u2_p1 = PageVisitFactory(lms_user=u2, page=u2_p1, visited_at=u2_expected_session_start_dt)
         v_u2_p2 = PageVisitFactory(lms_user=u2, page=u2_p2, visited_at=u2_expected_session_start_dt + datetime.timedelta(minutes=21))
 
-        importer = ImportLmsData(self.offering)
+        importer = ImportLmsData(self.offering, 'ignore.txt')
         importer._calculate_sessions()
 
         sessions = LMSSession.objects.all()
@@ -142,7 +142,7 @@ class ImporterSessionCalcTests(TestCase):
             for visit_offset_mins, page in visit_list:
                 visit_obj = PageVisitFactory(lms_user=user, page=page, visited_at=self.test_start_datetime + datetime.timedelta(minutes=visit_offset_mins))
 
-        importer = ImportLmsData(self.offering)
+        importer = ImportLmsData(self.offering, 'ignore.txt')
         importer._calculate_sessions()
 
         sessions = LMSSession.objects.all()
