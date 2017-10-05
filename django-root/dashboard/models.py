@@ -1,6 +1,11 @@
+from datetime import datetime
+import pytz
+
 from authtools.models import User
 from datetime import timedelta
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class CourseOffering(models.Model):
@@ -22,13 +27,35 @@ class CourseOffering(models.Model):
     last_activity_at = models.DateTimeField(blank=True, null=True)
     is_importing = models.BooleanField(default=False)
 
-    def get_end_date(self):
+    @property
+    def end_date(self):
         return self.start_date + timedelta(weeks=self.no_weeks)
 
     def get_weeks(self):
         start_week = self.start_date.isocalendar()[1]
-        end_week = self.get_end_date().isocalendar()[1]
+        end_week = self.end_date.isocalendar()[1]
         return list(range(start_week, end_week))
+
+    @property
+    def start_datetime(self):
+        local_tz = pytz.timezone(settings.TIME_ZONE)
+
+        return timezone.make_aware(datetime(
+            self.start_date.year,
+            self.start_date.month,
+            self.start_date.day
+        ), local_tz)
+
+    @property
+    def end_datetime(self):
+        local_tz = pytz.timezone(settings.TIME_ZONE)
+        end_date = self.end_date
+
+        return timezone.make_aware(datetime(
+            end_date.year,
+            end_date.month,
+            end_date.day
+        ), local_tz)
 
     def __str__(self):
         return self.code

@@ -1,8 +1,4 @@
-from datetime import datetime
-
-import pytz
 from django.conf import settings
-from django.utils import timezone
 
 from dashboard.models import CourseOffering
 
@@ -12,12 +8,7 @@ def get_course_import_metadata():
     for course_offering in CourseOffering.objects.filter(is_importing=False):
         last_activity_at = course_offering.last_activity_at
         if not last_activity_at:
-            local_tz = pytz.timezone(settings.TIME_ZONE)
-            last_activity_at = timezone.make_aware(datetime(
-                course_offering.start_date.year,
-                course_offering.start_date.month,
-                course_offering.start_date.day
-            ), local_tz)
+            last_activity_at = course_offering.start_datetime
 
         course_offerings[course_offering.code] = {
             'id': course_offering.id,
