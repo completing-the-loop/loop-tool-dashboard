@@ -6,9 +6,7 @@ from dashboard.models import CourseOffering
 def get_course_import_metadata():
     course_offerings = {}
     for course_offering in CourseOffering.objects.filter(is_importing=False):
-        last_activity_at = course_offering.last_activity_at
-        if not last_activity_at:
-            last_activity_at = course_offering.start_datetime
+        last_activity_at = course_offering.get_last_activity_date()
 
         course_offerings[course_offering.code] = {
             'id': course_offering.id,

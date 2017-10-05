@@ -24,7 +24,7 @@ class CourseOffering(models.Model):
     no_weeks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
-    last_activity_at = models.DateTimeField(blank=True, null=True)
+    last_activity_at = models.DateTimeField(blank=True, null=True)  # The last recorded page visit, submission attempt or summary post
     is_importing = models.BooleanField(default=False)
 
     @property
@@ -56,6 +56,12 @@ class CourseOffering(models.Model):
             end_date.month,
             end_date.day
         ), local_tz)
+
+    def get_last_activity_date(self):
+        last_activity_at = self.last_activity_at
+        if not last_activity_at:
+            last_activity_at = self.start_datetime
+        return last_activity_at
 
     def __str__(self):
         return self.code
