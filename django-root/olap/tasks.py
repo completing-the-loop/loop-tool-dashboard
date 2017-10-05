@@ -11,8 +11,8 @@ from olap.utils import get_course_export_data
 
 
 @app.task(bind=True)
-def import_olap_task(self, course_id, filename):
-    course_offering = CourseOffering.objects.get(id=course_id)
+def import_olap_task(self, course_id, filename, just_clear=False):
+    course_offering = CourseOffering.objects.get(id=course_id, just_clear=just_clear)
     file_path = Path.join(settings.DATA_PROCESSING_DIR, filename)
 
     try:

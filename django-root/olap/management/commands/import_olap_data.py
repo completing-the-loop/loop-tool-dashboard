@@ -74,7 +74,7 @@ class Command(BaseCommand):
                 course_offering = CourseOffering.objects.get(code=course_code)
                 course_offering.is_importing = True
                 course_offering.save()
-                import_olap_task.delay(course_offering.id, course_export_data['courses'][course_code]['filename'])
+                import_olap_task.delay(course_offering.id, course_export_data['courses'][course_code]['filename'], just_clear=options['clear'])
             except:
                 error_count += 1
                 self.stderr.write('An error occurred when {}ing the data for {}:'.format(verb, course_code))
