@@ -11,7 +11,7 @@ class CourseOffering(models.Model):
         (LMS_TYPE_MOODLE, 'Moodle'),
     )
 
-    code = models.CharField(max_length=100)
+    code = models.CharField(max_length=100, unique=True)
     title = models.CharField(max_length=255)
     offering = models.CharField(max_length=255)
     owners = models.ManyToManyField(User)
