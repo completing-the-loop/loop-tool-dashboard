@@ -28,22 +28,13 @@ const init = async (
                 this.accesses = await get(`${this.courseId}/communication_accesses/`);
             },
             async getPosts() {
-                this.posts = [
-                    {page_id: 1, title: 'Page 1', module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-
-                ];
+                this.posts = await get(`${this.courseId}/communication_posts/`);
             },
             async getStudents() {
-                this.students = [
-                    {page_id: 1, title: 'Page 1', module: 'module', weeks: {1: 0, 2: 1, 3: 6, 4: 7, 5: 3, 6: 8, 7:4, 8:22, 9: 11, 10:12, 11: 33, 12: 7, 13: 4, 14: 7}, total: 72, percent: 91},
-
-                ];
+                this.students = await get(`${this.courseId}/communication_students/`);
             },
             async getEvents() {
-                this.events = [
-                    {page_id: 1, title: 'Page 1', module: 'module', weeks: {1: {before: 0, after: 4}, 2: {before: 0, after: 4}, 3: {before: 0, after: 4}, 4: {before: 0, after: 4}, 5: {before: 0, after: 4}, 6: {before: 0, after: 4}, 7: {before: 0, after: 4}, 8: {before: 0, after: 4}, 9: {before: 0, after: 4}, 10: {before: 0, after: 4}, 11: {before: 0, after: 4}, 12: {before: 0, after: 4}, 13: {before: 0, after: 4}, 14: {before: 0, after: 4}}},
-
-                ];
+                this.events = await get(`${this.courseId}/communication_events/${this.eventId}/`);
             },
         },
         watch: {

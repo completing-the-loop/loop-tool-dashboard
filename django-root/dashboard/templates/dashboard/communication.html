@@ -18,7 +18,7 @@
         <h1 class="pull-left">Communication</h1>
         <ul class="nav nav-tabs">
           <li role="presentation" class="active navbar-right"><a href="#access" aria-controls="access" role="tab"
-                                                                 data-toggle="tab">Access</a></li>
+                                                                 data-toggle="tab">Accesses</a></li>
           <li role="presentation" class=" navbar-right"><a href="#posts" aria-controls="posts" role="tab"
                                                            data-toggle="tab">Posts</a></li>
           <li role="presentation" class=" navbar-right"><a href="#unique-students" aria-controls="unique-students" role="tab"
@@ -80,13 +80,20 @@
                 </tr>
               </thead>
               <tbody>
-              <tr v-for="resource in posts" class="stats-row">
+              <tr v-for="resource in posts.pageSet" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.module }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.page_id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i+1] }}</td>
+                <td class="stats-title">{{ resource.content_type }}</td>
+                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
+                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
                 <td class="stats-title">{{ resource.total }}</td>
                 <td>{{ resource.percent }}</td>
+              </tr>
+              <tr class="stats-row">
+                <th>Totals</th>
+                <th colspan="2">&nbsp;</th>
+                <td v-for="(week, i) in courseWeeks">{{ posts.totalsByWeek[i] }}</td>
+                <td>{{ posts.totalsByWeek[courseWeeks.length] }}</td>
+                <td>&nbsp;</td>
               </tr>
               </tbody>
           </table>
@@ -108,13 +115,20 @@
                 </tr>
               </thead>
               <tbody>
-              <tr v-for="resource in students" class="stats-row">
+              <tr v-for="resource in students.pageSet" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.module }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.page_id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i+1] }}</td>
+                <td class="stats-title">{{ resource.content_type }}</td>
+                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
+                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
                 <td class="stats-title">{{ resource.total }}</td>
                 <td>{{ resource.percent }}</td>
+              </tr>
+              <tr class="stats-row">
+                <th>Totals</th>
+                <th colspan="2">&nbsp;</th>
+                <td v-for="(week, i) in courseWeeks">{{ students.totalsByWeek[i] }}</td>
+                <td>{{ students.totalsByWeek[courseWeeks.length] }}</td>
+                <td>&nbsp;</td>
               </tr>
               </tbody>
           </table>
@@ -142,9 +156,9 @@
               <tbody>
               <tr v-for="resource in events" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.module }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.page_id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks" v-if="resource.weeks[i+1]">{{ resource.weeks[i+1].before }} / {{ resource.weeks[i+1].after }}</td><td v-else>-/-</td>
+                <td class="stats-title">{{ resource.content_type }}</td>
+                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
+                <td v-for="(week, i) in courseWeeks" v-if="resource.weeks[i]">{{ resource.weeks[i][0] }} / {{ resource.weeks[i][1] }}</td><td v-else>-/-</td>
               </tr>
               </tbody>
           </table>

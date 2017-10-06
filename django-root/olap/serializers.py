@@ -33,3 +33,9 @@ class CourseCommunicationSerializer(Serializer):
     totals_by_week = ListField(child=IntegerField())
 
 
+class CourseCommunicationPageEventSerializer(ModelSerializer):
+    weeks = ListField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'weeks')
