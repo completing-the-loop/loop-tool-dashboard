@@ -615,11 +615,13 @@ class BlackboardImport(BaseLmsImport):
         root = tree.getroot()
         forum_id = root.attrib['id']
         forum_id = forum_id[1:len(forum_id) - 2]
+        """
         conference_id = ""
         for elem in root:
             if elem.tag == "CONFERENCEID":
                 conference_id = elem.attrib["value"]
                 conference_id = conference_id[1:len(conference_id) - 2]
+        """
 
         # Get all posts
         for msg in tree.iter(tag='MSG'):
