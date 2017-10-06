@@ -22,12 +22,14 @@ class TopCourseUsersSerializer(ModelSerializer):
         fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
 
 
-class CommunicationAccessesPageSerializer(ModelSerializer):
+class CourseCommunicationPageSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'weeks', 'total', 'percent')
 
 
-class CommunicationAccessesSerializer(Serializer):
-    page_set = CommunicationAccessesPageSerializer(many=True)
+class CourseCommunicationSerializer(Serializer):
+    page_set = CourseCommunicationPageSerializer(many=True)
     totals_by_week = ListField(child=IntegerField())
+
+
