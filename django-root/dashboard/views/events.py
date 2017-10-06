@@ -17,11 +17,17 @@ class CourseRepeatingEventListView(ListView):
     template_name = 'dashboard/course_repeating_events_list.html'
     paginate_by = 10
 
+    def get_queryset(self):
+        return CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
+
 
 class CourseRepeatingEventCreateView(CreateView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/course_repeating_event_form.html'
     form_class = CourseRepeatingEventForm
+
+    def get_queryset(self):
+        return CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
 
     def get_success_url(self):
         return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering})
@@ -39,6 +45,9 @@ class CourseRepeatingEventUpdateView(UpdateView):
     template_name = 'dashboard/course_repeating_event_form.html'
     form_class = CourseRepeatingEventForm
 
+    def get_queryset(self):
+        return CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
+
     def get_success_url(self):
         return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering.id})
 
@@ -54,6 +63,9 @@ class CourseRepeatingEventDeleteView(DeleteView):
     model = CourseRepeatingEvent
     template_name = 'dashboard/confirm_delete.html'
 
+    def get_queryset(self):
+        return CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
+
     def get_success_url(self):
         return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering.id})
 
@@ -63,11 +75,17 @@ class CourseSubmissionEventListView(ListView):
     template_name = 'dashboard/course_submission_events_list.html'
     paginate_by = 10
 
+    def get_queryset(self):
+        return CourseSubmissionEvent.objects.filter(course_offering=self.request.course_offering)
+
 
 class CourseSubmissionEventCreateView(CreateView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/course_submission_event_form.html'
     form_class = CourseSubmissionEventForm
+
+    def get_queryset(self):
+        return CourseSubmissionEvent.objects.filter(course_offering=self.request.course_offering)
 
     def get_success_url(self):
         return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
@@ -85,6 +103,9 @@ class CourseSubmissionEventUpdateView(UpdateView):
     template_name = 'dashboard/course_submission_event_form.html'
     form_class = CourseSubmissionEventForm
 
+    def get_queryset(self):
+        return CourseSubmissionEvent.objects.filter(course_offering=self.request.course_offering)
+
     def get_success_url(self):
         return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
 
@@ -100,6 +121,9 @@ class CourseSubmissionEventDeleteView(DeleteView):
     model = CourseSubmissionEvent
     template_name = 'dashboard/confirm_delete.html'
 
+    def get_queryset(self):
+        return CourseSubmissionEvent.objects.filter(course_offering=self.request.course_offering)
+
     def get_success_url(self):
         return reverse('dashboard:list_course_submission_events', kwargs={'course_id': self.request.course_offering.id})
 
@@ -109,11 +133,17 @@ class CourseSingleEventListView(ListView):
     template_name = 'dashboard/course_single_events_list.html'
     paginate_by = 10
 
+    def get_queryset(self):
+        return CourseSingleEvent.objects.filter(course_offering=self.request.course_offering)
+
 
 class CourseSingleEventCreateView(CreateView):
     model = CourseSingleEvent
     template_name = 'dashboard/course_single_event_form.html'
     form_class = CourseSingleEventForm
+
+    def get_queryset(self):
+        return CourseSingleEvent.objects.filter(course_offering=self.request.course_offering)
 
     def get_success_url(self):
         return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
@@ -131,6 +161,9 @@ class CourseSingleEventUpdateView(UpdateView):
     template_name = 'dashboard/course_single_event_form.html'
     form_class = CourseSingleEventForm
 
+    def get_queryset(self):
+        return CourseSingleEvent.objects.filter(course_offering=self.request.course_offering)
+
     def get_success_url(self):
         return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
 
@@ -145,6 +178,9 @@ class CourseSingleEventUpdateView(UpdateView):
 class CourseSingleEventDeleteView(DeleteView):
     model = CourseSingleEvent
     template_name = 'dashboard/confirm_delete.html'
+
+    def get_queryset(self):
+        return CourseSingleEvent.objects.filter(course_offering=self.request.course_offering)
 
     def get_success_url(self):
         return reverse('dashboard:list_course_single_events', kwargs={'course_id': self.request.course_offering.id})
