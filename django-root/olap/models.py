@@ -349,11 +349,9 @@ class SummaryParticipatingUsersByDayInWeek(models.Model):
 #   `user_id` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SummaryPost(models.Model):
+    page = models.ForeignKey('Page')
+    lms_user = models.ForeignKey(LMSUser)
     posted_at = models.DateTimeField()
-    course_offering = models.ForeignKey(CourseOffering)
-    forum_id = models.IntegerField()
-    discussion_id = models.IntegerField()
-    lms_user = models.ForeignKey(LMSUser) # Having this is not normalised
 
 # CREATE TABLE `Summary_SessionAverageLengthByDayInWeek` (
 #   `id` int(11) NOT NULL,

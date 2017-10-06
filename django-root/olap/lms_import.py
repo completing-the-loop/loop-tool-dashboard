@@ -72,7 +72,7 @@ class ImportLmsData(object):
         # connection.execute("DELETE FROM Summary_Courses");
         SummaryForum.objects.filter(course_offering=offering).delete()
         SummaryDiscussion.objects.filter(course_offering=offering).delete()
-        SummaryPost.objects.filter(course_offering=offering).delete()
+        SummaryPost.objects.filter(page__course_offering=offering).delete()
         SummaryCourseVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
         SummaryCourseCommunicationVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
         SummaryCourseAssessmentVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
