@@ -9,6 +9,7 @@ from dashboard.tests.factories import CourseOfferingFactory
 from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
+from olap.models import SummaryPost
 
 
 class LMSUserFactory(factory.DjangoModelFactory):
@@ -67,12 +68,11 @@ class PageVisitFactory(factory.DjangoModelFactory):
         model = PageVisit
 
     class Params:
-        current_tz = get_current_timezone()
-        VISITS_START = datetime.datetime(2016, 2, 26, 8, 0, 10)
-        VISITS_END = datetime.datetime(2016, 6, 16, 17, 35, 9)
+        our_tz = get_current_timezone()
+        VISITS_START = datetime.datetime(2016, 2, 26, 8, 0, 10, tzinfo=our_tz)
+        VISITS_END = datetime.datetime(2016, 6, 16, 17, 35, 9, tzinfo=our_tz)
 
-    # visited_at = factory.fuzzy.FuzzyDateTime(start_dt=Params.VISITS_START, end_dt=Params.VISITS_END)
-    visited_at = faker.Faker('date_time_between_dates', datetime_start=Params.VISITS_START, datetime_end=Params.VISITS_END, tzinfo=Params.current_tz)
+    visited_at = faker.Faker('date_time_between_dates', datetime_start=Params.VISITS_START, datetime_end=Params.VISITS_END)
     lms_user = factory.SubFactory(LMSUserFactory)
     page = factory.SubFactory(PageFactory)
     # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
@@ -85,6 +85,19 @@ class PageVisitFactory(factory.DjangoModelFactory):
     # info = factory.TextField()
     session = None
 
+
+class SummaryPostFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = SummaryPost
+
+    class Params:
+        our_tz = get_current_timezone()
+        VISITS_START = datetime.datetime(2016, 2, 26, 8, 0, 10, tzinfo=our_tz)
+        VISITS_END = datetime.datetime(2016, 6, 16, 17, 35, 9, tzinfo=our_tz)
+
+    page = factory.SubFactory(PageFactory)
+    lms_user = factory.SubFactory(LMSUserFactory)
+    posted_at = faker.Faker('date_time_between_dates', datetime_start=Params.VISITS_START, datetime_end=Params.VISITS_END)
 
 """
 # TODO: Save these for another day.
