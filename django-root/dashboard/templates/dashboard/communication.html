@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 
-{% block page_id %}course-dashboard{% endblock page_id %}
+{% block page_id %}course-communication{% endblock page_id %}
 
 {% block content %}
 <div class="row">
   <ol class="breadcrumb col-md-12">
-    <li><a href="/mycourses"><i class="icon-home"></i>My Courses</a></li>
-    <li><a href="/coursedashboard?course_id={{ course_id }}&week_filter=0">Course: {{ course_code }} - {{ course_title }}</a></li>
+    <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
+    <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
     <li class="active">Communication</li>
   </ol>
 </div>
@@ -38,7 +38,7 @@
                   <th>Type</th>
                   <th>View</th>
 
-                  <th v-for="(week, i) in courseWeeks">Week {{ i + 1 }}</th>
+                  <th v-for="week in numWeeks">Week {{ week }}</th>
 
                   <th>Total</th>
                   <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
@@ -48,20 +48,20 @@
               <tr v-for="resource in accesses.pageSet" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
                 <td class="stats-title">{{ resource.content_type }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
+                <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
+                <td v-for="week in numWeeks">{{ resource.weeks[week - 1] }}</td>
                 <td class="stats-title">{{ resource.total }}</td>
                 <td>{{ resource.percent }}</td>
               </tr>
               <tr class="stats-row">
                 <th>Totals</th>
-                <th colspan="2">&nbsp;</th>
-                <td v-for="(week, i) in courseWeeks">{{ accesses.totalsByWeek[i] }}</td>
-                <td>{{ accesses.totalsByWeek[courseWeeks.length] }}</td>
+                <th colspan="2">&nbsp; </th>
+                <td v-for="week in numWeeks">{{ accesses.totalsByWeek[week - 1] }}</td>
+                <td>{{ accesses.totalsByWeek[numWeeks] }}</td>
                 <td>&nbsp;</td>
               </tr>
               </tbody>
-          </table>
+            </table>
             {% endverbatim %}
           </div>
           <div class="tab-pane fade" id="posts">
@@ -73,30 +73,30 @@
                   <th>Type</th>
                   <th>View</th>
 
-                  <th v-for="(week, i) in courseWeeks">Week {{ i + 1 }}</th>
+                  <th v-for="week in numWeeks">Week {{ week }}</th>
 
                   <th>Total</th>
                   <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
                 </tr>
               </thead>
               <tbody>
-              <tr v-for="resource in posts.pageSet" class="stats-row">
-                <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.content_type }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
-                <td class="stats-title">{{ resource.total }}</td>
-                <td>{{ resource.percent }}</td>
-              </tr>
-              <tr class="stats-row">
-                <th>Totals</th>
-                <th colspan="2">&nbsp;</th>
-                <td v-for="(week, i) in courseWeeks">{{ posts.totalsByWeek[i] }}</td>
-                <td>{{ posts.totalsByWeek[courseWeeks.length] }}</td>
-                <td>&nbsp;</td>
-              </tr>
+                <tr v-for="resource in posts.pageSet" class="stats-row">
+                  <td class="stats-title"><span>{{ resource.title }}</span></td>
+                  <td class="stats-title">{{ resource.content_type }}</td>
+                  <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
+                  <td v-for="week in numWeeks">{{ resource.weeks[week - 1] }}</td>
+                  <td class="stats-title">{{ resource.total }}</td>
+                  <td>{{ resource.percent }}</td>
+                </tr>
+                <tr class="stats-row">
+                  <th>Totals</th>
+                  <th colspan="2">&nbsp;</th>
+                  <td v-for="week in numWeeks">{{ posts.totalsByWeek[week - 1] }}</td>
+                  <td>{{ posts.totalsByWeek[numWeeks] }}</td>
+                  <td>&nbsp;</td>
+                </tr>
               </tbody>
-          </table>
+            </table>
             {% endverbatim %}
           </div>
           <div class="tab-pane fade" id="unique-students">
@@ -108,34 +108,33 @@
                   <th>Type</th>
                   <th>View</th>
 
-                  <th v-for="(week, i) in courseWeeks">Week {{ i + 1 }}</th>
+                  <th v-for="week in numWeeks">Week {{ week }}</th>
 
                   <th>Total</th>
                   <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
                 </tr>
               </thead>
               <tbody>
-              <tr v-for="resource in students.pageSet" class="stats-row">
-                <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.content_type }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks">{{ resource.weeks[i] }}</td>
-                <td class="stats-title">{{ resource.total }}</td>
-                <td>{{ resource.percent }}</td>
-              </tr>
-              <tr class="stats-row">
-                <th>Totals</th>
-                <th colspan="2">&nbsp;</th>
-                <td v-for="(week, i) in courseWeeks">{{ students.totalsByWeek[i] }}</td>
-                <td>{{ students.totalsByWeek[courseWeeks.length] }}</td>
-                <td>&nbsp;</td>
-              </tr>
+                <tr v-for="resource in students.pageSet" class="stats-row">
+                  <td class="stats-title"><span>{{ resource.title }}</span></td>
+                  <td class="stats-title">{{ resource.content_type }}</td>
+                  <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
+                  <td v-for="week in numWeeks">{{ resource.weeks[week - 1] }}</td>
+                  <td class="stats-title">{{ resource.total }}</td>
+                  <td>{{ resource.percent }}</td>
+                </tr>
+                <tr class="stats-row">
+                  <th>Totals</th>
+                  <th colspan="2">&nbsp;</th>
+                  <td v-for="week in numWeeks">{{ students.totalsByWeek[week - 1] }}</td>
+                  <td>{{ students.totalsByWeek[numWeeks] }}</td>
+                  <td>&nbsp;</td>
+                </tr>
               </tbody>
-          </table>
+            </table>
             {% endverbatim %}
           </div>
           <div class="tab-pane fade" id="events">
-
             <select id="eventfilter" name="eventfilter" v-model="eventId">
               {% for event in repeating_events %}
                 <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
@@ -149,16 +148,17 @@
                   <th>Type</th>
                   <th>View</th>
 
-                  <th v-for="(week, i) in courseWeeks">Week {{ i + 1 }}</th>
+                  <th v-for="week in numWeeks">Week {{ week }}</th>
 
                 </tr>
               </thead>
               <tbody>
               <tr v-for="resource in events" class="stats-row">
                 <td class="stats-title"><span>{{ resource.title }}</span></td>
-                <td class="stats-title">{{ resource.content_type }}</td>
-                <td class="stats-title"><a v-bind:href="'/coursepage?page_id=' + resource.id + '&course_id=' + courseId" class="btn btn-small btn-primary">View</a></td>
-                <td v-for="(week, i) in courseWeeks" v-if="resource.weeks[i]">{{ resource.weeks[i][0] }} / {{ resource.weeks[i][1] }}</td><td v-else>-/-</td>
+                <td class="stats-title">{{ resource.contentType }}</td>
+                <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
+                <!-- <td v-for="week in numWeeks" v-if="resource.weeks[week - 1]">{{ resource.weeks[week - 1][0] }} / {{ resource.weeks[week - 1][1] }}</td><td v-else>-/-</td> -->
+                <td v-for="week in numWeeks" :ref="`pie_${resource.id}`"></td>
               </tr>
               </tbody>
           </table>
@@ -178,12 +178,6 @@
 
 {% block javascript %}
 <script>
-  eventfilter = document.getElementById('eventfilter');
-  if (eventfilter.options.length > 0) {
-      eventId = eventfilter.options[0].value;
-  } else {
-      eventId = null;
-  }
-  window.pages.communication.init({{ course.id }}, {{course_weeks}}, eventId);
+  window.pages.communication.init(JSON.parse('{{ initial_data | escapejs }}'));
 </script>
 {% endblock javascript %}

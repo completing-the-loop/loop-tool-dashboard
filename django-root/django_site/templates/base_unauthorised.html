@@ -98,10 +98,7 @@
     {% endblock body %}
   </div>
   <script>
-    window.__APP_CONTEXT__ = {
-      BASE_URL: '{{ BASE_URL }}',
-      BASE_API_URL: '{{ BASE_API_URL }}',
-    };
+    window.__APP_CONTEXT__ = JSON.parse('{{ CONSTANTS | escapejs }}');
   </script>
 
   {% render_bundle 'main' 'js' %}
