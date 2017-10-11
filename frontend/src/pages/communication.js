@@ -17,9 +17,18 @@ const init = async (
         data: {
             courseId: initialData.courseId,
             numWeeks: initialData.numWeeks,
-            accesses: {pageSet: [], totalsByWeek: []},
-            posts: {pageSet: [], totalsByWeek: []},
-            students: {pageSet: [], totalsByWeek: []},
+            accesses: {
+                pageSet: [],
+                totalsByWeek: []
+            },
+            posts: {
+                pageSet: [],
+                totalsByWeek: []
+            },
+            students: {
+                pageSet: [],
+                totalsByWeek: []
+            },
             events: [],
             eventId: initialData.eventId,
         },

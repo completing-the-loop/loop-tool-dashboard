@@ -1,5 +1,6 @@
 import json
 
+
 def constants(request):
     constants_json = json.dumps({
         'BASE_URL': request.build_absolute_uri('/'),
