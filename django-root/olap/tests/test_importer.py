@@ -3,7 +3,7 @@ import datetime
 from django.test.testcases import TestCase
 from django.utils.timezone import get_current_timezone
 
-from dashboard.tests.factories import CourseFactory
+from dashboard.tests.factories import CourseOfferingFactory
 from olap.lms_import import ImportLmsData
 from olap.models import LMSSession
 from olap.models import LMSUser
@@ -22,7 +22,7 @@ class ImporterSessionCalcTests(TestCase):
     """
 
     def setUp(self):
-        self.offering = CourseFactory()
+        self.offering = CourseOfferingFactory()
         self.test_start_datetime = datetime.datetime(2016, 7, 21, 8, 47, 21, tzinfo=get_current_timezone())
 
 

@@ -14,7 +14,7 @@ django-stronghold==0.2.9
 django-webpack-loader==0.5.0
 djangorestframework==3.6.4
 djangorestframework-camel-case==0.2.0
-factory-boy==2.9.2
+-e git+https://github.com/levic/factory_boy.git@9a9a05c420113446de4229cdc35ac98b620e6dd2#egg=factory_boy
 Faker==0.8.4
 kombu==4.1.0
 lxml==4.0.0

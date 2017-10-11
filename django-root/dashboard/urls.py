@@ -4,6 +4,7 @@ from django.conf.urls import url
 from django.contrib.auth.views import logout
 from stronghold.decorators import public
 
+from dashboard.views.communication import CourseCommunicationView
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.events import CourseRepeatingEventCreateView
@@ -34,6 +35,7 @@ urlpatterns = [
 
     url(r'^(?P<course_id>\d+)/', decorator_include(course_access_url_wrapper, [
         url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+        url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communication'),
 
         # Event management for academic staff
         url(r'^course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),

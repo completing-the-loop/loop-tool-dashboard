@@ -1,7 +1,6 @@
 import csv
 from datetime import datetime
 import re
-import unicodedata
 
 from django.utils import timezone
 from django.db import connection
@@ -52,7 +51,7 @@ class ImportLmsData(object):
             lms_import.process_import_data()
 
             print("Processing user sessions for", offering)
-            self._process_user_sessions(offering)
+            self._calculate_sessions()
 
             # print("Populating summary data for {}".format(course_offering))
             # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
@@ -72,7 +71,7 @@ class ImportLmsData(object):
         # connection.execute("DELETE FROM Summary_Courses");
         SummaryForum.objects.filter(course_offering=offering).delete()
         SummaryDiscussion.objects.filter(course_offering=offering).delete()
-        SummaryPost.objects.filter(course_offering=offering).delete()
+        SummaryPost.objects.filter(page__course_offering=offering).delete()
         SummaryCourseVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
         SummaryCourseCommunicationVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
         SummaryCourseAssessmentVisitsByDayInWeek.objects.filter(course_offering=offering).delete()
@@ -384,8 +383,8 @@ class BlackboardImport(BaseLmsImport):
                     membership_file = resource_file
 
                 if resource_type in ['assessment/x-bb-qti-test', 'resource/x-bb-discussionboard']:
-                    dim_page = Page(course_offering=self.course_offering, content_type=resource_type, content_id=real_id, title=resource_title)
-                    dim_page.save()
+                    details_to_use_if_page_doesnt_exist = dict(content_type=resource_type, title=resource_title)
+                    dim_page, _ = Page.objects.update_or_create(content_id=real_id, course_offering=self.course_offering, defaults=details_to_use_if_page_doesnt_exist)
 
         parent_map = {}
         for parent_node in tree.iter():
@@ -616,11 +615,13 @@ class BlackboardImport(BaseLmsImport):
         root = tree.getroot()
         forum_id = root.attrib['id']
         forum_id = forum_id[1:len(forum_id) - 2]
+        """
         conference_id = ""
         for elem in root:
             if elem.tag == "CONFERENCEID":
                 conference_id = elem.attrib["value"]
                 conference_id = conference_id[1:len(conference_id) - 2]
+        """
 
         # Get all posts
         for msg in tree.iter(tag='MSG'):
@@ -637,7 +638,8 @@ class BlackboardImport(BaseLmsImport):
                 posted_at = self.convert_datetimestr_to_datetime(date_str)
                 user_id = user_id[1:len(user_id) - 2]
                 lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                post = SummaryPost(posted_at=posted_at, lms_user=lms_user, course_offering=self.course_offering, forum_id=forum_id, discussion_id=conference_id)
+                page, _ = Page.objects.get_or_create(content_id=forum_id, course_offering=self.course_offering)
+                post = SummaryPost(page=page, lms_user=lms_user, posted_at=posted_at)
                 post.save()
 
     def _process_conferences(self, file_path, content_id):

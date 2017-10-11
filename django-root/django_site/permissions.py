@@ -14,6 +14,6 @@ def course_access_url_wrapper(view_func):
         if request.user.has_perm('dashboard.is_course_offering_owner', request.course_offering):
             return view_func(request, *args, **kwargs)
         else:
-            return HttpResponseForbidden('You do not have access to that course')
+            return HttpResponseForbidden("You don't have access to this course.")
 
     return course_access_func

@@ -1,7 +1,7 @@
 from django.test.testcases import TestCase
 from django.urls import reverse
 
-from dashboard.tests.factories import CourseFactory
+from dashboard.tests.factories import CourseOfferingFactory
 from dashboard.tests.factories import LecturerFactory
 
 
@@ -10,8 +10,8 @@ class CourseListTestCase(TestCase):
     def setUp(self):
         self.lecturer_password = 'password'
         self.lecturer = LecturerFactory(password=self.lecturer_password)
-        self.unowned_course = CourseFactory()
-        self.owned_course = CourseFactory(owners=(self.lecturer,))
+        self.unowned_course = CourseOfferingFactory()
+        self.owned_course = CourseOfferingFactory(owners=(self.lecturer,))
 
         self.login_url = reverse('dashboard:login')
         self.course_list_url = reverse('dashboard:course_list')

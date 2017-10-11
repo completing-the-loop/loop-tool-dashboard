@@ -67,7 +67,7 @@ rules
 Unipath
 
 # Test data generation
-factory_boy
+-e git+https://github.com/levic/factory_boy.git@9a9a05c420113446de4229cdc35ac98b620e6dd2#egg=factory_boy
 
 # temp required to make frontend run
 SQLAlchemy
