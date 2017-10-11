@@ -1,9 +1,9 @@
 import datetime
-import factory
-from factory import faker
 import random
 
 from authtools.models import User
+import factory
+from factory import faker
 
 from dashboard.models import CourseOffering
 from dashboard.models import CourseRepeatingEvent
@@ -58,7 +58,7 @@ class CourseRepeatingEventFactory(factory.DjangoModelFactory):
 
     title = factory.Sequence(lambda n: 'CourseRepeatingEvent %d' % n)
     course_offering = factory.SubFactory(CourseOfferingFactory)
-    start_week = factory.LazyAttribute(lambda obj: random.randint(1, obj.course_offering.no_weeks)) # This .fuzz() stuff is thanks to levi
+    start_week = factory.LazyAttribute(lambda obj: random.randint(1, obj.course_offering.no_weeks))
     end_week = factory.LazyAttribute(lambda obj: random.randint(obj.start_week, obj.course_offering.no_weeks))
     day_of_week = factory.LazyAttribute(lambda obj: random.randint(0, 6))
     created_at = factory.LazyFunction(datetime.datetime.now)
