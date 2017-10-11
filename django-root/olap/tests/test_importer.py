@@ -336,8 +336,6 @@ class ImportSubmissionAttemptsTestCase(TestCase):
         submissions_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_submission_attempts(submissions_data)
 
-        print(importer.error_list)
-
         self.assertEqual(len(importer.error_list), 2)
 
 
@@ -420,8 +418,6 @@ class ImportActivityTestCase(TestCase):
         csv_data = io.StringIO(dedent(test_activity))
         activity_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_access_log(activity_data)
-
-        print(importer.error_list)
 
         self.assertEqual(len(importer.error_list), 2)
 
