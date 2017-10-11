@@ -6,6 +6,7 @@ import unicodedata
 from zipfile import ZipFile
 
 from django.db import connection
+from django.utils import dateparse
 
 from dashboard.models import CourseOffering
 from olap.models import LMSSession
@@ -31,11 +32,20 @@ class LMSImportError(Exception):
     pass
 
 
+class LMSImportFileError(LMSImportError):
+    def __init__(self, import_file, msg=None):
+        if msg is None:
+            msg = "Error in import file {}".format(import_file)
+        super().__init__(msg)
+        self.import_file = import_file
+
+
 class LMSImportDataError(LMSImportError):
-    pass
-    # def __init__(self, error_block):
-    #     super().__init__('AXcelerate Response Error', error_block)
-    #     self.error_block = error_block
+    def __init__(self, errors, msg=None):
+        if msg is None:
+            msg = "One or more errors in import data"
+        super().__init__(msg, errors)
+        self.errors = errors
 
 
 class ImportLmsData(object):
@@ -74,6 +84,7 @@ class ImportLmsData(object):
         self.course_offering.save()
 
     def process(self):
+        errors = []
         offering = self.course_offering
         if self.just_clear:
             print("Removing old data for", offering)
@@ -84,7 +95,7 @@ class ImportLmsData(object):
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
             lms_import = BlackboardImport(self.course_import_path, offering)
-            lms_import.process_import_data()
+            errors = lms_import.process_import_data()
 
             print("Processing user sessions for", offering)
             self._calculate_sessions()
@@ -92,6 +103,11 @@ class ImportLmsData(object):
             # print("Populating summary data for {}".format(course_offering))
             # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
             print("Skipping populating summary data for", offering)
+
+        if len(errors):
+            # TODO: Email the admins with the list of errors
+            raise LMSImportDataError(errors)
+
         self.set_latest_activity()
 
     def remove_olap_data(self):
@@ -296,6 +312,7 @@ class BaseLmsImport(object):
     def __init__(self, course_import_path, course_offering):
         self.course_offering = course_offering
         self.course_import_path = course_import_path
+        self.error_list = []
 
     def process_import_data(self):
         raise NotImplementedError("'process_import_data' must be implemented")
@@ -306,21 +323,22 @@ class BaseLmsImport(object):
     def get_communication_types(self):
         raise NotImplementedError("'get_communication_types' must be implemented")
 
+    def _add_error(self, error_msg):
+        self.error_list.append(error_msg)
+
 
 class BlackboardImport(BaseLmsImport):
-    USERS_FILE = 'user_listing.csv'
-    PAGES_FILE = 'resources_listing.csv'
-    POSTS_FILE = ''
-    SUBMISSIONS_FILE = 'assessment_listing.csv'
-    ACTIVITY_FILE = 'activity_listing.csv'
+    USERS_FILE = 'user.txt'
+    RESOURCES_FILE = 'resources.txt'
+    POSTS_FILE = 'forums.txt'
+    SUBMISSIONS_FILE = 'assessments.txt'
+    ACTIVITY_FILE = 'activity.txt'
 
-    USERS_FIELDNAMES = ['pk1', 'firstname', 'lastname', 'username', 'email']
-    PAGES_FIELDNAMES = ['content_key', 'parent_content_key', 'title', 'resource_type']
-    POSTS_FIELDNAMES = []
-    SUBMISSIONS_FIELDNAMES = ['gradebook_grade_key', 'user_key', 'content_key', 'user_grade', 'attempt_timestamp']
-    ACTIVITY_FIELDNAMES = ['activity_key', 'user_key', 'content_key', 'forum_pk1', 'access_timestamp']
-
-    error_list = []
+    USERS_FIELDNAMES = ['user_key', 'firstname', 'lastname', 'username', 'email']
+    RESOURCES_FIELDNAMES = ['content_key', 'parent_content_key', 'title', 'resource_type']
+    POSTS_FIELDNAMES = ['forum_key', 'user_key', 'thread', 'post', 'timestamp']
+    SUBMISSIONS_FIELDNAMES = ['user_key', 'content_key', 'user_grade', 'timestamp']
+    ACTIVITY_FIELDNAMES = ['user_key', 'content_key', 'forum_key', 'timestamp']
 
     def get_assessment_types(self):
         return ['assessment/x-bb-qti-test', 'course/x-bb-courseassessment', 'resource/x-turnitin-assignment']
@@ -329,136 +347,141 @@ class BlackboardImport(BaseLmsImport):
         return ['resource/x-bb-discussionboard', 'course/x-bb-collabsession', 'resource/x-bb-discussionfolder']
 
     def process_import_data(self):
-        self._process_users()
-        self._process_pages()
-        # self._process_posts()
-        self._process_submission_attempts()
-        self._process_access_log()
+        self._process_csv(self.USERS_FILE, self._process_users)
+        self._process_csv(self.RESOURCES_FILE, self._process_resources)
+        self._process_csv(self.RESOURCES_FILE, self._process_resource_parents)
+        # self._process_csv(self.POSTS_FILE, self._process_posts)
+        self._process_csv(self.SUBMISSIONS_FILE, self._process_submission_attempts)
+        self._process_csv(self.ACTIVITY_FILE, self._process_access_log)
 
-    def _add_error(self, error_msg):
-        self.error_list.append(error_msg)
+        return self.error_list
 
-    def _process_users(self):
+    def _process_csv(self, file_name, process_callable):
+        with ZipFile(self.course_import_path) as import_zip:
+            with import_zip.open(file_name) as csv_file:
+                csv_file = io.TextIOWrapper(csv_file, encoding='UTF-8', newline='')
+                csv_data = csv.DictReader(csv_file, delimiter='|')
+                process_callable(csv_data)
+
+    def _process_users(self, users_data):
         """
         Extracts users from the course import files and updates/inserts into the LMSUser table
         """
-        with ZipFile(self.course_import_path) as import_zip:
-            with import_zip.open(self.USERS_FILE) as users_file:
-                users_file = io.TextIOWrapper(users_file, encoding='UTF-8', newline='')
-                users_data = csv.DictReader(users_file)
+        if set(users_data.fieldnames) != set(self.USERS_FIELDNAMES):
+            raise LMSImportFileError(self.USERS_FILE, 'User data columns do not match {}'.format(self.USERS_FIELDNAMES))
 
-                if set(users_data.fieldnames) != set(self.USERS_FIELDNAMES):
-                    raise LMSImportDataError('User data columns do not match {}'.format(self.USERS_FIELDNAMES))
+        for row in users_data:
+            values = {
+                'firstname': row['firstname'],
+                'lastname': row['lastname'],
+                'username': row['username'],
+                'email': row['email'],
+            }
+            user, created = LMSUser.objects.update_or_create(course_offering=self.course_offering, lms_user_id=row['user_key'], defaults=values)
 
-                for row in users_data:
-                    values = {
-                        'firstname': row['firstname'],
-                        'lastname': row['lastname'],
-                        'username': row['username'],
-                        'email': row['email'],
-                    }
-                    user, created = LMSUser.objects.update_or_create(course_offering=self.course_offering, lms_user_id=row['pk1'], defaults=values)
-
-    def _process_pages(self):
+    def _process_resources(self, resources_data):
         """
         Extracts pages/resources from the course import files and updates/inserts into the Page table
         """
-        with ZipFile(self.course_import_path) as import_zip:
-            with import_zip.open(self.PAGES_FILE) as pages_file:
-                pages_file = io.TextIOWrapper(pages_file, encoding='UTF-8', newline='')
-                pages_data = csv.DictReader(pages_file)
+        if set(resources_data.fieldnames) != set(self.RESOURCES_FIELDNAMES):
+            raise LMSImportFileError(self.RESOURCES_FILE, 'Resource data columns do not match {}'.format(self.RESOURCES_FIELDNAMES))
 
-                if set(pages_data.fieldnames) != set(self.PAGES_FIELDNAMES):
-                    raise LMSImportDataError('Page data columns do not match {}'.format(self.PAGES_FIELDNAMES))
+        # Set the parent to None until all resources are inserted
+        for row in resources_data:
+            values = {
+                'title': row['title'],
+                'content_type': row['resource_type'],
+                'parent_id': None,
+            }
+            resource, created = Page.objects.update_or_create(course_offering=self.course_offering, content_id=row['content_key'], defaults=values)
 
-                # Set the parent to None until all pages are inserted
-                for row in pages_data:
-                    values = {
-                        'title': row['title'],
-                        'content_type': row['resource_type'],
-                        'parent_id': None,
-                    }
-                    page, created = Page.objects.update_or_create(course_offering=self.course_offering, content_id=row['content_key'], defaults=values)
+    def _process_resource_parents(self, resources_data):
+        """
+        Go through the pages/resources from the course import files again and find the parents, deleting any pages whose parent is missing
+        """
+        for row in resources_data:
+            if row['parent_content_key']:
+                content_page = Page.objects.get(content_id=row['content_key'])
+                try:
+                    parent_page = Page.objects.get(content_id=row['parent_content_key'])
+                    content_page.parent = parent_page
+                    content_page.save()
+                except Page.DoesNotExist:
+                    self._add_error('Unable to find parent resource {}'.format(row['parent_content_key']))
 
-
-            # Now go through the CSV again and find the parents, deleting any pages whose parent is missing
-            with import_zip.open(self.PAGES_FILE) as pages_file:
-                pages_file = io.TextIOWrapper(pages_file, encoding='UTF-8', newline='')
-                pages_data = csv.DictReader(pages_file)
-                for row in pages_data:
-                    if row['parent_content_key']:
-                        content_page = Page.objects.get(content_id=row['content_key'])
-                        try:
-                            parent_page = Page.objects.get(content_id=row['parent_content_key'])
-                            content_page.parent = parent_page
-                            content_page.save()
-                        except Page.DoesNotExist:
-                            self._add_error('Unable to find parent page {}. Removing page {}'.format(row['parent_content_key'], row['content_key']))
-                            content_page.delete()
-
-    def _process_submission_attempts(self):
+    def _process_submission_attempts(self, submissions_data):
         """
         Extracts submission attempts from the course import files and updates/inserts into the submission attempts table
         """
-        with ZipFile(self.course_import_path) as import_zip:
-            with import_zip.open(self.SUBMISSIONS_FILE) as submissions_file:
-                submissions_file = io.TextIOWrapper(submissions_file, encoding='UTF-8', newline='')
-                submissions_data = csv.DictReader(submissions_file)
+        if set(submissions_data.fieldnames) != set(self.SUBMISSIONS_FIELDNAMES):
+            raise LMSImportFileError(self.SUBMISSIONS_FILE, 'Submissions data columns do not match {}'.format(self.SUBMISSIONS_FIELDNAMES))
 
-                if set(submissions_data.fieldnames) != set(self.SUBMISSIONS_FIELDNAMES):
-                    raise LMSImportDataError('Submissions data columns do not match {}'.format(self.SUBMISSIONS_FIELDNAMES))
+        for row in submissions_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'])
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for submission attempt'.format(row['user_key']))
+                continue
 
-                for row in submissions_data:
-                    try:
-                        user = LMSUser.objects.get(lms_user_id=row['user_key'])
-                    except LMSUser.DoesNotExist:
-                        self._add_error('Unable to find user {}. Skipping submission attempt {}'.format(row['user_key'], row['gradebook_grade_key']))
-                        continue
+            try:
+                page = Page.objects.get(content_id=row['content_key'])
+            except Page.DoesNotExist:
+                self._add_error('Unable to find page {} for submission attempt'.format(row['content_key']))
+                continue
 
-                    try:
-                        page = Page.objects.get(content_id=row['content_key'])
-                    except Page.DoesNotExist:
-                        self._add_error('Unable to find page {}. Skipping submission attempt {}'.format(row['content_key'], row['gradebook_grade_key']))
-                        continue
+            try:
+                attempted_at = dateparse.parse_datetime(row['timestamp'])
+                if attempted_at is None:
+                    self._add_error('Timestamp {} for submission attempt is not a valid format'.format(row['timestamp']))
+                    continue
+            except ValueError:
+                self._add_error('Timestamp {} for submission attempt is not a valid datetime'.format(row['timestamp']))
+                continue
 
-                    # TODO: Check if submission attempt falls within course start/end
-                    values = {
-                        'lms_user': user,
-                        'page': page,
-                        'grade': row['user_grade'],
-                        'attempted_at': row['attempt_timestamp'],
-                    }
-                    submission, created = SubmissionAttempt.objects.update_or_create(attempt_key=row['gradebook_grade_key'], defaults=values)
+            if attempted_at < self.course_offering.start_datetime or attempted_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for submission attempt is outside course offering start/end'.format(row['timestamp']))
+                continue
 
-    def _process_access_log(self):
+            values = {
+                'grade': row['user_grade'],
+                'attempted_at': attempted_at,
+            }
+            submission, created = SubmissionAttempt.objects.update_or_create(lms_user=user, page=page, defaults=values)
+
+    def _process_access_log(self, activity_data):
         """
         Extracts user activity from the course import files and updates/inserts into the page visits table
         """
-        with ZipFile(self.course_import_path) as import_zip:
-            with import_zip.open(self.ACTIVITY_FILE) as activity_file:
-                activity_file = io.TextIOWrapper(activity_file, encoding='UTF-8', newline='')
-                activity_data = csv.DictReader(activity_file)
+        if set(activity_data.fieldnames) != set(self.ACTIVITY_FIELDNAMES):
+            raise LMSImportFileError(self.ACTIVITY_FILE, 'Activity data columns do not match {}'.format(self.ACTIVITY_FIELDNAMES))
 
-                if set(activity_data.fieldnames) != set(self.ACTIVITY_FIELDNAMES):
-                    raise LMSImportDataError('Activity data columns do not match {}'.format(self.ACTIVITY_FIELDNAMES))
+        for row in activity_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'])
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for activity'.format(row['user_key']))
+                continue
 
-                for row in activity_data:
-                    try:
-                        user = LMSUser.objects.get(lms_user_id=row['user_key'])
-                    except LMSUser.DoesNotExist:
-                        self._add_error('Unable to find user {}. Skipping page visit {}'.format(row['user_key'], row['activity_key']))
-                        continue
+            try:
+                page = Page.objects.get(content_id=row['content_key'])
+            except Page.DoesNotExist:
+                self._add_error('Unable to find resource {} for activity'.format(row['content_key']))
+                continue
 
-                    try:
-                        page = Page.objects.get(content_id=row['content_key'])
-                    except Page.DoesNotExist:
-                        self._add_error('Unable to find page {}. Skipping page visit {}'.format(row['content_key'], row['activity_key']))
-                        continue
+            try:
+                visited_at = dateparse.parse_datetime(row['timestamp'])
+                if visited_at is None:
+                    self._add_error('Timestamp {} for access activity is not a valid format'.format(row['timestamp']))
+                    continue
+            except ValueError:
+                self._add_error('Timestamp {} for access activity is not a valid datetime'.format(row['timestamp']))
+                continue
 
-                    # TODO: Check if activity falls within course start/end
-                    values = {
-                        'lms_user': user,
-                        'page': page,
-                        'visited_at': row['access_timestamp'],
-                    }
-                    page_visit, created = PageVisit.objects.update_or_create(lms_activity_id=row['activity_key'], defaults=values)
+            if visited_at < self.course_offering.start_datetime or visited_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for access activity is outside course offering start/end'.format(row['timestamp']))
+                continue
+
+            values = {
+                'visited_at': visited_at,
+            }
+            page_visit, created = PageVisit.objects.update_or_create(lms_user=user, page=page, defaults=values)
