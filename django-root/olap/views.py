@@ -5,8 +5,6 @@ from django.db.models import Count
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import get_current_timezone
-from django.utils.timezone import make_aware
-
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -51,48 +49,47 @@ class TopCourseUsersViewSet(ListAPIView):
 # Base class for CommunicationAccessesView and CommunicationPostsView.
 # What the derived classes do is very similar.  They look at events on things.
 class CommunicationGenericView(APIView):
-    def get_thing_queryset(self, page_id):
+    def get_event_queryset(self, page_id):
         raise NotImplementedError
 
-    def get_event_time(self, thing):
+    def get_event_time(self, event):
         raise NotImplementedError
 
     def get(self, request, format=None):
         course_offering = self.request.course_offering
-        our_tz = get_current_timezone()
         course_start_dt = course_offering.start_datetime
 
-        things_by_week_for_all_pages = [0] * course_offering.no_weeks
+        events_by_week_for_all_pages = [0] * course_offering.no_weeks
         page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.COMMUNICATION_TYPES).values('id', 'title', 'content_type')
-        total_things = 0
+        total_events = 0
         for page in page_queryset:
-            things_for_this_page = self.get_thing_queryset(page['id'])
-            things_by_week_for_this_page = [0] * course_offering.no_weeks
-            total_things += things_for_this_page.count()
-            for thing in things_for_this_page:
-                # Calculate the time since start of course for this thing.  From this we can calculate the week.
+            events_for_this_page = self.get_event_queryset(page['id'])
+            events_by_week_for_this_page = [0] * course_offering.no_weeks
+            total_events += events_for_this_page.count()
+            for event in events_for_this_page:
+                # Calculate the time since start of course for this event.  From this we can calculate the week.
                 # (Note, it's ok for courses not to start on Monday.  In this case, the boundary of the course week won't
                 # be the same as the inter-week boundary).
-                td = self.get_event_time(thing) - course_start_dt
+                td = self.get_event_time(event) - course_start_dt
                 week = td.days // 7  # Integer division, the first week after the course starts is week 0.
                 try:
                     # try is here to catch invalid week indexes caused by events outside of the course offering.
-                    things_by_week_for_this_page[week] += 1
-                    things_by_week_for_all_pages[week] += 1
+                    events_by_week_for_this_page[week] += 1
+                    events_by_week_for_all_pages[week] += 1
                 except IndexError:
                     pass
-            page['weeks'] = things_by_week_for_this_page
-            page['total'] = sum(things_by_week_for_this_page) # Add along the row.
+            page['weeks'] = events_by_week_for_this_page
+            page['total'] = sum(events_by_week_for_this_page) # Add along the row.
 
         # Total things for all pages and weeks.  Will appear in bottom right corner.
-        things_by_week_for_all_pages.append(total_things)
+        events_by_week_for_all_pages.append(total_events)
         # Calculate percentages.
         for page in page_queryset:
-            page['percent'] = Decimal(page['total'] * 100 / total_things if total_things else 0)
+            page['percent'] = (Decimal(page['total'] * 100 / total_events) if total_events else 0)
 
         results = {
             'page_set': page_queryset,
-            'totals_by_week': things_by_week_for_all_pages,
+            'totals_by_week': events_by_week_for_all_pages,
         }
 
         serializer = CourseCommunicationSerializer(data=results)
@@ -104,25 +101,24 @@ class CommunicationGenericView(APIView):
 
 
 class CommunicationAccessesView(CommunicationGenericView):
-    def get_thing_queryset(self, page_id):
+    def get_event_queryset(self, page_id):
         return PageVisit.objects.filter(page_id=page_id)
 
-    def get_event_time(self, thing):
-        return thing.visited_at
+    def get_event_time(self, event):
+        return event.visited_at
 
 
 class CommunicationPostsView(CommunicationGenericView):
-    def get_thing_queryset(self, page_id):
+    def get_event_queryset(self, page_id):
         return SummaryPost.objects.filter(page_id=page_id)
 
-    def get_event_time(self, thing):
-        return thing.posted_at
+    def get_event_time(self, event):
+        return event.posted_at
 
 
 class CommunicationStudentsView(APIView):
     def get(self, request, format=None):
         course_offering = self.request.course_offering
-        our_tz = get_current_timezone()
         course_start_dt = course_offering.start_datetime
 
         students_by_week_for_all_pages = [set() for i in range(course_offering.no_weeks)]
@@ -158,7 +154,7 @@ class CommunicationStudentsView(APIView):
 
         # Calculate percentages.
         for page in page_queryset:
-            page['percent'] = Decimal(page['total'] * 100 / grand_total_uniques if grand_total_uniques else 0)
+            page['percent'] = (Decimal(page['total'] * 100 / grand_total_uniques) if grand_total_uniques else 0)
 
         results = {
             'page_set': page_queryset,
@@ -176,12 +172,7 @@ class CommunicationStudentsView(APIView):
 class CommunicationEventsView(APIView):
     def get(self, request, event_id, format=None):
         course_offering = self.request.course_offering
-        repeating_event = get_object_or_404(CourseRepeatingEvent, pk=event_id)
-        # Ensure the repeating event is only used with a course offering to which it's associated (ie, no mix-and-match).
-        # Since permission checks on the course offering have already been done (thanks middleware), this also suffices
-        # to ensure the caller has access to the repeating event.
-        if repeating_event.course_offering != course_offering:
-            return HttpResponseNotFound()
+        repeating_event = get_object_or_404(CourseRepeatingEvent, pk=event_id, course_offering=course_offering)
 
         our_tz = get_current_timezone()
         course_start_dt = course_offering.start_datetime
