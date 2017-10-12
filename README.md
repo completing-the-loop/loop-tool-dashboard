@@ -121,11 +121,149 @@ cd django-root
 
 ## Deployment
 
-* Deployed on Rackspace
- * nginx frontend web server
- * gunicorn fastcgi wsgi behind nginx
-* gunicorn configured as a system daemon called `myproject`
-* Site settings are in `~/env`
+### Install system packages
+* nginx
+* mysql-server
+* rabbitmq-server
+* python3-devel
+* libmysqlclient-dev
+* virtualenv
+
+### Configure Nginx
+* Reverse proxies for Gunicorn
+* Serves static content
+
+#### Sample Configuration
+* eg. `/etc/nginx/sites-anabled/loop`
+* You may need to change path for `proxy_path`
+~~~~
+server {
+	listen 80 ;
+	listen [::]:80 ;
+
+	root /home/loop/website;
+
+	server_name circle.its.unimelb.edu.au;
+
+	location /static/ { }
+	location /media/ { }
+
+	location / {
+		proxy_set_header Host               $http_host;
+		proxy_set_header X-Real-IP          $remote_addr;
+		proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto  $scheme;
+		proxy_set_header Upgrade            $http_upgrade;
+		proxy_set_header Connection         "upgrade";
+		proxy_pass http://unix:/home/loop/run/gunicorn.socket;
+		#proxy_ignore_client_abort   off;
+		#proxy_intercept_errors      off;
+		#proxy_redirect              off;
+
+		## max client upload size
+		client_max_body_size        24m;
+		#
+		## buffer size before using a temp file for client upload
+		#client_body_buffer_size 128k;
+		#
+		## tcp connection timeout
+		#proxy_connect_timeout       10;
+		#
+		## timeout between 2 write operations once connected
+		#proxy_send_timeout          120;
+		#
+		## timeout between 2 read operations once connected
+		#proxy_read_timeout          120;
+		#
+		#proxy_buffers               8   16k;
+		#proxy_buffer_size           32k;
+	}
+}
+~~~~
+
+### Configure mysql
+* Create database (eg `loop_django`)
+* Create user (eg `loop`)
+
+### Configure RabbitMQ
+* Create rabbitmq user and vhost
+  * `rabbitmqctl add_vhost loop`
+  * `rabbitmqctl add_user loop agoodpassword`
+  * `rabbitmqctl set_permissions -p loop loop ".*" ".*" ".*"`
+
+### Deploy & configure application
+* Switch to application user (loop)
+* Create virtual environment
+  * `mkdir ~/.venv`
+  * `virtualenv -p python3 ~/.venv/melbuni-cloop`
+* Activate virtualenv
+  * `source ~/.venv/melbuni-cloop/bin/activate`
+* Checkout application
+  * `git clone ... loop.git`
+* In app directory (`loop.git`)
+  * `pip install -r requirements.txt`
+* Create content symlinks
+  * `ln -s loop.git ~/website`
+  * `ln -s assets ~/website/static`
+* Create place for runtime files to live
+  * `mkdir ~/run`
+* Create application configuration file (`~/.env`)
+  * Example:
+~~~~
+DJANGO_SETTINGS_MODULE=django_site.settings.production_prod
+SECRET_KEY=SECRET_KEY_HERE
+
+DB_HOST=localhost
+DB_NAME=loop_django
+DB_USER=loop
+DB_PASSWORD=MYSQL_PASSWORD_HERE
+
+RABBITMQ_HOSTNAME=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_VHOST=loop
+RABBITMQ_USER=loop
+RABBITMQ_PASSWORD=RABBITMQ_PASSWORD_HERE
+
+DATA_IMPORT_DIR=/home/loop/import
+DATA_PROCESSING_DIR=/home/loop/processing
+~~~~
+* Initialize Django
+  * `cd ~/website/django-root`
+  * `./manage.py migrate`
+  * `./manage.py createsuperuser`
+  * `./manage.py collectstatic`
+
+### Configure application services
+* 3 services need to be running for Loop:
+  * gunicorn (webserver)
+  * celery worker (background data processing)
+  * celery beat (task scheduler)
+* This documentation assumes you are using `circus` to run these services.
+* You also need to ensure `circusd` starts on boot with the below config file & the variables from the `.env` file loaded.
+* This would normally be done via `systemd`
+  * But is currently done via crontab or manually since we don't have the ability to create a service definition
+  * See `~/start.sh`
+* `mkdir ~/conf`
+* Example circus.conf (`~/conf/circus.conf`)
+~~~~
+[circus]
+endpoint=ipc:///home/loop/run/circus.sock
+
+[watcher:gunicorn]
+cmd=/home/loop/.venv/unimelb-cloop/bin/gunicorn --workers 4 -b unix:/home/loop/run/gunicorn.socket wsgi:application
+working_dir=/home/loop/website/django-root
+copy_env=true
+
+[watcher:celeryd]
+cmd = /home/loop/.venv/unimelb-cloop/bin/celery worker -A django_site -b  amqp://$(CIRCUS.ENV.RABBITMQ_USER):$(CIRCUS.ENV.RABBITMQ_PASSWORD)@$(CIRCUS.ENV.RABBITMQ_HOSTNAME)/$(CIRCUS.ENV.RABBITMQ_VHOST)
+working_dir=/home/loop/website/django-root
+copy_env=true
+
+[watcher:celerybeat]
+cmd = /home/loop/.venv/unimelb-cloop/bin/celery beat -A django_site -b  amqp://$(CIRCUS.ENV.RABBITMQ_USER):$(CIRCUS.ENV.RABBITMQ_PASSWORD)@$(CIRCUS.ENV.RABBITMQ_HOSTNAME)/$(CIRCUS.ENV.RABBITMQ_VHOST)
+working_dir=/home/loop/website/django-root
+copy_env=true
+~~~~
 
 ### Production Build
 
@@ -152,7 +290,7 @@ yarn run build
 #### Live
 
 * Tag and push the release: `git tag sendlive/YYYY/MMDD-hhmm && git push`
-* SSH to the server using details at tt:accountId=1234
+* SSH to the server
 * Create a DB backup
  * `~/bin/dbdump.sh`
 * Verify that there are no uncommitted changes on the server: `cd ~/livesite && git status`
@@ -161,13 +299,14 @@ yarn run build
 * Update code
 
 ```bash
-cd ~/livesite
+cd ~/loop.git
 git fetch
 git checkout sendlive/YYYY/MMDD-hhmm
 cd django-root
 ./manage.py migrate
 ./manage.py collectstatic
-service myproject reload
+#service loop reload
+~/bin/start.sh
 ```
 
 * If something goes wrong, restore database and checkout previous sendlive tag
