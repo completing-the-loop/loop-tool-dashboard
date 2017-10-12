@@ -21,7 +21,6 @@ urlpatterns = [
         url(r'^communication_students/$', CommunicationStudentsView.as_view(), name='communication_students'),
         url(r'^communication_events/(?P<event_id>\d+)/$', CommunicationEventsView.as_view(), name='communication_events'),
         url(r'^top_users/$', TopCourseUsersViewSet.as_view(), name='top_users'),
-        url(r'^top_content/$', TopAccessedContentView.as_view(), name='top_content'), # optional week
-        url(r'^top_content/(?P<week_num>\d+)/$', TopAccessedContentView.as_view(), name='top_content'),
+        url(r'^top_content/(?:(?P<week_num>\d+)/)?$', TopAccessedContentView.as_view(), name='top_content'), # optional week
     ])),
 ]

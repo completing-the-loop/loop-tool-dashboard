@@ -12,15 +12,17 @@ from olap.serializers import TopCourseUsersSerializer
 
 class TopCourseUsersViewSet(ListAPIView):
     serializer_class = TopCourseUsersSerializer
+    max_rows_to_return = 10
 
     def get_queryset(self):
-        qs = LMSUser.objects.annotate(pageviews=Count("pagevisit")).filter(course_offering=self.request.course_offering).order_by('-pageviews')[0:10]
+        qs = LMSUser.objects.annotate(pageviews=Count("pagevisit")).filter(course_offering=self.request.course_offering).order_by('-pageviews')[0:self.max_rows_to_return]
 
         return qs
 
 
 class TopAccessedContentView(ListAPIView):
     serializer_class = TopAccessedContentSerializer
+    max_rows_to_return = 10
 
     def get_queryset(self):
         course_offering = self.request.course_offering
@@ -37,7 +39,7 @@ class TopAccessedContentView(ListAPIView):
         dt_range = (range_start, range_end)
 
         # Get the page list.  pageviews can be done in the query.
-        page_qs = Page.objects.filter(course_offering=course_offering, pagevisit__visited_at__range=dt_range).values('id', 'title', 'content_type').annotate(pageviews=Count("pagevisit")).order_by('-pageviews')[0:10]
+        page_qs = Page.objects.filter(course_offering=course_offering, pagevisit__visited_at__range=dt_range).values('id', 'title', 'content_type').annotate(pageviews=Count("pagevisit")).order_by('-pageviews')[0:self.max_rows_to_return]
 
         # Now calculate the data for the userviews column by finding the number of distinct users to access each page in the time period.
         # FIXME: This isn't a great way to do it.  Would be good to do it as part of the query above, in a way that didn't involve iteration or sets.
