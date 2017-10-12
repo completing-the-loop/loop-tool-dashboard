@@ -10,9 +10,10 @@ const init = async (
         data: {
             courseId: courseId,
             topUsers: {},
-            topContent: {},
+            topContent: [],
             topForumContent: [],
             topQuizContent: [],
+            weekNum: "",
         },
         mounted: async function mounted() {
             this.getTopContent();
@@ -23,16 +24,7 @@ const init = async (
         },
         methods: {
             async getTopContent() {
-                this.topContent = [
-                    {page_id: 1, title: 'Page 1', module: 'module', user_views: 7, page_views: 9},
-                    {page_id: 2, title: 'Page 2', module: 'module', user_views: 4, page_views: 67},
-                    {page_id: 3, title: 'Page 3', module: 'module', user_views: 6, page_views: 93},
-                    {page_id: 4, title: 'Page 4', module: 'module', user_views: 2, page_views: 54},
-                    {page_id: 5, title: 'Page 5', module: 'module', user_views: 5, page_views: 34},
-                    {page_id: 6, title: 'Page 6', module: 'module', user_views: 8, page_views: 76},
-                    {page_id: 7, title: 'Page 7', module: 'module', user_views: 5, page_views: 74},
-                    {page_id: 8, title: 'Page 8', module: 'module', user_views: 4, page_views: 45},
-                ];
+                this.topContent = await get(`${this.courseId}/top_content/${this.weekNum ? this.weekNum + '/' : ''}`);
             },
             async getTopForumContent() {
                 this.topForumContent = [
@@ -68,6 +60,11 @@ const init = async (
                     y: [1, 2, 4, 8, 16]
                 }];
                 Plotly.plot('graph_container', data, {margin: {t: 0}});
+            },
+        },
+        watch: {
+            weekNum: function (val) {
+                this.getTopContent();
             },
         },
     });

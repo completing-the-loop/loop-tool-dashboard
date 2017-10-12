@@ -39,3 +39,14 @@ class CourseCommunicationPageEventSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'weeks')
+
+
+class TopAccessedContentSerializer(ModelSerializer):
+    pageviews = IntegerField()
+    userviews = IntegerField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'userviews', 'pageviews')
+
+

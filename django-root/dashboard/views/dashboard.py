@@ -231,6 +231,8 @@ class CourseDashboardView(TemplateView):
         #                 'week_no': week_no, 'uniquepageviewsbydayinweek': uniquepageviewsbydayinweek,
         #                 'participantsbydayinweek': participantsbydayinweek}
 
+        context['week_range'] = tuple(i + 1 for i in range(self.request.course_offering.no_weeks))
+        # Most of these can go.
         context['course_weeks'] = course_weeks
         context['week_id'] = self.week_id
         context['weekbeg'] = weekbeg

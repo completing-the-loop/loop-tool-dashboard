@@ -10,10 +10,10 @@
       Course Weekly Dashboard: Week {{ week_no }} ({{ weekbeg }} - {{weekend}})
       <input type="hidden" name="course_id" value="{{ request.course_offering.id }}" />
       <div style="float: right;">
-        <select id="weekfilter" name="week_filter">
-          <option value="-1"> View All</option>
-          {% for i in course_weeks %}
-            <option value="{{i}}" {% if week_id == i %} selected {% endif %}>Week {{ forloop.counter }}</option>
+        <select id="weekfilter" name="week_filter" v-model="weekNum">
+          <option value="">View All</option>
+          {% for i in week_range %}
+            <option value="{{ i }}">Week {{ i }}</option>
           {% endfor %}
         </select>
         <button type="submit" class="btn btn-small btn-primary">Change Week</button>
@@ -94,10 +94,10 @@
           <tbody>
           {% verbatim %}
           <tr v-for="page in topContent">
-            <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
-            <td>{{ page.module }}</td>
-            <td class="text-right">{{ page.user_views }}</td>
-            <td class="text-right">{{ page.page_views }}</td>
+            <td><a :href="`/${courseId}/course_page/${page.id}/`">{{ page.title }}</a></td>
+            <td>{{ page.contentType }}</td>
+            <td class="text-right">{{ page.userviews }}</td>
+            <td class="text-right">{{ page.pageviews }}</td>
           </tr>
           {% endverbatim %}
           </tbody>
