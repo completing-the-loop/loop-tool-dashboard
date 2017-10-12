@@ -11,18 +11,22 @@ from .production_base import *
 
 ALLOWED_HOSTS = [
     # 'www.mysite.com',
+    'circle.its.unimelb.edu.au',
 ]
 
 BODY_ENV_CLASS = 'env-prod'
 
 # Force HTTPS
-SECURE_SSL_REDIRECT = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True
+#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Only use HTTPS for various cookies
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
 
+ADMINS = (
+    ('Alliance Software', 'client-melbourneuni.loop@alliancesoftware.com.au'),
+)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Custom Project Configuration
