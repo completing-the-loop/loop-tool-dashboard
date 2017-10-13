@@ -73,7 +73,7 @@ class ImportLmsData(object):
             pass
 
         try:
-            latest_activity.append(SummaryPost.objects.filter(course_offering=self.course_offering).latest('posted_at').posted_at)
+            latest_activity.append(SummaryPost.objects.filter(page__course_offering=self.course_offering).latest('posted_at').posted_at)
         except SummaryPost.DoesNotExist:
             pass
 
@@ -119,7 +119,7 @@ class ImportLmsData(object):
         LMSSession.objects.filter(course_offering=offering).delete()
         SubmissionAttempt.objects.filter(page__course_offering=offering).delete()
         SubmissionType.objects.filter(course_offering=offering).delete()
-        SummaryPost.objects.filter(course_offering=offering).delete()
+        SummaryPost.objects.filter(page__course_offering=offering).delete()
 
         # # Next cleanup the Summary Tables
         # connection.execute("DELETE FROM Summary_Courses");
