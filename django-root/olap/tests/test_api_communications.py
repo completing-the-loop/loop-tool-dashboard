@@ -6,7 +6,6 @@ import random
 from django.test.testcases import TestCase
 from django.urls.base import reverse
 from django.utils.timezone import get_current_timezone
-from django.utils.timezone import make_aware
 
 from rest_framework.test import APIClient
 from rest_framework.status import HTTP_200_OK
@@ -139,12 +138,12 @@ class APICommunicationStudentsTests(APICommunicationTestsBase):
         visit_dt = self.course_offering.start_datetime + datetime.timedelta(days=3)
         visit = PageVisitFactory(page=page1, lms_user=lms_user1, visited_at=visit_dt)
         visit = PageVisitFactory(page=page1, lms_user=lms_user2, visited_at=visit_dt)
-        visit = PageVisitFactory(page=page1, lms_user=lms_user2, visited_at=visit_dt)
+        visit = PageVisitFactory(page=page2, lms_user=lms_user2, visited_at=visit_dt)
         # Top right: 1xU1
         visit_dt = self.course_offering.start_datetime + datetime.timedelta(days=10)
         visit = PageVisitFactory(page=page1, lms_user=lms_user1, visited_at=visit_dt)
         # Bottom left: 1xU2
-        visit_dt = self.course_offering.start_datetime + datetime.timedelta(days=3)
+        visit_dt = self.course_offering.start_datetime + datetime.timedelta(days=5)
         visit = PageVisitFactory(page=page2, lms_user=lms_user2, visited_at=visit_dt)
         # Nothing in bottom right
 
