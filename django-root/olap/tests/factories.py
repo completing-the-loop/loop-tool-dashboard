@@ -56,6 +56,7 @@ class PageFactory(factory.DjangoModelFactory):
     content_type = fuzzy.FuzzyChoice(choices=Params.CONTENT_TYPE_CHOICES)
     content_id = factory.Sequence(lambda n: n)
     parent = None
+    is_forum = False
     order_no = 0
     title = fuzzy.FuzzyChoice(choices=Params.TITLE_CHOICES)
 

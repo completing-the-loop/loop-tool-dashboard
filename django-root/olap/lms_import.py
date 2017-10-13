@@ -1,11 +1,13 @@
 import csv
-from datetime import datetime
 import io
-import re
-import unicodedata
 from zipfile import ZipFile
 
+from datetime import datetime
+
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import connection
+from django.db.utils import IntegrityError
 from django.utils import dateparse
 
 from dashboard.models import CourseOffering
@@ -36,7 +38,7 @@ class LMSImportFileError(LMSImportError):
     def __init__(self, import_file, msg=None):
         if msg is None:
             msg = "Error in import file {}".format(import_file)
-        super().__init__(msg)
+        super().__init__(msg, import_file)
         self.import_file = import_file
 
 
@@ -105,7 +107,16 @@ class ImportLmsData(object):
             print("Skipping populating summary data for", offering)
 
         if len(errors):
-            # TODO: Email the admins with the list of errors
+            send_mail(
+                'Errors in import of {}'.format(self.course_offering.code),
+                "The following errors occurred during the import of {} at {}:\n{}".format(
+                    self.course_offering.code,
+                    datetime.now(),
+                    "\n".join(errors),
+                ),
+                settings.ADMINS,
+                settings.CLOOP_IMPORT_ADMINS,
+            )
             raise LMSImportDataError(errors)
 
         self.set_latest_activity()
@@ -340,6 +351,8 @@ class BlackboardImport(BaseLmsImport):
     SUBMISSIONS_FIELDNAMES = ['user_key', 'content_key', 'user_grade', 'timestamp']
     ACTIVITY_FIELDNAMES = ['user_key', 'content_key', 'forum_key', 'timestamp']
 
+    FORUM_CONTENT_TYPE = 'resource/x-bb-discussionboard'
+
     def get_assessment_types(self):
         return ['assessment/x-bb-qti-test', 'course/x-bb-courseassessment', 'resource/x-turnitin-assignment']
 
@@ -347,11 +360,16 @@ class BlackboardImport(BaseLmsImport):
         return ['resource/x-bb-discussionboard', 'course/x-bb-collabsession', 'resource/x-bb-discussionfolder']
 
     def process_import_data(self):
+        print("Processing users")
         self._process_csv(self.USERS_FILE, self._process_users)
+        print("Processing resources")
         self._process_csv(self.RESOURCES_FILE, self._process_resources)
         self._process_csv(self.RESOURCES_FILE, self._process_resource_parents)
-        # self._process_csv(self.POSTS_FILE, self._process_posts)
+        print("Processing posts")
+        self._process_csv(self.POSTS_FILE, self._process_posts)
+        print("Processing submission attempts")
         self._process_csv(self.SUBMISSIONS_FILE, self._process_submission_attempts)
+        print("Processing activity")
         self._process_csv(self.ACTIVITY_FILE, self._process_access_log)
 
         return self.error_list
@@ -393,7 +411,7 @@ class BlackboardImport(BaseLmsImport):
                 'content_type': row['resource_type'],
                 'parent_id': None,
             }
-            resource, created = Page.objects.update_or_create(course_offering=self.course_offering, content_id=row['content_key'], defaults=values)
+            resource, created = Page.objects.update_or_create(course_offering=self.course_offering, content_id=row['content_key'], is_forum=False, defaults=values)
 
     def _process_resource_parents(self, resources_data):
         """
@@ -401,7 +419,7 @@ class BlackboardImport(BaseLmsImport):
         """
         for row in resources_data:
             if row['parent_content_key']:
-                content_page = Page.objects.get(content_id=row['content_key'])
+                content_page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
                 try:
                     parent_page = Page.objects.get(content_id=row['parent_content_key'])
                     content_page.parent = parent_page
@@ -418,13 +436,13 @@ class BlackboardImport(BaseLmsImport):
 
         for row in submissions_data:
             try:
-                user = LMSUser.objects.get(lms_user_id=row['user_key'])
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
             except LMSUser.DoesNotExist:
                 self._add_error('Unable to find user {} for submission attempt'.format(row['user_key']))
                 continue
 
             try:
-                page = Page.objects.get(content_id=row['content_key'])
+                page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
             except Page.DoesNotExist:
                 self._add_error('Unable to find page {} for submission attempt'.format(row['content_key']))
                 continue
@@ -442,11 +460,10 @@ class BlackboardImport(BaseLmsImport):
                 self._add_error('Timestamp {} for submission attempt is outside course offering start/end'.format(row['timestamp']))
                 continue
 
-            values = {
-                'grade': row['user_grade'],
-                'attempted_at': attempted_at,
-            }
-            submission, created = SubmissionAttempt.objects.update_or_create(lms_user=user, page=page, defaults=values)
+            try:
+                submission = SubmissionAttempt.objects.create(lms_user=user, page=page, attempted_at=attempted_at, grade=row['user_grade'])
+            except IntegrityError as e:
+                self._add_error('Integrity Error in submission attempt insert: {}'.format(e))
 
     def _process_access_log(self, activity_data):
         """
@@ -455,17 +472,27 @@ class BlackboardImport(BaseLmsImport):
         if set(activity_data.fieldnames) != set(self.ACTIVITY_FIELDNAMES):
             raise LMSImportFileError(self.ACTIVITY_FILE, 'Activity data columns do not match {}'.format(self.ACTIVITY_FIELDNAMES))
 
+        batch_size = 10000
+        batch = []
+
         for row in activity_data:
             try:
-                user = LMSUser.objects.get(lms_user_id=row['user_key'])
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
             except LMSUser.DoesNotExist:
                 self._add_error('Unable to find user {} for activity'.format(row['user_key']))
                 continue
 
             try:
-                page = Page.objects.get(content_id=row['content_key'])
+                # Check if it's a visit to a normal resource or a forum (thread)
+                if row['content_key']:
+                    page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
+                else:
+                    page = Page.objects.get(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
             except Page.DoesNotExist:
-                self._add_error('Unable to find resource {} for activity'.format(row['content_key']))
+                if row['content_key']:
+                    self._add_error('Unable to find resource {} for activity'.format(row['content_key']))
+                else:
+                    self._add_error('Unable to find forum {} for activity'.format(row['forum_key']))
                 continue
 
             try:
@@ -481,7 +508,60 @@ class BlackboardImport(BaseLmsImport):
                 self._add_error('Timestamp {} for access activity is outside course offering start/end'.format(row['timestamp']))
                 continue
 
+            batch.append(PageVisit(lms_user=user, page=page, visited_at=visited_at))
+
+            if len(batch) == batch_size:
+                try:
+                    print("Inserting batch")
+                    PageVisit.objects.bulk_create(batch)
+                    break
+                except IntegrityError as e:
+                    print("Failed batch")
+                    self._add_error('Integrity Error in activity bulk insert: {}'.format(e))
+                batch = []
+
+        try:
+            print("Inserting batch")
+            PageVisit.objects.bulk_create(batch)
+        except IntegrityError as e:
+            print("Failed batch")
+            self._add_error('Integrity Error in activity bulk insert: {}'.format(e))
+
+    def _process_posts(self, posts_data):
+        """
+        Extracts posts from the course import files and updates/inserts into the page visits table
+        """
+        if set(posts_data.fieldnames) != set(self.POSTS_FIELDNAMES):
+            raise LMSImportFileError(self.POSTS_FILE, 'Posts data columns do not match {}'.format(self.POSTS_FIELDNAMES))
+
+        for row in posts_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for post'.format(row['user_key']))
+                continue
+
             values = {
-                'visited_at': visited_at,
+                'title': row['thread'],
+                'content_type': self.FORUM_CONTENT_TYPE,
+                'parent_id': None,
             }
-            page_visit, created = PageVisit.objects.update_or_create(lms_user=user, page=page, defaults=values)
+            page, _ = Page.objects.get_or_create(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
+
+            try:
+                posted_at = dateparse.parse_datetime(row['timestamp'])
+                if posted_at is None:
+                    self._add_error('Timestamp {} for post is not a valid format'.format(row['timestamp']))
+                    continue
+            except ValueError:
+                self._add_error('Timestamp {} for post is not a valid datetime'.format(row['timestamp']))
+                continue
+
+            if posted_at < self.course_offering.start_datetime or posted_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for post is outside course offering start/end'.format(row['timestamp']))
+                continue
+
+            try:
+                post = SummaryPost.objects.create(lms_user=user, page=page, posted_at=posted_at)
+            except IntegrityError as e:
+                self._add_error('Integrity Error in post insert: {}'.format(e))

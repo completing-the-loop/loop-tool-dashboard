@@ -10,7 +10,7 @@ from dashboard.tests.factories import CourseOfferingFactory
 from olap.lms_import import BlackboardImport
 from olap.lms_import import ImportLmsData
 from olap.lms_import import LMSImportFileError
-from olap.models import LMSSession
+from olap.models import LMSSession, SummaryPost
 from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
@@ -237,8 +237,8 @@ class ImportResourcesTestCase(TestCase):
         resources_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_resources(resources_data)
 
-        self.assertTrue(Page.objects.filter(content_id=1, parent__isnull=True, title='Parent page', content_type='resource/x-bb-document', course_offering=self.offering).exists())
-        self.assertTrue(Page.objects.filter(content_id=2, parent__isnull=True, title='Child page', content_type='resource/x-bb-document', course_offering=self.offering).exists())
+        self.assertTrue(Page.objects.filter(content_id=1, parent__isnull=True, title='Parent page', content_type='resource/x-bb-document', is_forum=False, course_offering=self.offering).exists())
+        self.assertTrue(Page.objects.filter(content_id=2, parent__isnull=True, title='Child page', content_type='resource/x-bb-document', is_forum=False, course_offering=self.offering).exists())
 
     def test_valid_parents_data(self):
         test_resources = """\
@@ -249,14 +249,14 @@ class ImportResourcesTestCase(TestCase):
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        parent_page = Page.objects.create(content_id=1, parent=None, title='Parent page', content_type='resource/x-bb-document', course_offering=self.offering)
-        Page.objects.create(content_id=2, parent=None, title='Child page', content_type='resource/x-bb-document', course_offering=self.offering)
+        parent_page = PageFactory(content_id=1, course_offering=self.offering)
+        PageFactory(content_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_resources))
         resources_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_resource_parents(resources_data)
-        self.assertTrue(Page.objects.filter(content_id=1, parent__isnull=True, title='Parent page', content_type='resource/x-bb-document', course_offering=self.offering).exists())
-        self.assertTrue(Page.objects.filter(content_id=2, parent=parent_page, title='Child page', content_type='resource/x-bb-document', course_offering=self.offering).exists())
+        self.assertTrue(Page.objects.filter(content_id=1, parent__isnull=True, course_offering=self.offering).exists())
+        self.assertTrue(Page.objects.filter(content_id=2, parent=parent_page, course_offering=self.offering).exists())
 
     def test_missing_parents_data(self):
         test_resources = """\
@@ -267,8 +267,8 @@ class ImportResourcesTestCase(TestCase):
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        Page.objects.create(content_id=1, parent=None, title='Parent page', content_type='resource/x-bb-document', course_offering=self.offering)
-        Page.objects.create(content_id=2, parent=None, title='Child page', content_type='resource/x-bb-document', course_offering=self.offering)
+        PageFactory(content_id=1, course_offering=self.offering)
+        PageFactory(content_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_resources))
         resources_data = csv.DictReader(csv_data, delimiter='|')
@@ -308,9 +308,9 @@ class ImportSubmissionAttemptsTestCase(TestCase):
         importer = BlackboardImport('ignore.zip', self.offering)
 
         attempt_dt = datetime.datetime(2017, 10, 5, 13, 30, 0, tzinfo=datetime.timezone.utc)
-        page = Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        user1 = LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
-        user2 = LMSUser.objects.create(lms_user_id=2, username='student2', firstname='Sample', lastname='Student', email='student2@email.com', course_offering=self.offering)
+        page = PageFactory(content_id=1, course_offering=self.offering)
+        user1 = LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        user2 = LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_submissions))
         submissions_data = csv.DictReader(csv_data, delimiter='|')
@@ -329,8 +329,8 @@ class ImportSubmissionAttemptsTestCase(TestCase):
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
+        PageFactory(content_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_submissions))
         submissions_data = csv.DictReader(csv_data, delimiter='|')
@@ -348,13 +348,95 @@ class ImportSubmissionAttemptsTestCase(TestCase):
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=2, username='student2', firstname='Sample', lastname='Student', email='student2@email.com', course_offering=self.offering)
+        PageFactory(content_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_submissions))
         submissions_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_submission_attempts(submissions_data)
+
+        self.assertEqual(len(importer.error_list), 2)
+
+
+class ImportPostsTestCase(TestCase):
+    """
+    Tests to ensure that the posts imports are handled correctly
+    """
+
+    def setUp(self):
+        self.offering = CourseOfferingFactory(start_date=datetime.date(2017, 7, 3), no_weeks=14)
+
+    def test_invalid_column_names(self):
+        test_posts = """\
+            forum_key|user_key|invalid_col
+            1|2|value
+        """
+
+        csv_data = io.StringIO(dedent(test_posts))
+        posts_data = csv.DictReader(csv_data, delimiter='|')
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        with self.assertRaises(LMSImportFileError):
+            importer._process_posts(posts_data)
+
+    def test_valid_data(self):
+        test_posts = """\
+            forum_key|user_key|thread|post|timestamp
+            1|1|Name of thread|User 1 post|2017-10-05 13:30:00+00:00
+            1|2|Name of thread|User 2 post|2017-10-05 13:30:00+00:00
+        """
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        posted_dt = datetime.datetime(2017, 10, 5, 13, 30, 0, tzinfo=datetime.timezone.utc)
+        page = PageFactory(content_id=1, is_forum=True, course_offering=self.offering)
+        user1 = LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        user2 = LMSUserFactory(lms_user_id=2, course_offering=self.offering)
+
+        csv_data = io.StringIO(dedent(test_posts))
+        posts_data = csv.DictReader(csv_data, delimiter='|')
+        importer._process_posts(posts_data)
+
+        self.assertTrue(SummaryPost.objects.filter(page=page, lms_user=user1, posted_at=posted_dt).exists())
+        self.assertTrue(SummaryPost.objects.filter(page=page, lms_user=user2, posted_at=posted_dt).exists())
+
+
+    def test_missing_related_objects(self):
+        test_posts = """\
+            forum_key|user_key|thread|post|timestamp
+            1|500|Name of thread|User 1 post|2017-10-05 13:30:00+00:00
+        """
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        PageFactory(content_id=1, is_forum=True, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+
+        csv_data = io.StringIO(dedent(test_posts))
+        posts_data = csv.DictReader(csv_data, delimiter='|')
+        importer._process_posts(posts_data)
+
+        self.assertEqual(len(importer.error_list), 1)
+
+
+    def test_invalid_access_datetimes(self):
+        test_posts = """\
+            forum_key|user_key|thread|post|timestamp
+            1|1|Name of thread|User 1 post|2016-10-05 13:30:00+00:00
+            1|2|Name of thread|User 2 post|2018-10-05 13:30:00+00:00
+        """
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        PageFactory(content_id=1, is_forum=True, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=2, course_offering=self.offering)
+
+        csv_data = io.StringIO(dedent(test_posts))
+        posts_data = csv.DictReader(csv_data, delimiter='|')
+        importer._process_posts(posts_data)
 
         self.assertEqual(len(importer.error_list), 2)
 
@@ -386,40 +468,44 @@ class ImportActivityTestCase(TestCase):
             user_key|content_key|forum_key|timestamp
             1|1||2017-10-05 13:30:00+00:00
             2|1||2017-10-05 13:30:00+00:00
+            2||2|2017-10-05 13:30:00+00:00
         """
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
         visit_dt = datetime.datetime(2017, 10, 5, 13, 30, 0, tzinfo=datetime.timezone.utc)
-        page = Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        user1 = LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
-        user2 = LMSUser.objects.create(lms_user_id=2, username='student2', firstname='Sample', lastname='Student', email='student2@email.com', course_offering=self.offering)
+        resource_page = PageFactory(content_id=1, is_forum=False, course_offering=self.offering)
+        post_page = PageFactory(content_id=2, is_forum=True, course_offering=self.offering)
+        user1 = LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        user2 = LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_activity))
         activity_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_access_log(activity_data)
 
-        self.assertTrue(PageVisit.objects.filter(page=page, lms_user=user1, visited_at=visit_dt).exists())
-        self.assertTrue(PageVisit.objects.filter(page=page, lms_user=user2, visited_at=visit_dt).exists())
+        self.assertTrue(PageVisit.objects.filter(page=resource_page, lms_user=user1, visited_at=visit_dt).exists())
+        self.assertTrue(PageVisit.objects.filter(page=resource_page, lms_user=user2, visited_at=visit_dt).exists())
+        self.assertTrue(PageVisit.objects.filter(page=post_page, lms_user=user2, visited_at=visit_dt).exists())
 
 
     def test_missing_related_objects(self):
         test_activity = """\
             user_key|content_key|forum_key|timestamp
             1|500||2017-10-05 13:30:00+00:00
+            1||500|2017-10-05 13:30:00+00:00
             500|1||2017-10-05 13:30:00+00:00
         """
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
+        PageFactory(content_id=1, is_forum=False, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_activity))
         activity_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_access_log(activity_data)
 
-        self.assertEqual(len(importer.error_list), 2)
+        self.assertEqual(len(importer.error_list), 3)
 
 
     def test_invalid_access_datetimes(self):
@@ -431,9 +517,9 @@ class ImportActivityTestCase(TestCase):
 
         importer = BlackboardImport('ignore.zip', self.offering)
 
-        Page.objects.create(content_id=1, parent=None, title='Sample page', content_type='resource/x-bb-document', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=1, username='student1', firstname='Sample', lastname='Student', email='student1@email.com', course_offering=self.offering)
-        LMSUser.objects.create(lms_user_id=2, username='student2', firstname='Sample', lastname='Student', email='student2@email.com', course_offering=self.offering)
+        PageFactory(content_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_activity))
         activity_data = csv.DictReader(csv_data, delimiter='|')
