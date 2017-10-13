@@ -70,12 +70,18 @@ class Command(BaseCommand):
         # no state kept across offerings.
         error_count = 0
         for course_code in course_codes:
+            course_offering = None
             try:
                 course_offering = CourseOffering.objects.get(code=course_code)
                 course_offering.is_importing = True
                 course_offering.save()
                 import_olap_task.delay(course_offering.id, course_import_metadata['courses'][course_code]['filename'], just_clear=options['clear'])
             except:
+                # Reset the course offering
+                if course_offering:
+                    course_offering.is_importing = False
+                    course_offering.save()
+
                 error_count += 1
                 self.stderr.write('An error occurred when {}ing the data for {}:'.format(verb, course_code))
                 if not options['trace']:
