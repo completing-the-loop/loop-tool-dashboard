@@ -1,5 +1,7 @@
 -r base.txt
 
+circus
+
 # Use URL syntax for database config (required for heroku)
 #dj-database-url
 
@@ -8,7 +10,7 @@
 # WSGI lib
 
 # stand
-#gunicorn
+gunicorn
 
 # See https://github.com/etianen/django-herokuapp/issues/9#issuecomment-14165240
 # waitress caps the number of threads so on heroku is preferred over gunicorn
