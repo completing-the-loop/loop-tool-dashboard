@@ -605,6 +605,9 @@ CELERY_BEAT_SCHEDULE = {
 # PERMANENT_FIELD = 'deleted_at'
 
 
+CLOOP_IMPORT_ADMINS = []
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Frontend Testing Settings
 

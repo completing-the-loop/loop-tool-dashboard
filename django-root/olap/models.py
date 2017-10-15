@@ -103,9 +103,15 @@ class LMSUser(models.Model):
 #   `session_id` int(11) DEFAULT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class PageVisit(models.Model):
+    lms_activity_id = models.CharField(max_length=255)
     visited_at = models.DateTimeField()
     lms_user = models.ForeignKey(LMSUser)
     page = models.ForeignKey('Page')
+    session = models.ForeignKey('LMSSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
+
+    class Meta:
+        unique_together = (('lms_user', 'page', 'visited_at'), )
+
     # TODO: There's several fields here which are candidates for removal/alteration.  Audit.
     module = models.CharField(blank=True, max_length=255) # Is this always a resource/x-bb-* content type?
     action = models.CharField(blank=True, max_length=255)
@@ -114,7 +120,6 @@ class PageVisit(models.Model):
     section_pk = models.CharField(blank=True, max_length=255)
     section_order = models.IntegerField(blank=True, null=True)
     info = models.TextField()
-    session = models.ForeignKey('LMSSession', blank=True, null=True) # We need to allow blank to cater for period before sessions are calculated.
 
 # CREATE TABLE `dim_pages` (
 #   `id` int(11) NOT NULL,
@@ -131,12 +136,13 @@ class Page(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     content_type = models.CharField(max_length=255)
     content_id = models.IntegerField()
-    parent_id = models.IntegerField(default=0)
+    is_forum = models.BooleanField(default=False)   # Defines whether content_id is from the resources or the forums
+    parent = models.ForeignKey('self', null=True, blank=True)
     order_no = models.IntegerField(default=0)
     title = models.TextField()
 
     class Meta:
-        unique_together = (('course_offering', 'content_id'), )
+        unique_together = (('course_offering', 'content_id', 'is_forum'), )
 
     def __str__(self):
         return '<Page {}: {}>'.format(self.id, self.title)
@@ -206,10 +212,14 @@ class LMSSession(models.Model):
 #   `unixtimestamp` int(11) NOT NULL
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 class SubmissionAttempt(models.Model):
+    attempt_key = models.CharField(max_length=255)
     attempted_at = models.DateTimeField()
     page = models.ForeignKey(Page) # Was called content_id
     lms_user = models.ForeignKey(LMSUser)
     grade = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = (('lms_user', 'page', 'attempted_at'),)
 
 
 # CREATE TABLE `dim_submissiontypes` (
@@ -352,6 +362,10 @@ class SummaryPost(models.Model):
     page = models.ForeignKey('Page')
     lms_user = models.ForeignKey(LMSUser)
     posted_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = (('lms_user', 'page', 'posted_at'),)
+
 
 # CREATE TABLE `Summary_SessionAverageLengthByDayInWeek` (
 #   `id` int(11) NOT NULL,

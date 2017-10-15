@@ -142,7 +142,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
 DATA_PROCESSING_DIR = _Path(PROJECT_DIR, 'data')
-
+CLOOP_IMPORT_ADMINS = ['dev@localhost']
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Note that manage.py runserver forks processes so this will unavoidably display multiple times

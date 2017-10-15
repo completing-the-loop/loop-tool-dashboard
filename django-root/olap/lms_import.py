@@ -1,11 +1,14 @@
 import csv
-from datetime import datetime
-import re
+import io
+from zipfile import ZipFile
 
-from django.utils import timezone
+from datetime import datetime
+
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import connection
-from unipath.path import Path
-import xml.etree.cElementTree as ET
+from django.db.utils import IntegrityError
+from django.utils import dateparse
 
 from dashboard.models import CourseOffering
 from olap.models import LMSSession
@@ -27,6 +30,26 @@ from olap.models import SummarySessionsByDayInWeek
 from olap.models import SummaryUniquePageViewsByDayInWeek
 
 
+class LMSImportError(Exception):
+    pass
+
+
+class LMSImportFileError(LMSImportError):
+    def __init__(self, import_file, msg=None):
+        if msg is None:
+            msg = "Error in import file {}".format(import_file)
+        super().__init__(msg, import_file)
+        self.import_file = import_file
+
+
+class LMSImportDataError(LMSImportError):
+    def __init__(self, errors, msg=None):
+        if msg is None:
+            msg = "One or more errors in import data"
+        super().__init__(msg, errors)
+        self.errors = errors
+
+
 class ImportLmsData(object):
     SESSION_LENGTH_MINS = 40
 
@@ -35,20 +58,46 @@ class ImportLmsData(object):
 
     def __init__(self, course_offering, file_path, just_clear=False):
         self.just_clear = just_clear
-        self.course_export_path = file_path
+        self.course_import_path = file_path
         self.course_offering = course_offering
 
+    def set_latest_activity(self):
+        latest_activity = []
+
+        try:
+            latest_activity.append(PageVisit.objects.filter(page__course_offering=self.course_offering).latest('visited_at').visited_at)
+        except PageVisit.DoesNotExist:
+            pass
+
+        try:
+            latest_activity.append(SubmissionAttempt.objects.filter(page__course_offering=self.course_offering).latest('attempted_at').attempted_at)
+        except SubmissionAttempt.DoesNotExist:
+            pass
+
+        try:
+            latest_activity.append(SummaryPost.objects.filter(page__course_offering=self.course_offering).latest('posted_at').posted_at)
+        except SummaryPost.DoesNotExist:
+            pass
+
+        if len(latest_activity):
+            self.course_offering.last_activity_at = max(latest_activity)
+        else:
+            self.course_offering.last_activity_at = None
+        self.course_offering.save()
+
     def process(self):
+        errors = []
         offering = self.course_offering
-        print("Removing old data for", offering)
-        self.remove_olap_data()
         if self.just_clear:
+            print("Removing old data for", offering)
+            self.remove_olap_data()
+            self.set_latest_activity()
             return
 
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
-            lms_import = BlackboardImport(self.course_export_path, offering)
-            lms_import.process_import_data()
+            lms_import = BlackboardImport(self.course_import_path, offering)
+            errors = lms_import.process_import_data()
 
             print("Processing user sessions for", offering)
             self._calculate_sessions()
@@ -56,6 +105,21 @@ class ImportLmsData(object):
             # print("Populating summary data for {}".format(course_offering))
             # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
             print("Skipping populating summary data for", offering)
+
+        if len(errors):
+            send_mail(
+                'Errors in import of {}'.format(self.course_offering.code),
+                "The following errors occurred during the import of {} at {}:\n{}".format(
+                    self.course_offering.code,
+                    datetime.now(),
+                    "\n".join(errors),
+                ),
+                settings.ADMINS,
+                settings.CLOOP_IMPORT_ADMINS,
+            )
+            raise LMSImportDataError(errors)
+
+        self.set_latest_activity()
 
     def remove_olap_data(self):
         offering = self.course_offering
@@ -66,6 +130,7 @@ class ImportLmsData(object):
         LMSSession.objects.filter(course_offering=offering).delete()
         SubmissionAttempt.objects.filter(page__course_offering=offering).delete()
         SubmissionType.objects.filter(course_offering=offering).delete()
+        SummaryPost.objects.filter(page__course_offering=offering).delete()
 
         # # Next cleanup the Summary Tables
         # connection.execute("DELETE FROM Summary_Courses");
@@ -255,36 +320,10 @@ class ImportLmsData(object):
 
 class BaseLmsImport(object):
 
-    def __init__(self, course_export_path, course_offering):
+    def __init__(self, course_import_path, course_offering):
         self.course_offering = course_offering
-        self.course_export_path = course_export_path
-
-        self.our_tz = timezone.get_current_timezone()
-        # Is there a better mechanism for this?
-
-    # https://docs.python.org/3/library/time.html#time.strftime
-    def convert_datetimestr_to_datetime(self, datetimestr):
-        # Data may have EDT or EST appended.  Strip this off.
-        datetimestr_without_tz = re.sub(r'( EDT| EST)?$', '', datetimestr)
-        date = datetime.strptime(datetimestr_without_tz, '%Y-%m-%d %H:%M:%S') # eg 2015-07-24 16:52:53
-        return self.our_tz.localize(date, is_dst=None)
-
-    def convert_ddmonyy_to_datetime(self, ddmonyy):
-        dt = datetime.strptime(ddmonyy, "%d-%b-%y %H:%M:%S") # eg 01-SEP-14 09:46:52
-        return self.our_tz.localize(dt, is_dst=None)
-
-    # There was code that asked for these conversions, and so I've moved them here, but
-    # it seems they're never called.
-    """
-    def cvt_datestr_to_date(self, datestr):
-        datetime = datetime.strptime(datestr, '%Y-%m-%d')
-        current_timezone = timezone.get_current_timezone()
-        return self.our_tz.localize(date, is_dst=None)
-
-    def cvt_ddmonyy_to_date(self, ddmonyy):
-        datetime = datetime.strptime(ddmonyy, "%d-%b-%y")
-        return self.our_tz.localize(datetime, is_dst=None)
-    """
+        self.course_import_path = course_import_path
+        self.error_list = []
 
     def process_import_data(self):
         raise NotImplementedError("'process_import_data' must be implemented")
@@ -295,15 +334,24 @@ class BaseLmsImport(object):
     def get_communication_types(self):
         raise NotImplementedError("'get_communication_types' must be implemented")
 
-
+    def _add_error(self, error_msg):
+        self.error_list.append(error_msg)
 
 
 class BlackboardImport(BaseLmsImport):
-    announcements_id = None
-    gradebook_id = None
-    user_membership_resource_file = None
-    resource_id_type_lookup_dict = {}
-    content_link_id_to_content_id_dict = {}
+    USERS_FILE = 'user.txt'
+    RESOURCES_FILE = 'resources.txt'
+    POSTS_FILE = 'forums.txt'
+    SUBMISSIONS_FILE = 'assessments.txt'
+    ACTIVITY_FILE = 'activity.txt'
+
+    USERS_FIELDNAMES = ['user_key', 'firstname', 'lastname', 'username', 'email']
+    RESOURCES_FIELDNAMES = ['content_key', 'parent_content_key', 'title', 'resource_type']
+    POSTS_FIELDNAMES = ['forum_key', 'user_key', 'thread', 'post', 'timestamp']
+    SUBMISSIONS_FIELDNAMES = ['user_key', 'content_key', 'user_grade', 'timestamp']
+    ACTIVITY_FIELDNAMES = ['user_key', 'content_key', 'forum_key', 'timestamp']
+
+    FORUM_CONTENT_TYPE = 'resource/x-bb-discussionboard'
 
     def get_assessment_types(self):
         return ['assessment/x-bb-qti-test', 'course/x-bb-courseassessment', 'resource/x-turnitin-assignment']
@@ -312,441 +360,204 @@ class BlackboardImport(BaseLmsImport):
         return ['resource/x-bb-discussionboard', 'course/x-bb-collabsession', 'resource/x-bb-discussionfolder']
 
     def process_import_data(self):
-        self._process_manifest()
-        self._process_users()
-        self._process_access_log()
+        print("Processing users")
+        self._process_csv(self.USERS_FILE, self._process_users)
+        print("Processing resources")
+        self._process_csv(self.RESOURCES_FILE, self._process_resources)
+        self._process_csv(self.RESOURCES_FILE, self._process_resource_parents)
+        print("Processing posts")
+        self._process_csv(self.POSTS_FILE, self._process_posts)
+        print("Processing submission attempts")
+        self._process_csv(self.SUBMISSIONS_FILE, self._process_submission_attempts)
+        print("Processing activity")
+        self._process_csv(self.ACTIVITY_FILE, self._process_access_log)
 
-    def _process_manifest(self):
-        manifest_file = Path(self.course_export_path, 'imsmanifest.xml')
-        tree = ET.ElementTree(file=manifest_file)
-        root = tree.getroot()
+        return self.error_list
 
-        membership_file = None
-        gradebook_file = None
+    def _process_csv(self, file_name, process_callable):
+        with ZipFile(self.course_import_path) as import_zip:
+            with import_zip.open(file_name) as csv_file:
+                csv_file = io.TextIOWrapper(csv_file, encoding='UTF-8', newline='')
+                csv_data = csv.DictReader(csv_file, delimiter='|')
+                process_callable(csv_data)
 
-        # Get all resource no and the pk for each.
-        # Store a dict to map resource no to pk and a dict of counts of content types
-        # Make a dict to match resource no to pk (id)
-        resource_pk_dict = {}
-        resource_type_lookup_dict = {}
-        resource_name_lookup_dict = {}
-        toc_dict = {'discussion_board_entry': 0, 'staff_information': 0, 'announcements_entry': 0, 'check_grade': 0}
-
-        # Make a dict to store counts of content types
-        resource_type_dict = {}
-
-        assessment_res_to_id_dict = {}
-
-        for elem in tree.iter(tag='resource'):
-            resource_file = elem.attrib["{http://www.blackboard.com/content-packaging/}file"]
-            resource_file_path = Path(self.course_export_path, resource_file)
-
-            # http://www.peterbe.com/plog/unicode-to-ascii
-            resource_title = elem.attrib["{http://www.blackboard.com/content-packaging/}title"]
-            resource_title = unicodedata.normalize('NFKD', resource_title).encode('ascii', 'ignore')
-
-            resource_type = elem.attrib["type"]
-            if resource_type == "resource/x-bb-document":
-                resource_type = self._get_resource_content_type(resource_file_path)
-            resource_no = elem.attrib["{http://www.w3.org/XML/1998/namespace}base"]
-            # the type file has invalid xml course/x-bb-trackingevent so ignore
-
-            real_id = "0"
-            if resource_type not in ["course/x-bb-trackingevent", "assessment/x-bb-qti-attempt", "resource/x-bb-announcement"]:
-                resource_id = self._get_resource_id(resource_file_path, resource_type)
-
-                resource_pk_dict[resource_no] = resource_id
-                resource_type_lookup_dict[resource_no] = resource_type
-                resource_name_lookup_dict[resource_no] = resource_title
-                if resource_id != '0':
-                    self.resource_id_type_lookup_dict[resource_id[1:len(resource_id) - 2]] = resource_type
-                    real_id = resource_id[1:-2]
-                else:
-                    self.resource_id_type_lookup_dict[resource_id] = resource_type
-                if resource_type in resource_type_dict:
-                    resource_type_dict[resource_type] = resource_type_dict[resource_type] + 1
-                else:
-                    resource_type_dict[resource_type] = 1
-                if resource_type == "course/x-bb-user":
-                    self.user_membership_resource_file = resource_file_path
-
-                if resource_type == "resource/x-bb-discussionboard":
-                    self._process_forum(resource_file_path)
-                elif resource_type == "resource/x-bb-conference":
-                    self._process_conferences(resource_file_path, resource_id)
-                elif resource_type == "course/x-bb-gradebook":
-                    gradebook_file = resource_file
-                elif resource_type == "assessment/x-bb-qti-test":
-                    self._process_exam(resource_file_path, resource_id, resource_type)
-                    assessment_res_to_id_dict[resource_no] = resource_id[1:-2]
-                elif resource_type == 'membership/x-bb-coursemembership':
-                    membership_file = resource_file
-
-                if resource_type in ['assessment/x-bb-qti-test', 'resource/x-bb-discussionboard']:
-                    details_to_use_if_page_doesnt_exist = dict(content_type=resource_type, title=resource_title)
-                    dim_page, _ = Page.objects.update_or_create(content_id=real_id, course_offering=self.course_offering, defaults=details_to_use_if_page_doesnt_exist)
-
-        parent_map = {}
-        for parent_node in tree.iter():
-            for child_node in parent_node:
-                parent_map[child_node] = parent_node
-
-        order = 1
-        for node in parent_map:
-            if node.tag == "item" and 'identifierref' in node.attrib:
-                current_node = node.attrib["identifierref"]
-                parent_node = parent_map[node]
-                if parent_node.tag == "organization":
-                    parent_resource = parent_node.attrib["identifier"]
-                    if parent_resource in resource_pk_dict:
-                        parent_resource_no = resource_pk_dict[parent_resource]
-                    else:
-                        parent_resource_no = 0
-                elif 'identifierref' in parent_node.attrib:
-                    parent_resource = parent_node.attrib["identifierref"]
-                    if parent_resource in resource_pk_dict:
-                        parent_resource_no = resource_pk_dict[parent_resource]
-                    else:
-                        parent_resource_no = 0
-                else:
-                    parent_resource_no = 0
-                current_node_name = resource_name_lookup_dict[current_node]  # node.attrib["{http://www.blackboard.com/content-packaging/}title"]
-                current_node_type = resource_type_lookup_dict[current_node]
-                current_node_id = resource_pk_dict[current_node]
-                current_node_id = current_node_id[1:len(current_node_id) - 2]
-                if parent_resource_no != 0:
-                    parent_resource_no = parent_resource_no[1:len(parent_resource_no) - 2]
-
-                # get actual content handle
-                content_handle = self._get_content_handle(Path(self.course_export_path, current_node + ".dat"))
-
-                if content_handle in toc_dict:
-                    toc_dict[content_handle] = current_node_id
-                    if content_handle == "staff_information":
-                        current_node_type = "resource/x-bb-stafffolder"
-                    elif content_handle == "discussion_board_entry":
-                        current_node_type = "resource/x-bb-discussionfolder"
-                    elif content_handle == "check_grade":
-                        current_node_type = "course/x-bb-gradebook"
-
-                if current_node_type != "resource/x-bb-asmt-test-link":
-                    dim_page = Page(course_offering=self.course_offering, content_type=current_node_type, content_id=current_node_id, title=current_node_name, order_no=order, parent_id=parent_resource_no)
-                    dim_page.save()
-            order += 1
-
-        # store single announcements item to match announcements coming from log
-        self.announcements_id = Page.get_next_page_id(self.course_offering)
-        announcements_page = Page(course_offering=self.course_offering, content_type="resource/x-bb-announcement", content_id=self.announcements_id, title="Announcements")
-        announcements_page.save()
-
-        # store single view gradebook to match check_gradebook coming from log
-        self.gradebook_id = Page.get_next_page_id(self.course_offering)
-        gradebook_page = Page(course_offering=self.course_offering, content_type="course/x-bb-gradebook", content_id=self.gradebook_id, title="View Gradebook")
-        gradebook_page.save()
-
-        # remap /x-bbstaffinfo and discussion boards
-        if toc_dict['staff_information'] != 0:
-            Page.objects.filter(course_offering=self.course_offering, content_type="resource/x-bb-staffinfo").update(parent_id=toc_dict['staff_information'])
-
-        # process memberships
-        member_to_user_dict = self._process_memberships(Path(self.course_export_path, membership_file))
-
-        # process quiz attempts in gradebook file
-        self._process_attempts(Path(self.course_export_path, gradebook_file), assessment_res_to_id_dict, member_to_user_dict, self.course_export_path)
-
-    def _process_users(self):
+    def _process_users(self, users_data):
         """
-        Extracts users from the course export files and inserts into the dim_users table
-        Todo: Update to include all roles not only students
+        Extracts users from the course import files and updates/inserts into the LMSUser table
         """
-        tree = ET.ElementTree(file=self.user_membership_resource_file)
-        root = tree.getroot()
-        username = None
-        firstname = None
-        lastname = None
-        role = None
-        email = None
-        for child_of_root in root:
-            user_id = str(child_of_root.attrib["id"])
-            user_id = user_id[1:(len(user_id) - 2)]
-            for child_child_of_root in child_of_root:
-                if child_child_of_root.tag == "EMAILADDRESS":
-                    email = child_child_of_root.attrib["value"]
-                if child_child_of_root.tag == "USERNAME":
-                    username = child_child_of_root.attrib["value"]
-                for child_child_child_of_root in child_child_of_root:
-                    if child_child_child_of_root.tag == "GIVEN":
-                        firstname = child_child_child_of_root.attrib["value"]
-                        firstname = firstname.replace("'", "''")
-                    elif child_child_child_of_root.tag == "FAMILY":
-                        lastname = child_child_child_of_root.attrib["value"]
-                        lastname = lastname.replace("'", "''")
-                    elif child_child_child_of_root.tag == "ROLEID":
-                        role = child_child_child_of_root.attrib["value"]
+        if set(users_data.fieldnames) != set(self.USERS_FIELDNAMES):
+            raise LMSImportFileError(self.USERS_FILE, 'User data columns do not match {}'.format(self.USERS_FIELDNAMES))
 
-            if not firstname:
-                firstname = "blank"
-            if not lastname:
-                lastname = "blank"
-            if not email:
-                email = "blank"
-            if role != "STAFF":
-                # The likelihood is that users saved here have already been referred to when importing data for the
-                # other models, and were saved as partials.  This fills in the fields that weren't saved when the
-                # partials were saved.
-                details_to_use_if_user_doesnt_exist = dict(firstname=firstname, lastname=lastname, username=username, email=email, role=role)
-                lms_user, _ = LMSUser.objects.update_or_create(lms_user_id=user_id, course_offering=self.course_offering, defaults=details_to_use_if_user_doesnt_exist)
+        for row in users_data:
+            values = {
+                'firstname': row['firstname'],
+                'lastname': row['lastname'],
+                'username': row['username'],
+                'email': row['email'],
+            }
+            user, created = LMSUser.objects.update_or_create(course_offering=self.course_offering, lms_user_id=row['user_key'], defaults=values)
 
-    droppable_row_DATA_string_fns = (
-        lambda s: s.endswith('/list_assignments.jsp'),
-        lambda s: s.endswith('/500.jsp'),
-        lambda s: s == '/webapps/discussionboard/do/message',
-        lambda s: s == 'Mobile Course View',
-        lambda s: s == '@X@content.eval_label@X@',
-        lambda s: s == '/webapps/blackboard/content/contentWrapperItem.jsp',
-        lambda s: s == 'Grade Centre',
-        lambda s: s == '/webapps/item-analysis/itemanalysis/showItemAnalysis',
-    )
-
-    def _process_access_log(self):
+    def _process_resources(self, resources_data):
         """
-            Extract entries from the csv log file from a Blackboard course offering and inserts each entry as a row in the fact_coursevisits table
+        Extracts pages/resources from the course import files and updates/inserts into the Page table
         """
-        course_log_file = Path(self.course_export_path, 'log.csv')
-        with open(course_log_file, 'rU') as f:
-            reader = csv.DictReader(f)
+        if set(resources_data.fieldnames) != set(self.RESOURCES_FIELDNAMES):
+            raise LMSImportFileError(self.RESOURCES_FILE, 'Resource data columns do not match {}'.format(self.RESOURCES_FIELDNAMES))
 
-            for row in reader:
-                # Process row
-                visited_at = self.convert_ddmonyy_to_datetime(row["TIMESTAMP"])
+        # Set the parent to None until all resources are inserted
+        for row in resources_data:
+            values = {
+                'title': row['title'],
+                'content_type': row['resource_type'],
+                'parent_id': None,
+            }
+            resource, created = Page.objects.update_or_create(course_offering=self.course_offering, content_id=row['content_key'], is_forum=False, defaults=values)
 
-                user_id = row["USER_PK1"]
-                content_id = row["CONTENT_PK1"]
-                action = row["EVENT_TYPE"]
-                forum_id = row["FORUM_PK1"]
+    def _process_resource_parents(self, resources_data):
+        """
+        Go through the pages/resources from the course import files again and find the parents, deleting any pages whose parent is missing
+        """
+        for row in resources_data:
+            if row['parent_content_key']:
+                content_page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
+                try:
+                    parent_page = Page.objects.get(content_id=row['parent_content_key'])
+                    content_page.parent = parent_page
+                    content_page.save()
+                except Page.DoesNotExist:
+                    self._add_error('Unable to find parent resource {}'.format(row['parent_content_key']))
 
-                data = row["DATA"]
-                if any((fn(data) for fn in self.droppable_row_DATA_string_fns)):
-                    print("Dropping row, row=", row)
+    def _process_submission_attempts(self, submissions_data):
+        """
+        Extracts submission attempts from the course import files and updates/inserts into the submission attempts table
+        """
+        if set(submissions_data.fieldnames) != set(self.SUBMISSIONS_FIELDNAMES):
+            raise LMSImportFileError(self.SUBMISSIONS_FILE, 'Submissions data columns do not match {}'.format(self.SUBMISSIONS_FIELDNAMES))
+
+        for row in submissions_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for submission attempt'.format(row['user_key']))
+                continue
+
+            try:
+                page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
+            except Page.DoesNotExist:
+                self._add_error('Unable to find page {} for submission attempt'.format(row['content_key']))
+                continue
+
+            try:
+                attempted_at = dateparse.parse_datetime(row['timestamp'])
+                if attempted_at is None:
+                    self._add_error('Timestamp {} for submission attempt is not a valid format'.format(row['timestamp']))
                     continue
+            except ValueError:
+                self._add_error('Timestamp {} for submission attempt is not a valid datetime'.format(row['timestamp']))
+                continue
 
-                if forum_id:
-                    content_id = forum_id
+            if attempted_at < self.course_offering.start_datetime or attempted_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for submission attempt is outside course offering start/end'.format(row['timestamp']))
+                continue
 
+            try:
+                submission = SubmissionAttempt.objects.create(lms_user=user, page=page, attempted_at=attempted_at, grade=row['user_grade'])
+            except IntegrityError as e:
+                self._add_error('Integrity Error in submission attempt insert: {}'.format(e))
 
-                # default for module
-                content_type = "blank"
-                if content_id:
-                    if str(content_id) in self.resource_id_type_lookup_dict:
-                        content_type = self.resource_id_type_lookup_dict[str(content_id)]
-                    else:
-                        if not row["INTERNAL_HANDLE"]:
-                            content_type = row["DATA"]
-                            # also add to dim_pages
-                            if not Page.objects.filter(content_id=int(content_id)).exists():
-                                title = "blank"
-                                if content_type == "/webapps/blackboard/execute/blti/launchLink":
-                                    title = "LTI Link"
-                                elif content_type == "/webapps/blackboard/execute/manageCourseItem":
-                                    title = "Manage Course Item"
-                                dim_page = Page(course_offering=self.course_offering, content_type=content_type, content_id=content_id, title=title)
-                                dim_page.save()
-                elif row["INTERNAL_HANDLE"] == "my_announcements":
-                    content_type = "resource/x-bb-announcement"
-                    content_id = str(self.announcements_id)
-                elif row["INTERNAL_HANDLE"] == "check_grade":
-                    content_type = "course/x-bb-gradebook"
-                    content_id = str(self.gradebook_id)
-
-                # map all links in content to assessment to actual assessment id
-                if content_id in self.content_link_id_to_content_id_dict:
-                    content_id = self.content_link_id_to_content_id_dict[content_id]
-
-                # Need to exclude forum post creation as this is counted in summary_posts
-                # Exclude admin actions such as entering an announcement
-                if row["INTERNAL_HANDLE"] not in ['discussion_board_entry', 'db_thread_list_entry',
-                                                   'db_collection_entry', 'announcements_entry',
-                                                   'cp_gradebook_needs_grading']:
-                    lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                    page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
-                    page_visit = PageVisit(lms_user=lms_user, visited_at=visited_at, module=content_type, action=action, page=page)
-                    page_visit.save()
-
-    def _get_resource_content_type(self, file_path):
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        content_type = ""
-        for elem in tree.iter(tag='CONTENTHANDLER'):
-            content_type =  elem.attrib["value"]
-        return content_type
-
-    def _get_resource_id(self, resource_file, resource_type=None):
-        resource_id = '0'
-        tree = ET.ElementTree(file=resource_file)
-        root = tree.getroot()
-        if resource_type == "assessment/x-bb-qti-test":
-            for elem in tree.iter(tag='assessmentmetadata'):
-                for elem_elem in elem:
-                    if elem_elem.tag == "bbmd_asi_object_id":
-                        resource_id =  elem_elem.text
-        else:
-            if "id" in root.attrib:
-                resource_id = root.attrib["id"]
-            elif root.tag == "questestinterop":
-                for elem in tree.iter(tag='assessmentmetadata'):
-                    for elem_elem in elem:
-                        if elem_elem.tag == "bbmd_asi_object_id":
-                            resource_id =  elem_elem.text
-            else:
-                resource_id = '0'
-
-        return resource_id
-
-    def _get_content_handle(self, file_path):
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        content_handle = ""
-        for elem in tree.iter(tag='INTERNALHANDLE'):
-            content_handle = elem.attrib["value"]
-        return content_handle
-
-    def _process_forum(self, file_path):
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        forum_id = root.attrib['id']
-        forum_id = forum_id[1:len(forum_id) - 2]
+    def _process_access_log(self, activity_data):
         """
-        conference_id = ""
-        for elem in root:
-            if elem.tag == "CONFERENCEID":
-                conference_id = elem.attrib["value"]
-                conference_id = conference_id[1:len(conference_id) - 2]
+        Extracts user activity from the course import files and updates/inserts into the page visits table
         """
+        if set(activity_data.fieldnames) != set(self.ACTIVITY_FIELDNAMES):
+            raise LMSImportFileError(self.ACTIVITY_FILE, 'Activity data columns do not match {}'.format(self.ACTIVITY_FIELDNAMES))
 
-        # Get all posts
-        for msg in tree.iter(tag='MSG'):
-            date_id = ""
-            user_id = ""
-            for elem in msg:
-                if elem.tag == "USERID":
-                    user_id = elem.attrib["value"]
-                for subelem in elem:
-                    if subelem.tag == "CREATED":
-                        date_str = subelem.attrib["value"].strip()
+        batch_size = 10000
+        batch = []
 
-            if date_str:
-                posted_at = self.convert_datetimestr_to_datetime(date_str)
-                user_id = user_id[1:len(user_id) - 2]
-                lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                page, _ = Page.objects.get_or_create(content_id=forum_id, course_offering=self.course_offering)
-                post = SummaryPost(page=page, lms_user=lms_user, posted_at=posted_at)
-                post.save()
+        for row in activity_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for activity'.format(row['user_key']))
+                continue
 
-    def _process_conferences(self, file_path, content_id):
-        forum = SummaryForum(course_offering=self.course_offering, forum_id=content_id, title='Conferences', no_discussions=0)
-        forum.save()
+            try:
+                # Check if it's a visit to a normal resource or a forum (thread)
+                if row['content_key']:
+                    page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
+                else:
+                    page = Page.objects.get(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
+            except Page.DoesNotExist:
+                if row['content_key']:
+                    self._add_error('Unable to find resource {} for activity'.format(row['content_key']))
+                else:
+                    self._add_error('Unable to find forum {} for activity'.format(row['forum_key']))
+                continue
 
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
+            try:
+                visited_at = dateparse.parse_datetime(row['timestamp'])
+                if visited_at is None:
+                    self._add_error('Timestamp {} for access activity is not a valid format'.format(row['timestamp']))
+                    continue
+            except ValueError:
+                self._add_error('Timestamp {} for access activity is not a valid datetime'.format(row['timestamp']))
+                continue
 
-        title = ""
-        for elem in tree.iter(tag='CONFERENCE'):
-            conference_id = elem.attrib["id"]
-            conference_id = conference_id[1:len(conference_id) - 2]
-            for child_of_root in elem:
-                if child_of_root.tag == "TITLE":
-                    title = child_of_root.attrib["value"]
+            if visited_at < self.course_offering.start_datetime or visited_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for access activity is outside course offering start/end'.format(row['timestamp']))
+                continue
 
-            discussion = SummaryDiscussion(course_offering=self.course_offering, forum_id=conference_id, discussion_id=content_id, title=title, no_posts=0)
-            discussion.save()
+            batch.append(PageVisit(lms_user=user, page=page, visited_at=visited_at))
 
-    def _process_exam(self, file_path, content_id, content_type):
-        # timeopen = 0
-        # timeclose = 0
-        grade = 0.0
-        content_id = content_id[1:-2]
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        for elem in tree.iter(tag='qmd_absolutescore_max'):
-            grade = elem.text
+            if len(batch) == batch_size:
+                try:
+                    PageVisit.objects.bulk_create(batch)
+                    break
+                except IntegrityError as e:
+                    self._add_error('Integrity Error in activity bulk insert: {}'.format(e))
+                batch = []
 
-        submission_type = SubmissionType(course_offering=self.course_offering, content_id=content_id, content_type=content_type, grade=grade)
-        submission_type.save()
+        try:
+            PageVisit.objects.bulk_create(batch)
+        except IntegrityError as e:
+            self._add_error('Integrity Error in activity bulk insert: {}'.format(e))
 
-    def _process_memberships(self, file_path):
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        member_to_user_dict = {}
-        for elem in tree.iter(tag='COURSEMEMBERSHIP'):
-            member_id = elem.attrib["id"]
-            member_id = member_id[1:-2]
-            user_id = 0
-            for usr in elem:
-                if usr.tag == "USERID":
-                    user_id = usr.attrib["value"]
-                    user_id = user_id[1:-2]
-            member_to_user_dict[member_id] = user_id
-        return member_to_user_dict
+    def _process_posts(self, posts_data):
+        """
+        Extracts posts from the course import files and updates/inserts into the page visits table
+        """
+        if set(posts_data.fieldnames) != set(self.POSTS_FIELDNAMES):
+            raise LMSImportFileError(self.POSTS_FILE, 'Posts data columns do not match {}'.format(self.POSTS_FIELDNAMES))
 
-    def _process_attempts(self, file_path, assessment_res_to_id_dict, member_to_user_dict, path):
-        tree = ET.ElementTree(file=file_path)
-        root = tree.getroot()
-        content_id = None  # content_id[1:-2]
-        content_link_id = None
-        for elem in tree.iter(tag='OUTCOMEDEFINITION'):
-            for child_of_root in elem:
-                # This is the OUTCOMEDEFINITION level
-                if child_of_root.tag == "ASIDATAID":
-                    resource_id = child_of_root.attrib['value']
-                    if resource_id in assessment_res_to_id_dict:
-                        content_id = assessment_res_to_id_dict[resource_id]
-                if child_of_root.tag == "CONTENTID":
-                    resource_link = child_of_root.attrib['value']
-                    if resource_link== "":
-                        content_link_id = None
-                    else:
-                        link_id = self._get_resource_id(Path(path, resource_link + ".dat"))
-                        content_link_id = link_id[1:-2]
-                if child_of_root.tag == "EXTERNALREF":
-                    external_ref = child_of_root.attrib['value']
-                    if content_id is None and external_ref != "":
-                        content_id = external_ref[1:-2]
-                for child_child_of_root in child_of_root:
-                    # This is the outcomes level
-                    user_id = None
-                    grade = None
-                    date_str = None
-                    for child_child_child_of_root in child_child_of_root:
-                        if child_child_child_of_root.tag == "COURSEMEMBERSHIPID":
-                            member_id = child_child_child_of_root.attrib["value"]
-                            member_id = member_id[1:len(member_id) - 2]
-                            if member_id in member_to_user_dict:
-                                user_id = member_to_user_dict[member_id]
-                            else:
-                                user_id = member_id
+        for row in posts_data:
+            try:
+                user = LMSUser.objects.get(lms_user_id=row['user_key'], course_offering=self.course_offering)
+            except LMSUser.DoesNotExist:
+                self._add_error('Unable to find user {} for post'.format(row['user_key']))
+                continue
 
-                        for child_child_child_child_of_root in child_child_child_of_root:
+            values = {
+                'title': row['thread'],
+                'content_type': self.FORUM_CONTENT_TYPE,
+                'parent_id': None,
+            }
+            page, _ = Page.objects.get_or_create(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
 
-                            for child_child_child_child_child_of_root in child_child_child_child_of_root:
+            try:
+                posted_at = dateparse.parse_datetime(row['timestamp'])
+                if posted_at is None:
+                    self._add_error('Timestamp {} for post is not a valid format'.format(row['timestamp']))
+                    continue
+            except ValueError:
+                self._add_error('Timestamp {} for post is not a valid datetime'.format(row['timestamp']))
+                continue
 
-                                if child_child_child_child_child_of_root.tag == "SCORE":
-                                    grade = child_child_child_child_child_of_root.attrib['value']
-                                if child_child_child_child_child_of_root.tag == "DATEATTEMPTED":
-                                    attempted_at_str = child_child_child_child_child_of_root.attrib['value'] # eg 2014-07-11 16:52:53 EST
+            if posted_at < self.course_offering.start_datetime or posted_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for post is outside course offering start/end'.format(row['timestamp']))
+                continue
 
-                    if content_id is not None and grade is not None:  # i.e. 0 attempts -
-                        attempted_at = self.convert_datetimestr_to_datetime(attempted_at_str)
-
-                        lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                        page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
-                        attempt = SubmissionAttempt(page=page, grade=grade, lms_user=lms_user, attempted_at=attempted_at)
-                        attempt.save()
-
-                        if content_link_id is not None:
-                            self.content_link_id_to_content_id_dict[content_link_id] = content_id
-
-                        lms_user, _ = LMSUser.objects.get_or_create(lms_user_id=user_id, course_offering=self.course_offering)
-                        page = Page.objects.get(course_offering=self.course_offering, content_id=content_id)
-                        page_visit = PageVisit(lms_user=lms_user, visited_at=attempted_at,
-                                               module='assessment/x-bb-qti-test', action='COURSE_ACCESS', page=page)
-                        page_visit.save()
+            try:
+                post = SummaryPost.objects.create(lms_user=user, page=page, posted_at=posted_at)
+            except IntegrityError as e:
+                self._add_error('Integrity Error in post insert: {}'.format(e))
