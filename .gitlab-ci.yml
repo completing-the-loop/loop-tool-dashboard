@@ -11,6 +11,7 @@ variables:
   RABBITMQ_HOSTNAME: localhost
   RABBITMQ_PORT: 5672
   RABBITMQ_VHOST: /
+  CLOOP_IMPORT_ADMINS: client-melbourneuni.loop@alliancesoftware.com.au
 
 
 cache:
