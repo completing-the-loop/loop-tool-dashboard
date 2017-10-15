@@ -21,7 +21,6 @@ from dashboard.views.events import CourseSubmissionEventListView
 from dashboard.views.events import CourseSubmissionEventUpdateView
 from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
-
 from dashboard.views import views
 from django_site.permissions import course_access_url_wrapper
 
@@ -35,7 +34,7 @@ urlpatterns = [
 
     url(r'^(?P<course_id>\d+)/', decorator_include(course_access_url_wrapper, [
         url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
-        url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communication'),
+        url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communications'),
 
         # Event management for academic staff
         url(r'^course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
@@ -52,15 +51,10 @@ urlpatterns = [
         url(r'^course_single_event/(?P<pk>\d+)/delete/$', CourseSingleEventDeleteView.as_view(), name='delete_course_single_event'),
     ])),
 
-    url(r'^overallcoursedashboard/$', views.overallcoursedashboard, name='overallcoursedashboard'),
+    # These are to be removed or moved to the permissions wrapper above
     url(r'^coursemembers/$', views.coursemembers, name='course_members'),
     url(r'^coursemember/$', views.coursemember, name='coursemember'),
     url(r'^coursepage/$', views.coursepage, name='coursepage'),
-    url(r'^coursestructure/$', views.coursestructure, name='coursestructure'),
     url(r'^content/$', views.content, name='course_content'),
-    url(r'^communication/$', views.communication, name='course_communications'),
     url(r'^assessment/$', views.assessment, name='course_assessments'),
-    url(r'^pedagogyhelper/$', views.pedagogyhelper, name='pedagogyhelper'),
-    url(r'^pedagogyhelperdownload/$', views.pedagogyhelperdownload, name='pedagogyhelperdownload'),
-    url(r'^logout/$', logout,  {'next_page': '/home/'}, name='loggedout'),
 ]
