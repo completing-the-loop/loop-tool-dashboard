@@ -272,6 +272,7 @@ module.exports = ({
     conf.module.rules.push(vueConfig);
 
     conf.resolve.alias['plotly$'] = "plotly.js/dist/plotly.js";
+    conf.resolve.alias['moment$'] = "moment/moment.js";
 
 
     // ------------------------------------------------------------------

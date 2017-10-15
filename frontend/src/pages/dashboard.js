@@ -1,30 +1,47 @@
+import moment from 'moment';
 import Plotly from 'plotly';
 import Vue from 'vue';
 import { get } from '../api';
 
 const init = async (
-    courseId,
+    initialData,
 ) => {
     new Vue({
         el: '#course-dashboard',
         data: {
-            courseId: courseId,
+            weekNum: 0,
+            courseId: initialData.courseId,
+            numWeeks: initialData.numWeeks,
+            courseStart: initialData.courseStart,
             topUsers: {},
             topContent: [],
             topForumContent: [],
             topQuizContent: [],
-            weekNum: "",
         },
         mounted: async function mounted() {
-            this.getTopContent();
-            this.getTopForumContent();
-            this.getTopQuizContent();
-            this.getTopUsers();
-            this.plotGraph();
+            this.getOverallDashboard();
+        },
+        computed: {
+            weekStart: function() {
+                return moment(this.courseStart).add(this.weekNum - 1, 'weeks').format('MMM D, YYYY');
+            },
+            weekEnd: function() {
+                return moment(this.courseStart).add(this.weekNum, 'weeks').add(-1, 'days').format('MMM D, YYYY');
+            },
         },
         methods: {
-            async getTopContent() {
-                this.topContent = await get(`${this.courseId}/top_content/${this.weekNum ? this.weekNum + '/' : ''}`);
+            async getOverallDashboard() {
+                this.getTopContent();
+                this.getTopForumContent();
+                this.getTopQuizContent();
+                this.getTopUsers();
+                this.plotGraph();
+            },
+            async getWeekDashboard(weekNum) {
+                this.getTopContent(weekNum);
+            },
+            async getTopContent(weekNum = null) {
+                this.topContent = await get(`${this.courseId}/top_content/${weekNum ? weekNum + '/' : ''}`);
             },
             async getTopForumContent() {
                 this.topForumContent = [
@@ -64,7 +81,11 @@ const init = async (
         },
         watch: {
             weekNum: function (val) {
-                this.getTopContent();
+                if (val >= 1) {
+                    this.getWeekDashboard(val)
+                } else {
+                    this.getOverallDashboard();
+                }
             },
         },
     });

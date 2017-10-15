@@ -5,21 +5,22 @@
 {% block content %}
   <!--<p v-tooltip:top="'My tooltip title'">Sample tooltip</p>-->
 
-  <p>
-    <form id="weekselector" method="get">
-      Course Weekly Dashboard: Week {{ week_no }} ({{ weekbeg }} - {{weekend}})
-      <input type="hidden" name="course_id" value="{{ request.course_offering.id }}" />
-      <div style="float: right;">
-        <select id="weekfilter" name="week_filter" v-model="weekNum">
-          <option value="">View All</option>
-          {% for i in week_range %}
-            <option value="{{ i }}">Week {{ i }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-small btn-primary">Change Week</button>
+  {% verbatim %}
+    <div class="row">
+      <div class="col-md-10">
+        <h2 v-if="weekNum >= 1">Course Weekly Dashboard: Week {{ weekNum }} ({{ weekStart }} - {{weekEnd}})</h2>
+        <h2 v-else>Overall Course Dashboard</h2>
       </div>
-    </form>
-  </p>
+      <div class="col-md-2 text-right">
+        <form>
+          <select v-model="weekNum">
+            <option value="0">View All</option>
+            <option v-for="i in numWeeks" :value="i">Week {{ i }}</option>
+          </select>
+        </form>
+      </div>
+    </div>
+  {% endverbatim %}
 
   <div class="row-fluid">
     <div class="col-md-8">
@@ -210,6 +211,6 @@
 
 {% block javascript %}
   <script>
-      window.pages.dashboard.init({{ request.course_offering.id }});
+      window.pages.dashboard.init(JSON.parse('{{ initial_data | escapejs }}'));
   </script>
 {% endblock javascript %}
