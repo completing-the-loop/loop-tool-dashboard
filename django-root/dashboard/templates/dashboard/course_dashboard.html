@@ -22,7 +22,11 @@
     </div>
   {% endverbatim %}
 
-  <div class="row-fluid">
+  <div v-if="weekNum == 0" class="row-fluid">
+    {% include "dashboard/panels/_overall_graph.html" %}
+  </div>
+
+  <div v-if="weekNum >= 1" class="row-fluid">
     <div class="col-md-8">
       {% include "dashboard/panels/_per_week_graph.html" %}
     </div>
