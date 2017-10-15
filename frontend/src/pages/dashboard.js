@@ -17,6 +17,7 @@ const init = async (
             topContent: [],
             topCommunications: [],
             topAssessments: [],
+            perWeekData: {},
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -65,11 +66,54 @@ const init = async (
             async plotOverallGraph() {
             },
             async plotPerWeekGraph(weekNum) {
-                const data = [{
-                    x: [1, 2, 3, 4, 5],
-                    y: [1, 2, 4, 8, 16]
-                }];
-                Plotly.plot('graph_container', data, {margin: {t: 0}});
+                this.perWeekData = {
+                    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',],
+                    content: [ 1 * this.weekNum, 2, 3, 4, 5, 6, 7],
+                    communications: [2, 3, 4, 5, 6, 7, 1],
+                    assessments: [3, 4, 5, 6, 7, 1, 2],
+                    unique: [4, 5, 6, 7, 1, 2, 3],
+                };
+
+                this.$nextTick(function() {
+                    const graphLayout = {
+                        margin: {t: 20, r: 20, b: 20, l: 20},
+                    };
+                    const graphConfig = {
+                        displayModeBar: false,
+                    };
+
+                    Plotly.newPlot(
+                        'graph_container',
+                        [
+                            {
+                                x: this.perWeekData.days,
+                                y: this.perWeekData.content,
+                                mode: 'lines+markers',
+                                name: 'Content',
+                            },
+                            {
+                                x: this.perWeekData.days,
+                                y: this.perWeekData.communications,
+                                mode: 'lines+markers',
+                                name: 'Communication',
+                            },
+                            {
+                                x: this.perWeekData.days,
+                                y: this.perWeekData.assessments,
+                                mode: 'lines+markers',
+                                name: 'Assessment',
+                            },
+                            {
+                                x: this.perWeekData.days,
+                                y: this.perWeekData.unique,
+                                mode: 'lines+markers',
+                                name: 'Unique Pages',
+                            },
+                        ],
+                        graphLayout,
+                        graphConfig,
+                    );
+                });
             },
             async plotWeekMetrics(weekNum) {
             },
