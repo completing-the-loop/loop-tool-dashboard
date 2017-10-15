@@ -67,12 +67,17 @@ const init = async (
             },
             async plotPerWeekGraph(weekNum) {
                 this.perWeekData = {
+                    events: [
+                        ['Lecture'], [], ['Tutorial', 'Other'], [], [], [], [],
+                    ],
                     days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',],
                     content: [ 1 * this.weekNum, 2, 3, 4, 5, 6, 7],
                     communications: [2, 3, 4, 5, 6, 7, 1],
                     assessments: [3, 4, 5, 6, 7, 1, 2],
                     unique: [4, 5, 6, 7, 1, 2, 3],
                 };
+
+                const tags = this.generateGraphTags(this.perWeekData.events);
 
                 this.$nextTick(function() {
                     const graphLayout = {
@@ -110,12 +115,51 @@ const init = async (
                                 name: 'Unique Pages',
                             },
                         ],
-                        graphLayout,
+                        Object.assign({}, graphLayout, tags),
                         graphConfig,
                     );
                 });
             },
             async plotWeekMetrics(weekNum) {
+            },
+            generateGraphTags(events) {
+                const shapes = _.map(events, function(eventList, index) {
+                    if (eventList.length) {
+                        return {
+                            type: 'line',
+                            x0: index,
+                            y0: 0,
+                            x1: index,
+                            y1: 1,
+                            xref: 'x',
+                            yref: 'paper',
+                            line: {
+                                color: 'rgb(55, 128, 191)',
+                                width: 3,
+                            }
+                        }
+                    }
+                });
+                const annotations = _.map(events, function(eventList, index) {
+                    if (eventList.length) {
+                        return {
+                            x: index,
+                            y: 1,
+                            xref: 'x',
+                            yref: 'paper',
+                            text: _.join(eventList, ', '),
+                            textangle: 90,
+                            showarrow: false,
+                            yanchor: 'top',
+                            xshift: 10,
+                        }
+                    }
+                });
+
+                return {
+                    shapes: shapes,
+                    annotations: annotations,
+                }
             },
         },
         watch: {
