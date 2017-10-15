@@ -1,0 +1,27 @@
+{% verbatim %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Top Accessed Content</h3>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="text-center">Page</th>
+            <th class="text-center">Type</th>
+            <th class="text-center">Student Visits</th>
+            <th class="text-center">Pageviews</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="page in topContent">
+            <td><a :href="`/${courseId}/course_page/${page.id}/`">{{ page.title }}</a></td>
+            <td>{{ page.contentType }}</td>
+            <td class="text-right">{{ page.userviews }}</td>
+            <td class="text-right">{{ page.pageviews }}</td>
+          </tr>
+        </tbody>
+       </table>
+    </div>
+  </div>
+{% endverbatim %}

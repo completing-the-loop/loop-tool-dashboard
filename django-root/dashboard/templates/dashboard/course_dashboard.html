@@ -24,188 +24,38 @@
 
   <div class="row-fluid">
     <div class="col-md-8">
-    <div class="panel panel-default ">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon list-alt"></i><span class="break"></span>Pageviews</h3>
-      </div>
-      <div class="panel-body">
-        <div id="graph_container" style="height: 282px;"></div>
-      </div>
-    </div>
+      {% include "dashboard/panels/_per_week_graph.html" %}
     </div>
     <div class="col-md-4">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Week Metrics</h3>
-      </div>
-      <div class="panel-body">
-        <div class="widget green">
-          <ul class="unstyled">
-            <li><span id="uniquepageviewsbydayinweek"></span>
-                Unique Pageviews <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique page views in the course"><i class="halflings-icon info-sign"></i></a>
-                <!--<span class="number">781</span>-->
-            </li>
-            <li><span id="participantsbydayinweek"></span>
-                Students <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of active students"><i class="halflings-icon info-sign"></i></a>
-                <!--<span class="number">2,19</span>-->
-            </li>
-            <li><span id="sessionsbydayinweek"></span>
-                Sessions <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="“Number of student sessions. A session is defined by student clicks where the time between clicks is less than 40 minutes."><i class="halflings-icon info-sign"></i></a>
-            </li>
-            <li><span id="averagesessionlengthbydayinweek"></span>
-                Avg. Session Duration (in mins) <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average duration in minutes of a student session"><i class="halflings-icon info-sign"></i></a>
-            </li>
-            <li><span id="averagepagespersessionbydayinweek"></span>
-                Avg. Pageviews Per Session <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average number of pages a student has viewed in a session"><i class="halflings-icon info-sign"></i></a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_week_metrics.html" %}
+    </div>
   </div>
-</div>
 
   <div class="row-fluid">
     <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Student Pageviews Histogram</h3> <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique students (vertical axis) who have viewed a number of pages within a range  (horizontal axis) that week"><i class="halflings-icon info-sign"></i></a>
-      </div>
-      <div class="panel-body">
-        <div id="userhistogram" style="height: 500px"></div>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_histogram.html" %}
     </div>
 
     <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Top Accessed Content</h3>
-      </div>
-      <div class="panel-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th class="text-center">Page</th>
-              <th class="text-center">Type</th>
-              <th class="text-center">Student Visits</th>
-              <th class="text-center">Pageviews</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% verbatim %}
-          <tr v-for="page in topContent">
-            <td><a :href="`/${courseId}/course_page/${page.id}/`">{{ page.title }}</a></td>
-            <td>{{ page.contentType }}</td>
-            <td class="text-right">{{ page.userviews }}</td>
-            <td class="text-right">{{ page.pageviews }}</td>
-          </tr>
-          {% endverbatim %}
-          </tbody>
-         </table>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_top_content.html" %}
     </div>
-  </div><!--/row-->
+  </div>
 
   <div class="row-fluid">
     <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Communication Access</h3>
-      </div>
-      <div class="panel-body">
-        <table class="table">
-          <thead>
-            <tr>
-              <th class="text-center">Title</th>
-              <th class="text-center">Type</th>
-              <th class="text-center">Unique Students</th>
-              <th class="text-center">Pageviews</th>
-              <th class="text-center">Posts</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% verbatim %}
-            <tr v-for="page in topForumContent">
-              <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
-              <td>{{ page.module }}</td>
-              <td class="text-right">{{ page.user_views }}</td>
-              <td class="text-right">{{ page.page_views }}</td>
-              <td class="text-right">{{ page.post_count }}</td>
-            </tr>
-          {% endverbatim %}
-          </tbody>
-         </table>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_top_communication.html" %}
     </div>
 
     <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Top Course Visitors</h3>
-      </div>
-      <div class="panel-body">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th class="text-center">Firstname</th>
-              <th class="text-center">Surname</th>
-              <th class="text-center">Role</th>
-              <th class="text-center">Pageviews</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% verbatim %}
-              <tr v-for="user in topUsers">
-                <td>{{ user.firstname }}</td>
-                <td>{{ user.lastname }}</td>
-                <td>{{ user.role }}</td>
-                <td class="text-right">{{ user.pageviews }}</td>
-              </tr>
-            {% endverbatim %}
-          </tbody>
-         </table>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_top_visitors.html" %}
     </div>
-  </div><!--/row-->
+  </div>
 
   <div class="row-fluid">
     <div class="col-md-6">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Assessment Access</h3>
-      </div>
-      <div class="panel-body">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th class="text-center">Title</th>
-              <th class="text-center">Type</th>
-              <th class="text-center">Unique Students</th>
-              <!--<th>Pageviews</th>-->
-              <th class="text-center">Attempts</th>
-              <th class="text-center">Average Student Score</th>
-            </tr>
-          </thead>
-          <tbody>
-          {% verbatim %}
-            <tr v-for="page in topQuizContent">
-              <td><a v-bind:href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
-              <td>{{ page.module }}</td>
-              <td class="text-right">{{ page.user_views }}</td>
-              <td class="text-right">{{ page.attempts }}</td>
-              <td class="text-right">{{ page.average_score }}</td>
-            </tr>
-          {% endverbatim %}
-          </tbody>
-         </table>
-      </div>
-    </div><!--/span-->
+      {% include "dashboard/panels/_top_assessment.html" %}
     </div>
-  </div><!--/row-->
+  </div>
 
 {% endblock content %}
 
