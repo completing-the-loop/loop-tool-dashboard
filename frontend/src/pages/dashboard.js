@@ -15,8 +15,8 @@ const init = async (
             courseStart: initialData.courseStart,
             topUsers: {},
             topContent: [],
-            topForumContent: [],
-            topQuizContent: [],
+            topCommunications: [],
+            topAssessments: [],
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -32,19 +32,26 @@ const init = async (
         methods: {
             async getOverallDashboard() {
                 this.getTopContent();
-                this.getTopForumContent();
-                this.getTopQuizContent();
+                this.getTopCommunications();
+                this.getTopAssessments();
                 this.getTopUsers();
-                this.plotGraph();
+                this.plotOverallGraph();
+                this.plotHistogram();
             },
             async getWeekDashboard(weekNum) {
                 this.getTopContent(weekNum);
+                this.getTopCommunications(weekNum);
+                this.getTopAssessments(weekNum);
+                this.getTopUsers(weekNum);
+                this.plotPerWeekGraph(weekNum);
+                this.plotWeekMetrics(weekNum);
+                this.plotHistogram(weekNum);
             },
             async getTopContent(weekNum = null) {
                 this.topContent = await get(`${this.courseId}/top_content/${weekNum ? weekNum + '/' : ''}`);
             },
-            async getTopForumContent() {
-                this.topForumContent = [
+            async getTopCommunications(weekNum = null) {
+                this.topCommunications = [
                     {page_id: 11, title: 'Page 11', module: 'module', user_views: 6, page_views: 65, post_count: 12},
                     {page_id: 12, title: 'Page 12', module: 'module', user_views: 4, page_views: 86, post_count: 23},
                     {page_id: 13, title: 'Page 13', module: 'module', user_views: 2, page_views: 23, post_count: 32},
@@ -55,8 +62,8 @@ const init = async (
                     {page_id: 18, title: 'Page 18', module: 'module', user_views: 6, page_views: 45, post_count: 23},
                 ];
             },
-            async getTopQuizContent() {
-                this.topQuizContent = [
+            async getTopAssessments(weekNum = null) {
+                this.topAssessments = [
                     {page_id: 21, title: 'Page 21', module: 'module', user_views: 6, average_score: 65, attempts: 12},
                     {page_id: 22, title: 'Page 22', module: 'module', user_views: 4, average_score: 86, attempts: 23},
                     {page_id: 23, title: 'Page 23', module: 'module', user_views: 2, average_score: 23, attempts: 32},
@@ -67,16 +74,22 @@ const init = async (
                     {page_id: 28, title: 'Page 28', module: 'module', user_views: 6, average_score: 45, attempts: 23},
                 ];
             },
-            async getTopUsers() {
+            async getTopUsers(weekNum = null) {
                 // This is getting top users with page views filtered by week
                 this.topUsers = await get(`${this.courseId}/top_users`);
             },
-            async plotGraph() {
+            async plotHistogram(weekNum = null) {
+            },
+            async plotOverallGraph() {
+            },
+            async plotPerWeekGraph(weekNum) {
                 const data = [{
                     x: [1, 2, 3, 4, 5],
                     y: [1, 2, 4, 8, 16]
                 }];
                 Plotly.plot('graph_container', data, {margin: {t: 0}});
+            },
+            async plotWeekMetrics(weekNum) {
             },
         },
         watch: {

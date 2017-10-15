@@ -15,7 +15,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="page in topForumContent">
+          <tr v-for="page in topCommunications">
             <td><a :href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
             <td>{{ page.module }}</td>
             <td class="text-right">{{ page.user_views }}</td>
