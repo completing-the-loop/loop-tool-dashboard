@@ -427,6 +427,10 @@ class BlackboardImport(BaseLmsImport):
 
             try:
                 page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
+                if page.content_type not in CourseOffering.assessment_types():
+                    self._add_error('Resource {} for submission attempt is not an assessment type'.format(page.content_id))
+                    continue
+
             except Page.DoesNotExist:
                 self._add_error('Unable to find page {} for submission attempt'.format(row['content_key']))
                 continue
@@ -527,6 +531,11 @@ class BlackboardImport(BaseLmsImport):
                 'parent_id': None,
             }
             page, _ = Page.objects.get_or_create(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering, defaults=values)
+
+            # In case page was found already, check it's content type to ensure it is a communication type
+            if page.content_type not in CourseOffering.communication_types():
+                self._add_error('Resource {} for post is not a communication type'.format(page.content_id))
+                continue
 
             try:
                 posted_at = dateparse.parse_datetime(row['timestamp'])
