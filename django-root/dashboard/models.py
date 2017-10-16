@@ -39,6 +39,14 @@ class CourseOffering(models.Model):
     last_activity_at = models.DateTimeField(blank=True, null=True)  # The last recorded page visit, submission attempt or summary post
     is_importing = models.BooleanField(default=False)
 
+    @classmethod
+    def assessment_types(cls):
+        return cls.ASSESSMENT_TYPES
+
+    @classmethod
+    def communication_types(cls):
+        return cls.COMMUNICATION_TYPES
+
     @property
     def end_date(self):
         return self.start_date + timedelta(weeks=self.no_weeks)
