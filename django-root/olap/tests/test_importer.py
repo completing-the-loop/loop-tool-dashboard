@@ -308,7 +308,7 @@ class ImportSubmissionAttemptsTestCase(TestCase):
         importer = BlackboardImport('ignore.zip', self.offering)
 
         attempt_dt = datetime.datetime(2017, 10, 5, 13, 30, 0, tzinfo=datetime.timezone.utc)
-        page = PageFactory(content_id=1, course_offering=self.offering)
+        page = PageFactory(content_id=1, content_type='course/x-bb-courseassessment', course_offering=self.offering)
         user1 = LMSUserFactory(lms_user_id=1, course_offering=self.offering)
         user2 = LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
@@ -318,6 +318,24 @@ class ImportSubmissionAttemptsTestCase(TestCase):
 
         self.assertTrue(SubmissionAttempt.objects.filter(page=page, lms_user=user1, grade='0', attempted_at=attempt_dt).exists())
         self.assertTrue(SubmissionAttempt.objects.filter(page=page, lms_user=user2, grade='10.5', attempted_at=attempt_dt).exists())
+
+
+    def test_submission_for_invalid_resource_type(self):
+        test_submissions = """\
+            user_key|content_key|user_grade|timestamp
+            1|1|0|2017-10-05 13:30:00+00:00
+        """
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        PageFactory(content_id=1, content_type='resource/x-bb-document', course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+
+        csv_data = io.StringIO(dedent(test_submissions))
+        submissions_data = csv.DictReader(csv_data, delimiter='|')
+        importer._process_submission_attempts(submissions_data)
+
+        self.assertEqual(len(importer.error_list), 1)
 
 
     def test_missing_related_objects(self):
@@ -391,7 +409,7 @@ class ImportPostsTestCase(TestCase):
         importer = BlackboardImport('ignore.zip', self.offering)
 
         posted_dt = datetime.datetime(2017, 10, 5, 13, 30, 0, tzinfo=datetime.timezone.utc)
-        page = PageFactory(content_id=1, is_forum=True, course_offering=self.offering)
+        page = PageFactory(content_id=1, is_forum=True, content_type='resource/x-bb-discussionboard', course_offering=self.offering)
         user1 = LMSUserFactory(lms_user_id=1, course_offering=self.offering)
         user2 = LMSUserFactory(lms_user_id=2, course_offering=self.offering)
 
@@ -412,6 +430,24 @@ class ImportPostsTestCase(TestCase):
         importer = BlackboardImport('ignore.zip', self.offering)
 
         PageFactory(content_id=1, is_forum=True, course_offering=self.offering)
+        LMSUserFactory(lms_user_id=1, course_offering=self.offering)
+
+        csv_data = io.StringIO(dedent(test_posts))
+        posts_data = csv.DictReader(csv_data, delimiter='|')
+        importer._process_posts(posts_data)
+
+        self.assertEqual(len(importer.error_list), 1)
+
+
+    def test_post_for_invalid_resource_type(self):
+        test_posts = """\
+            forum_key|user_key|thread|post|timestamp
+            1|1|Name of thread|User 1 post|2017-10-05 13:30:00+00:00
+        """
+
+        importer = BlackboardImport('ignore.zip', self.offering)
+
+        PageFactory(content_id=1, is_forum=True, content_type='resource/x-bb-document', course_offering=self.offering)
         LMSUserFactory(lms_user_id=1, course_offering=self.offering)
 
         csv_data = io.StringIO(dedent(test_posts))

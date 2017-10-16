@@ -28,7 +28,7 @@ class CommunicationGenericView(APIView):
         course_start_dt = course_offering.start_datetime
 
         events_by_week_for_all_pages = [0] * course_offering.no_weeks
-        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.COMMUNICATION_TYPES).values('id', 'title', 'content_type')
+        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.communication_types()).values('id', 'title', 'content_type')
         total_events = 0
         for page in page_queryset:
             events_for_this_page = self.get_event_queryset(page['id'])
@@ -90,7 +90,7 @@ class CommunicationStudentsView(APIView):
         course_start_dt = course_offering.start_datetime
 
         students_by_week_for_all_pages = [set() for i in range(course_offering.no_weeks)]
-        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.COMMUNICATION_TYPES).values('id', 'title', 'content_type')
+        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.communication_types()).values('id', 'title', 'content_type')
         for page in page_queryset:
             page_visits_for_this_page = PageVisit.objects.filter(page_id=page['id'])
             students_by_week_for_this_page = [set() for i in range(course_offering.no_weeks)]
@@ -145,7 +145,7 @@ class CommunicationEventsView(APIView):
         our_tz = get_current_timezone()
         course_start_dt = course_offering.start_datetime
 
-        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.COMMUNICATION_TYPES).values('id', 'title', 'content_type')
+        page_queryset = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.communication_types()).values('id', 'title', 'content_type')
         for page in page_queryset:
             page_visits_for_this_page = PageVisit.objects.filter(page_id=page['id'])
             visit_pairs_by_week = [[0, 0] for i in range(course_offering.no_weeks)]

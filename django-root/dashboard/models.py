@@ -19,13 +19,15 @@ class CourseOffering(models.Model):
     # Types for Blackboard.  See utils.get_contenttypes for other LMS
     COMMUNICATION_TYPES = (
         'resource/x-bb-discussionboard',
-        'course/x-bb-collabsession', # TODO: Check if this is course/ or resource/.
+        'course/x-bb-collabsession',
         'resource/x-bb-discussionfolder',
     )
     ASSESSMENT_TYPES = (
         'assessment/x-bb-qti-test',
         'course/x-bb-courseassessment',
         'resource/x-turnitin-assignment',
+        'resource/x-bb-asmt-survey-link',
+        'resource/x-bb-asmt-test-link',
     )
 
     code = models.CharField(max_length=100, unique=True)
@@ -38,6 +40,14 @@ class CourseOffering(models.Model):
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
     last_activity_at = models.DateTimeField(blank=True, null=True)  # The last recorded page visit, submission attempt or summary post
     is_importing = models.BooleanField(default=False)
+
+    @classmethod
+    def assessment_types(cls):
+        return cls.ASSESSMENT_TYPES
+
+    @classmethod
+    def communication_types(cls):
+        return cls.COMMUNICATION_TYPES
 
     @property
     def end_date(self):
