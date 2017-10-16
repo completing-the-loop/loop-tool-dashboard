@@ -102,10 +102,6 @@ class ImportLmsData(object):
             print("Processing user sessions for", offering)
             self._calculate_sessions()
 
-            # print("Populating summary data for {}".format(course_offering))
-            # self._populate_summary_tables(course_offering, lms_import.get_assessment_types(), lms_import.get_communication_types())
-            print("Skipping populating summary data for", offering)
-
         if len(errors):
             send_mail(
                 'Errors in import of {}'.format(self.course_offering.code),
@@ -328,12 +324,6 @@ class BaseLmsImport(object):
     def process_import_data(self):
         raise NotImplementedError("'process_import_data' must be implemented")
 
-    def get_assessment_types(self):
-        raise NotImplementedError("'get_assessment_types' must be implemented")
-
-    def get_communication_types(self):
-        raise NotImplementedError("'get_communication_types' must be implemented")
-
     def _add_error(self, error_msg):
         self.error_list.append(error_msg)
 
@@ -352,12 +342,6 @@ class BlackboardImport(BaseLmsImport):
     ACTIVITY_FIELDNAMES = ['user_key', 'content_key', 'forum_key', 'timestamp']
 
     FORUM_CONTENT_TYPE = 'resource/x-bb-discussionboard'
-
-    def get_assessment_types(self):
-        return ['assessment/x-bb-qti-test', 'course/x-bb-courseassessment', 'resource/x-turnitin-assignment']
-
-    def get_communication_types(self):
-        return ['resource/x-bb-discussionboard', 'course/x-bb-collabsession', 'resource/x-bb-discussionfolder']
 
     def process_import_data(self):
         print("Processing users")
