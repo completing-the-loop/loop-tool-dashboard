@@ -526,7 +526,7 @@ class BlackboardImport(BaseLmsImport):
                 'content_type': self.FORUM_CONTENT_TYPE,
                 'parent_id': None,
             }
-            page, _ = Page.objects.get_or_create(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
+            page, _ = Page.objects.get_or_create(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering, defaults=values)
 
             try:
                 posted_at = dateparse.parse_datetime(row['timestamp'])
