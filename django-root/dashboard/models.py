@@ -19,13 +19,15 @@ class CourseOffering(models.Model):
     # Types for Blackboard.  See utils.get_contenttypes for other LMS
     COMMUNICATION_TYPES = (
         'resource/x-bb-discussionboard',
-        'course/x-bb-collabsession', # TODO: Check if this is course/ or resource/.
+        'course/x-bb-collabsession',
         'resource/x-bb-discussionfolder',
     )
     ASSESSMENT_TYPES = (
         'assessment/x-bb-qti-test',
         'course/x-bb-courseassessment',
         'resource/x-turnitin-assignment',
+        'resource/x-bb-asmt-survey-link',
+        'resource/x-bb-asmt-test-link',
     )
 
     code = models.CharField(max_length=100, unique=True)
