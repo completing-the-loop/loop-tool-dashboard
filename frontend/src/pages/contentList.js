@@ -64,12 +64,12 @@ const init = async (
                 }
                 const vue = this;
                 _.forEach(pageList[pageId].children, function(childId) {
-                    pageList[childId].visible = true;
+                    Vue.set(pageList[childId], 'visible', true);
                     if (recursive) {
                         vue.expandNode(pageList, childId);
                     }
                 });
-                pageList[pageId].expanded = true;
+                Vue.set(pageList[pageId], 'expanded', true);
             },
             collapseNode(pageList, pageId) {
                 if (!pageList[pageId].children.length || !pageList[pageId].expanded) {
@@ -77,10 +77,10 @@ const init = async (
                 }
                 const vue = this;
                 _.forEach(pageList[pageId].children, function(childId) {
-                    pageList[childId].visible = false;
+                    Vue.set(pageList[childId], 'visible', false);
                     vue.collapseNode(pageList, childId);
                 });
-                pageList[pageId].expanded = false;
+                Vue.set(pageList[pageId], 'expanded', false);
             },
             toggleNode(pageList, pageId) {
                 if (pageList[pageId].children.length) {
@@ -102,8 +102,8 @@ const init = async (
             setSortOrder(pageList, currentLevelPages, nextOrder, indentLevel) {
                 const vue = this;
                 _.forEach(currentLevelPages, function(pageId) {
-                    pageList[pageId].indentLevel = indentLevel;
-                    pageList[pageId].sortOrder = nextOrder;
+                    Vue.set(pageList[pageId], 'indentLevel', indentLevel);
+                    Vue.set(pageList[pageId], 'sortOrder', nextOrder);
                     nextOrder += 1;
                     if (pageList[pageId].children.length) {
                         nextOrder = vue.setSortOrder(pageList, pageList[pageId].children, nextOrder, indentLevel+1);
@@ -116,16 +116,16 @@ const init = async (
 
                 // Set the initial state parameters for each row
                 _.forEach(apiPageList, function(page) {
-                    page.expanded = false;
-                    page.children = [];
-                    page.sortOrder = 1;
-                    page.indentLevel = 0;
+                    Vue.set(page, 'expanded', false);
+                    Vue.set(page, 'children', []);
+                    Vue.set(page, 'sortOrder', 1);
+                    Vue.set(page, 'indentLevel', 0);
                     if (!page.parentId) {
-                        page.visible = true;
+                        Vue.set(page, 'visible', true);
                     } else {
-                        page.visible = false;
+                        Vue.set(page, 'visible', false);
                     }
-                    pageList[page.id] = page;
+                    Vue.set(pageList, page.id, page);
                 });
 
                 // Calculate the reverse relationship for parents
