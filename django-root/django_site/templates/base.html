@@ -42,7 +42,7 @@
       <!-- start: Main Menu -->
       <div id="sidebar-left" class="col-sm-3 col-md-2 sidebar">
         {% if request.course_offering %}
-          <div class="nav-collapse sidebar-nav">
+          <div class="">
             <ul class="nav nav-tabs nav-stacked main-menu">
               <li>
                 <a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">
@@ -58,7 +58,7 @@
                     </a>
                   </li>
                   <li>
-                    <a class="submenu" href="{% url 'dashboard:course_communications' %}?course_id={{ request.course_offering.id }}">
+                    <a class="submenu" href="{% url 'dashboard:course_communications' course_id=request.course_offering.id %}">
                       <i class="icon-file-alt"></i><span class="hidden-tablet"> Communication</span>
                     </a>
                   </li>

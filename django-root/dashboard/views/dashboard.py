@@ -1,43 +1,20 @@
-from django.db import connections
-from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
-
-from dashboard.utils import weekbegend
-from olap.models import SummaryCourseVisitsByDayInWeek
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 
 class CourseDashboardView(TemplateView):
     template_name = 'dashboard/course_dashboard.html'
 
-    def get(self, request, *args, **kwargs):
-        self.week_id = int(self.request.GET.get('week_filter', 0))
-
-        if self.week_id == -1:
-            return redirect('/overallcoursedashboard?course_id=' + str(request.course_offering.id))
-
-        return super().get(request, *args, **kwargs)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        course_weeks = self.request.course_offering.get_weeks()
-
-        if self.week_id == 0:
-            self.week_id = course_weeks[0]
-
-        week_no = course_weeks.index(self.week_id) + 1
-
-        cursor = connections['default'].cursor()
-
-        weekbeg, weekend, begweek_unix, endweek_unix = weekbegend(2015, self.week_id)
-
         # Pageview Graph - Content
-        daytotal = [0, 0, 0, 0, 0, 0, 0]
-        summary_course_visits = SummaryCourseVisitsByDayInWeek.objects.filter(date_week=course_weeks[week_no-1], course_offering=self.request.course_offering).order_by('date_dayinweek')
-        for visit in summary_course_visits:
-            daytotal[visit.date_dayinweek] = visit.pageviews
-
-        PageViewGraphContentList = ','.join(map(str, daytotal))
+        # daytotal = [0, 0, 0, 0, 0, 0, 0]
+        # summary_course_visits = SummaryCourseVisitsByDayInWeek.objects.filter(date_week=course_weeks[week_no-1], course_offering=self.request.course_offering).order_by('date_dayinweek')
+        # for visit in summary_course_visits:
+        #     daytotal[visit.date_dayinweek] = visit.pageviews
+        #
+        # PageViewGraphContentList = ','.join(map(str, daytotal))
 
         # # Pageview Graph - Communication
         # daytotal = [0, 0, 0, 0, 0, 0, 0]
@@ -231,13 +208,12 @@ class CourseDashboardView(TemplateView):
         #                 'week_no': week_no, 'uniquepageviewsbydayinweek': uniquepageviewsbydayinweek,
         #                 'participantsbydayinweek': participantsbydayinweek}
 
-        context['week_range'] = tuple(i + 1 for i in range(self.request.course_offering.no_weeks))
-        # Most of these can go.
-        context['course_weeks'] = course_weeks
-        context['week_id'] = self.week_id
-        context['weekbeg'] = weekbeg
-        context['weekend'] = weekend
-        context['week_no'] = week_no
-        context['PageViewGraphContentList'] = PageViewGraphContentList
+        initial_data = {
+            'course_id': self.request.course_offering.id,
+            'course_start': self.request.course_offering.start_date,
+            'num_weeks': self.request.course_offering.no_weeks,
+        }
+
+        context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
 
         return context
