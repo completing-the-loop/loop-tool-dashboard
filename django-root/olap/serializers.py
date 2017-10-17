@@ -22,14 +22,19 @@ class TopCourseUsersSerializer(ModelSerializer):
         fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
 
 
-class CourseCommunicationPageSerializer(ModelSerializer):
+class PageSerializer(ModelSerializer):
     class Meta:
         model = Page
-        fields = ('id', 'title', 'content_type', 'weeks', 'total', 'percent')
+        fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
 
 
 class CourseCommunicationSerializer(Serializer):
-    page_set = CourseCommunicationPageSerializer(many=True)
+    page_set = PageSerializer(many=True)
+    totals_by_week = ListField(child=IntegerField())
+
+
+class CourseContentSerializer(Serializer):
+    page_set = PageSerializer(many=True)
     totals_by_week = ListField(child=IntegerField())
 
 
@@ -39,6 +44,14 @@ class CourseCommunicationPageEventSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'weeks')
+
+
+class CourseContentPageEventSerializer(ModelSerializer):
+    weeks = ListField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'parent_id', 'content_type', 'weeks')
 
 
 class TopAccessedContentSerializer(ModelSerializer):
