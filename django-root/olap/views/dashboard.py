@@ -70,7 +70,7 @@ class TopCommunicationAccessView(ListAPIView):
         dt_range = (range_start, range_end)
 
         # Get the page list.  If only we could do all this at the db level.
-        page_qs = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.COMMUNICATION_TYPES).values('id', 'title', 'content_type')
+        page_qs = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.communication_types()).values('id', 'title', 'content_type')
 
         # Augment all the pages with how many page views related to that page for the window of interest.
         for page in page_qs:
