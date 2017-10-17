@@ -71,7 +71,7 @@ class TopAssessmentAccessView(ListAPIView):
         dt_range = (range_start, range_end)
 
         # Get the page list.  If only we could do all this at the db level.
-        page_qs = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.ASSESSMENT_TYPES).values('id', 'title', 'content_type')
+        page_qs = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.assessment_types()).values('id', 'title', 'content_type')
 
         # Augment all the pages with how many submission attempts related to that page for the window of interest.
         for page in page_qs:
