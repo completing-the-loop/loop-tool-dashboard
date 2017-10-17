@@ -1,3 +1,4 @@
+from rest_framework.serializers import DecimalField
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ListField
 from rest_framework.serializers import ModelSerializer
@@ -50,3 +51,11 @@ class TopAccessedContentSerializer(ModelSerializer):
         fields = ('id', 'title', 'content_type', 'userviews', 'pageviews')
 
 
+class TopAssessmentAccessSerializer(ModelSerializer):
+    userviews = IntegerField()
+    average_score = DecimalField(max_digits=7, decimal_places=4)
+    attempts = IntegerField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'userviews', 'average_score', 'attempts')

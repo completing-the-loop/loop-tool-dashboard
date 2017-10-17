@@ -4,10 +4,10 @@
       <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Assessment Access</h3>
     </div>
     <div class="panel-body">
-      <table class="table table-striped">
+      <table class="table">
         <thead>
           <tr>
-            <th class="text-center">Title</th>
+            <th class="text-center">Page</th>
             <th class="text-center">Type</th>
             <th class="text-center">Unique Students</th>
             <th class="text-center">Attempts</th>
@@ -16,11 +16,11 @@
         </thead>
         <tbody>
           <tr v-for="page in topAssessments">
-            <td><a :href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
-            <td>{{ page.module }}</td>
-            <td class="text-right">{{ page.user_views }}</td>
+            <td><a :href="`/${courseId}/course_page/${page.id}/`">{{ page.title }}</a></td>
+            <td>{{ page.contentType }}</td>
+            <td class="text-right">{{ page.userviews }}</td>
             <td class="text-right">{{ page.attempts }}</td>
-            <td class="text-right">{{ page.average_score }}</td>
+            <td class="text-right">{{ page.averageScore }}</td>
           </tr>
         </tbody>
        </table>
