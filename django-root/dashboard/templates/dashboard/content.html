@@ -65,6 +65,13 @@
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
                   </tr>
+                  <tr class="stats-row">
+                    <th>Totals</th>
+                    <th colspan="2">&nbsp;</th>
+                    <td v-for="week in numWeeks">{{ pageViews.totalsByWeek[week - 1] }}</td>
+                    <td>{{ pageViews.totalsByWeek[numWeeks] }}</td>
+                    <td>&nbsp;</td>
+                  </tr>
                   </tbody>
                 </table>
               {% endverbatim %}
@@ -103,6 +110,13 @@
                     <td v-for="(week, i) in numWeeks">{{ resource.weeks[i] }}</td>
                     <td class="stats-title">{{ resource.total }}</td>
                     <td>{{ resource.percent }}</td>
+                  </tr>
+                  <tr class="stats-row">
+                    <th>Totals</th>
+                    <th colspan="2">&nbsp;</th>
+                    <td v-for="week in numWeeks">{{ students.totalsByWeek[week - 1] }}</td>
+                    <td>{{ students.totalsByWeek[numWeeks] }}</td>
+                    <td>&nbsp;</td>
                   </tr>
                   </tbody>
                 </table>
