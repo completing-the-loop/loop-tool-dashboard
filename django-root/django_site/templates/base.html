@@ -53,7 +53,7 @@
                 <a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> Course Access</span></a>
                 <ul>
                   <li>
-                    <a class="submenu" href="{% url 'dashboard:course_content' %}?course_id={{ request.course_offering.id }}">
+                    <a class="submenu" href="{% url 'dashboard:course_content' course_id=request.course_offering.id %}">
                       <i class="icon-file-alt"></i><span class="hidden-tablet"> Content</span>
                     </a>
                   </li>
