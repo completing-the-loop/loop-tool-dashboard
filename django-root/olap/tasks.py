@@ -14,7 +14,7 @@ def import_olap_task(self, course_id, filename, just_clear=False):
     file_path = Path(settings.DATA_PROCESSING_DIR, filename)
 
     try:
-        with transaction.atomic:
+        with transaction.atomic():
             importer = ImportLmsData(course_offering, file_path, just_clear=just_clear)
             importer.process()
     finally:
