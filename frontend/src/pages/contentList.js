@@ -18,9 +18,15 @@ const init = async (
             indentPixels: window.__APP_CONTEXT__.PAGE_INDENT_PIXELS,
             courseId: initialData.courseId,
             numWeeks: initialData.numWeeks,
-            pageViews: {},
-            students: {},
-            events: {},
+            pageViews: {
+                pageSet: [],
+                totalsByWeek: [],
+            },
+            students: {
+                pageSet: [],
+                totalsByWeek: [],
+            },
+            events: [],
             eventId: initialData.eventId,
         },
         mounted: async function mounted() {
@@ -30,10 +36,10 @@ const init = async (
         },
         computed: {
             sortedPageViews() {
-                return this.sortedList(this.pageViews);
+                return this.sortedList(this.pageViews.pageSet);
             },
             sortedStudents() {
-                return this.sortedList(this.students);
+                return this.sortedList(this.students.pageSet);
             },
             sortedEvents() {
                 return this.sortedList(this.events);
@@ -139,108 +145,28 @@ const init = async (
             },
 
             async getPageViews() {
-                const apiPageViews = [
-                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                ];
+                const apiPageViews = await get(`${this.courseId}/content_accesses/`);
 
-                this.pageViews = this.processPages(apiPageViews);
+                this.pageViews = apiPageViews;
+                this.pageViews.pageSet = this.processPages(apiPageViews.pageSet);
             },
             async getStudents() {
-                const apiStudents = [
-                    {id: 1, title: 'Page 1', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 2, title: 'Page 2', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 3, title: 'Page 3', parentId: null, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 4, title: 'Page 2a', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 5, title: 'Page 2b', parentId: 2, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 6, title: 'Page 3a', parentId: 3, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                    {id: 7, title: 'Page 3ai', parentId: 6, module: 'module', weeks: [0, 1, 6, 7, 3, 8, 4, 22, 11, 12, 33, 7, 4, 7], total: 72, percent: 91},
-                ];
+                const apiStudents = await get(`${this.courseId}/content_students/`);
 
-                this.students = this.processPages(apiStudents);
+                this.students = apiStudents;
+                this.students.pageSet = this.processPages(apiStudents.pageSet);
             },
             async getEvents() {
-                const apiEvents = [
-                    {
-                        id: 1,
-                        title: 'Page 1',
-                        module: 'module',
-                        parentId: null,
-                        weeks: [
-                            {before: 1, after: 4},
-                            {before: 2, after: 4},
-                            {before: 3, after: 4},
-                            {before: 4, after: 4},
-                            {before: 1, after: 4},
-                            {before: 2, after: 4},
-                            {before: 3, after: 4},
-                            {before: 4, after: 4},
-                            {before: 1, after: 4},
-                            {before: 2, after: 4},
-                            {before: 3, after: 4},
-                            {before: 4, after: 4},
-                            {before: 1, after: 4},
-                            {before: 2, after: 4},
-                        ]
-                    },
-                    {
-                        id: 2,
-                        title: 'Page 2',
-                        module: 'module',
-                        parentId: null,
-                        weeks: [
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                        ]
-                    },
-                    {
-                        id: 3,
-                        title: 'Page 1a',
-                        module: 'module',
-                        parentId: 1,
-                        weeks: [
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                            {before: 0, after: 4},
-                        ]
-                    },
-                ];
+                const apiEvents = await get(`${this.courseId}/content_events/${this.eventId}/`);
+
                 this.events = this.processPages(apiEvents);
 
                 this.$nextTick(function () {
                     let maxVisits = 0;
                     _.forEach(this.events, function(event) {
                         _.forEach(event.weeks, function (eventWeek) {
-                            if (eventWeek.before + eventWeek.after > maxVisits) {
-                                maxVisits = eventWeek.before + eventWeek.after;
+                            if (eventWeek[0] + eventWeek[1] > maxVisits) {
+                                maxVisits = eventWeek[0] + eventWeek[1];
                             }
                         });
                     });
@@ -270,14 +196,18 @@ const init = async (
 
                     _.forEach(this.events, function(event) {
                         _.forEach(event.weeks, function(eventWeek, index) {
-                            const pieProportion = (eventWeek.before + eventWeek.after) / maxVisits;
-                            const pieSize = pieProportion * (maxPieSize - minPieSize) + minPieSize;
-                            Plotly.newPlot(
-                                vue.$refs["pie_" + event.id][index],
-                                [Object.assign({}, pieData, {values: [eventWeek.before, eventWeek.after,],}),],
-                                Object.assign({}, pieLayout, {width: pieSize, height: pieSize,}),
-                                pieConfig,
-                            );
+                            if (maxVisits) {
+                                const pieProportion = (eventWeek[0] + eventWeek[1]) / maxVisits;
+                                if (pieProportion) { // Skip graph if no views before and after event.
+                                    const pieSize = pieProportion * (maxPieSize - minPieSize) + minPieSize;
+                                    Plotly.newPlot(
+                                        vue.$refs["pie_" + event.id][index],
+                                        [Object.assign({}, pieData, {values: [eventWeek[0], eventWeek[1],],}),],
+                                        Object.assign({}, pieLayout, {width: pieSize, height: pieSize,}),
+                                        pieConfig,
+                                    );
+                                }
+                            }
                         });
                     });
                 });
