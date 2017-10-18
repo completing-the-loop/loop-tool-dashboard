@@ -3,16 +3,21 @@ import datetime
 from django.db.models import Avg
 from django.db.models import Count
 from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from dashboard.models import CourseOffering
+from dashboard.models import CourseRepeatingEvent
 from olap.models import LMSUser
 from olap.models import Page
+from olap.models import PageVisit
 from olap.models import SummaryPost
 from olap.models import SubmissionAttempt
 from olap.serializers import TopAccessedContentSerializer
 from olap.serializers import TopAssessmentAccessSerializer
 from olap.serializers import TopCommunicationAccessSerializer
 from olap.serializers import TopCourseUsersSerializer
+from olap.serializers import WeeklyPageVisitsSerializer
 
 
 class TopCourseUsersViewSet(ListAPIView):
@@ -134,3 +139,43 @@ class TopAssessmentAccessView(ListAPIView):
             page['average_score'] = avg['grade__avg']
 
         return page_qs
+
+
+class PerWeekPageVisitsView(APIView):
+    def get(self, request, *args, **kwargs):
+
+        week_num = kwargs.get('week_num')
+        week_start = request.course_offering.start_datetime + datetime.timedelta(weeks=int(week_num) - 1)
+        dt_range = (week_start, week_start + datetime.timedelta(weeks=1))
+
+        day_dict = {}
+        for day_offset in range(7):
+            day = (week_start + datetime.timedelta(days=day_offset)).date()
+            day_dict[day] = {
+                'day': day,
+                'content_visits': 0,
+                'communication_visits': 0,
+                'assessment_visits': 0,
+                'repeating_events': [],
+            }
+
+        # Add the page visits to their corresponding entry
+        for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering, visited_at__range=dt_range).values('visited_at', 'page__content_type'):
+            visit_date = page_visit['visited_at'].date()
+            if page_visit['page__content_type'] in CourseOffering.communication_types():
+                day_dict[visit_date]['communication_visits'] += 1
+            elif page_visit['page__content_type'] in CourseOffering.assessment_types():
+                day_dict[visit_date]['assessment_visits']+= 1
+            else:
+                day_dict[visit_date]['content_visits'] += 1
+
+        # Add the repeating events to their corresponding entry
+        for repeating_event in CourseRepeatingEvent.objects.filter(course_offering=request.course_offering, start_week__gte=week_num, end_week__lte=week_num):
+            repeat_event_date = week_start + datetime.timedelta(days=repeating_event.day_of_week)
+            day_dict[repeat_event_date.date()]['repeating_events'].append(repeating_event.title)
+
+        # Convert to array and serialize
+        data = [v for v in day_dict.values()]
+        data.sort(key=lambda day_data: day_data['day'])
+        serializer = WeeklyPageVisitsSerializer(data, many=True)
+        return Response(serializer.data)

@@ -1,3 +1,4 @@
+from rest_framework.serializers import DateField
 from rest_framework.serializers import DecimalField
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ListField
@@ -82,3 +83,11 @@ class TopAssessmentAccessSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'userviews', 'average_score', 'attempts')
+
+
+class WeeklyPageVisitsSerializer(Serializer):
+    day = DateField()
+    content_visits = IntegerField()
+    communication_visits = IntegerField()
+    assessment_visits = IntegerField()
+    repeating_events = ListField()
