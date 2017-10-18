@@ -17,7 +17,7 @@ const init = async (
             topContent: [],
             topCommunications: [],
             topAssessments: [],
-            perWeekData: {},
+            perWeekVisits: [],
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -66,51 +66,63 @@ const init = async (
             async plotOverallGraph() {
             },
             async plotPerWeekGraph(weekNum) {
-                this.perWeekData = {
-                    events: [
-                        ['Lecture'], [], ['Tutorial', 'Other'], [], [], [], [],
-                    ],
-                    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',],
-                    content: [ 1 * this.weekNum, 2, 3, 4, 5, 6, 7],
-                    communications: [2, 3, 4, 5, 6, 7, 1],
-                    assessments: [3, 4, 5, 6, 7, 1, 2],
-                    unique: [4, 5, 6, 7, 1, 2, 3],
-                };
+                this.perWeekVisits = await get(`${this.courseId}/weekly_page_visits/${weekNum}/`);
+                const days = [];
+                const contentVisits = [];
+                const communicationVisits = [];
+                const assessmentVisits = [];
+                const uniqueVisits = [];
+                const repeatingEvents = [];
 
-                const tags = this.generateGraphTags(this.perWeekData.events);
+                // Initial loop through data for page views
+                _.forEach(this.perWeekVisits, function(visit) {
+                    days.push(moment(visit.day).format('ddd'));
+                    contentVisits.push(visit.contentVisits);
+                    communicationVisits.push(visit.communicationVisits);
+                    assessmentVisits.push(visit.assessmentVisits);
+                    uniqueVisits.push(0);
+                    repeatingEvents.push(visit.repeatingEvents);
+                });
+
+                const tags = this.generateGraphTags(repeatingEvents);
 
                 this.$nextTick(function() {
                     const graphLayout = {
-                        margin: {t: 20, r: 20, b: 20, l: 20},
+                        margin: {
+                            t: 20,
+                            r: 20,
+                            b: 20,
+                            l: 20
+                        },
                     };
                     const graphConfig = {
                         displayModeBar: false,
                     };
 
                     Plotly.newPlot(
-                        'graph_container',
+                        'per_week_pageviews_chart',
                         [
                             {
-                                x: this.perWeekData.days,
-                                y: this.perWeekData.content,
+                                x: days,
+                                y: contentVisits,
                                 mode: 'lines+markers',
                                 name: 'Content',
                             },
                             {
-                                x: this.perWeekData.days,
-                                y: this.perWeekData.communications,
+                                x: days,
+                                y: communicationVisits,
                                 mode: 'lines+markers',
                                 name: 'Communication',
                             },
                             {
-                                x: this.perWeekData.days,
-                                y: this.perWeekData.assessments,
+                                x: days,
+                                y: assessmentVisits,
                                 mode: 'lines+markers',
                                 name: 'Assessment',
                             },
                             {
-                                x: this.perWeekData.days,
-                                y: this.perWeekData.unique,
+                                x: days,
+                                y: uniqueVisits,
                                 mode: 'lines+markers',
                                 name: 'Unique Pages',
                             },
@@ -134,7 +146,6 @@ const init = async (
                             xref: 'x',
                             yref: 'paper',
                             line: {
-                                color: 'rgb(55, 128, 191)',
                                 width: 3,
                             }
                         }
