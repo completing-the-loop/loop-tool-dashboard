@@ -7,7 +7,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th class="text-center">Title</th>
+            <th class="text-center">Page</th>
             <th class="text-center">Type</th>
             <th class="text-center">Unique Students</th>
             <th class="text-center">Pageviews</th>
@@ -16,11 +16,11 @@
         </thead>
         <tbody>
           <tr v-for="page in topCommunications">
-            <td><a :href="'/coursepage?page_id=' + page.page_id + '&course_id=' + courseId">{{ page.title }}</a></td>
-            <td>{{ page.module }}</td>
-            <td class="text-right">{{ page.user_views }}</td>
-            <td class="text-right">{{ page.page_views }}</td>
-            <td class="text-right">{{ page.post_count }}</td>
+            <td><a :href="`/${courseId}/course_page/${page.id}/`">{{ page.title }}</a></td>
+            <td>{{ page.contentType }}</td>
+            <td class="text-right">{{ page.userviews }}</td>
+            <td class="text-right">{{ page.pageviews }}</td>
+            <td class="text-right">{{ page.posts }}</td>
           </tr>
         </tbody>
        </table>

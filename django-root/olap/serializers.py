@@ -63,3 +63,12 @@ class TopAccessedContentSerializer(ModelSerializer):
         fields = ('id', 'title', 'content_type', 'userviews', 'pageviews')
 
 
+class TopCommunicationAccessSerializer(ModelSerializer):
+    pageviews = IntegerField()
+    userviews = IntegerField()
+    posts = IntegerField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'userviews', 'pageviews', 'posts')
+
