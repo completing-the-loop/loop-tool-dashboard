@@ -207,9 +207,17 @@ const init = async (
                         range: [0, maxVisits + 2],
                     }
                 };
+
+                const graphConfig = {
+                    modeBarButtonsToRemove: [
+                        'sendDataToCloud',
+                    ],
+                };
+
                 Plotly.newPlot('overall_pageviews_chart',
                     graphData,
                     graphLayout,
+                    graphConfig,
                 );
             },
             async plotPerWeekGraph(weekNum) {
