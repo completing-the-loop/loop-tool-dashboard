@@ -174,8 +174,8 @@ class OverallPageVisitsView(APIView):
             day_dict[single_event.event_date.date()]['single_events'].append(single_event.title)
 
         for submission_event in CourseSubmissionEvent.objects.filter(course_offering=request.course_offering):
-            day_dict[submission_event.start_date.date()]['submission_events'].append("{}: Start".format(submission_event.title))
-            day_dict[submission_event.end_date.date()]['submission_events'].append("{}: End".format(submission_event.title))
+            day_dict[submission_event.start_date.date()]['submission_events'].append("{} (start)".format(submission_event.title))
+            day_dict[submission_event.end_date.date()]['submission_events'].append("{} (end)".format(submission_event.title))
 
         # Convert to array and serialize
         data = [v for v in day_dict.values()]

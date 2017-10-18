@@ -66,18 +66,51 @@ const init = async (
             async plotOverallGraph() {
                 this.overallVisits = await get(`${this.courseId}/overall_pagevisits`);
 
-                const dates = _.map(this.overallVisits, function(visit) {
-                    return visit.day;
+                let maxVisits = 0;
+                const dates = [];
+                const contentVisits = [];
+                const communicationVisits = [];
+                const assessmentVisits = [];
+                const singleEventsData = [];
+                const submissionEventsData = [];
+                const singleEventsText = [];
+                const submissionEventsText = [];
+
+                // Initial loop through data for page views
+                _.forEach(this.overallVisits, function(visit) {
+                    dates.push(visit.day);
+                    contentVisits.push(visit.contentVisits);
+                    communicationVisits.push(visit.communicationVisits);
+                    assessmentVisits.push(visit.assessmentVisits);
+                    if (visit.contentVisits > maxVisits) {
+                        maxVisits = visit.contentVisits;
+                    }
+                    if (visit.communicationVisits > maxVisits) {
+                        maxVisits = visit.communicationVisits;
+                    }
+                    if (visit.assessmentVisits > maxVisits) {
+                        maxVisits = visit.assessmentVisits;
+                    }
                 });
-                const communicationVisits = _.map(this.overallVisits, function(visit) {
-                    return visit.communicationVisits;
+
+                // Second loop to build events data
+                _.forEach(this.overallVisits, function(visit) {
+                    if (visit.singleEvents.length) {
+                        singleEventsData.push(maxVisits+1);
+                        singleEventsText.push(_.join(visit.singleEvents, ', '));
+                    } else {
+                        singleEventsData.push(null);
+                        singleEventsText.push(null);
+                    }
+                    if (visit.submissionEvents.length) {
+                        submissionEventsData.push(maxVisits+1);
+                        submissionEventsText.push(_.join(visit.submissionEvents, ', '));
+                    } else {
+                        submissionEventsData.push(null);
+                        submissionEventsText.push(null);
+                    }
                 });
-                const contentVisits = _.map(this.overallVisits, function(visit) {
-                    return visit.contentVisits;
-                });
-                const assessmentVisits = _.map(this.overallVisits, function(visit) {
-                    return visit.assessmentVisits;
-                });
+
                 const graphData = [
                     {
                         type: "scatter",
@@ -99,6 +132,24 @@ const init = async (
                         name: "Assessment",
                         x: dates,
                         y: assessmentVisits,
+                    },
+                    {
+                        type: "scatter",
+                        mode: "markers+text",
+                        name: "Single Events",
+                        x: dates,
+                        y: singleEventsData,
+                        text: singleEventsText,
+                        textposition: "top center",
+                    },
+                    {
+                        type: "scatter",
+                        mode: "markers+text",
+                        name: "Submission Events",
+                        x: dates,
+                        y: submissionEventsData,
+                        text: submissionEventsText,
+                        textposition: "top center",
                     },
                 ];
                 const graphLayout = {
