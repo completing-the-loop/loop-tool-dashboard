@@ -160,11 +160,11 @@ class OverallPageVisitsView(APIView):
             }
 
         # Add the page visits to their corresponding entry
-        for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering):
-            visit_date = page_visit.visited_at.date()
-            if page_visit.page.content_type in CourseOffering.communication_types():
+        for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering).values('visited_at', 'page__content_type'):
+            visit_date = page_visit['visited_at'].date()
+            if page_visit['page__content_type'] in CourseOffering.communication_types():
                 day_dict[visit_date]['communication_visits'] += 1
-            elif page_visit.page.content_type in CourseOffering.assessment_types():
+            elif page_visit['page__content_type'] in CourseOffering.assessment_types():
                 day_dict[visit_date]['assessment_visits']+= 1
             else:
                 day_dict[visit_date]['content_visits'] += 1
