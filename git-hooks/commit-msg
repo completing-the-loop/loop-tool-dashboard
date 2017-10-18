@@ -12,7 +12,7 @@ trap cleanup EXIT
 
 [[ $commit_file != "" ]]
 
-first_line_regex="^((${commit_categories}):)|^(${commit_categories_bare})$"
+first_line_regex="^((${commit_categories}):)|^(${commit_categories_bare})$|^Merge"
 commit_file_tmp=$( mktemp )
 if egrep -v '^#' "$commit_file" > "$commit_file_tmp" ; then
 	# (can't use a ! in the if or the return code is wiped)
