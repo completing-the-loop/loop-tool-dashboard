@@ -152,16 +152,65 @@ const init = async (
                         textposition: "top center",
                     },
                 ];
+
+                // Make the range slider range a bit longer to show shaded sidebars
+                const rangeStart = moment(this.courseStart).add(-2, 'weeks').format('YYYY-MM-DD');
+                const rangeEnd = moment(this.courseStart).add(this.numWeeks + 2, 'weeks').format('YYYY-MM-DD');
+
                 const graphLayout = {
-                    margin: {
-                        t: 0,
+                    xaxis: {
+                        rangeselector: {
+                            buttons: [
+                                {
+                                    count: 1,
+                                    label: '1m',
+                                    step: 'month',
+                                    stepmode: 'backward'
+                                },
+                                {
+                                    count: 3,
+                                    label: '3m',
+                                    step: 'month',
+                                    stepmode: 'backward'
+                                },
+                                {
+                                    count: 6,
+                                    label: '6m',
+                                    step: 'month',
+                                    stepmode: 'backward'
+                                },
+                                {
+                                    count: 1,
+                                    label: 'YTD',
+                                    step: 'year',
+                                    stepmode: 'todate'
+                                },
+                                {
+                                    count: 1,
+                                    label: '1y',
+                                    step: 'year',
+                                    stepmode: 'backward'
+                                },
+                                {
+                                    step: 'All',
+                                },
+                            ],
+                            y: 1.1,
+                        },
+                        rangeslider: {
+                            thickness: 0.3,
+                            range: [rangeStart, rangeEnd],
+                        },
+                        type: 'date',
                     },
+                    yaxis: {
+                        range: [0, maxVisits + 2],
+                    }
                 };
                 Plotly.newPlot('overall_pageviews_chart',
                     graphData,
                     graphLayout,
                 );
-
             },
             async plotPerWeekGraph(weekNum) {
                 const data = [{
