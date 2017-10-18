@@ -17,6 +17,7 @@ const init = async (
             topContent: [],
             topCommunications: [],
             topAssessments: [],
+            overallVisits: [],
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -63,6 +64,53 @@ const init = async (
             async plotHistogram(weekNum = null) {
             },
             async plotOverallGraph() {
+                this.overallVisits = await get(`${this.courseId}/overall_pagevisits`);
+
+                const dates = _.map(this.overallVisits, function(visit) {
+                    return visit.day;
+                });
+                const communicationVisits = _.map(this.overallVisits, function(visit) {
+                    return visit.communicationVisits;
+                });
+                const contentVisits = _.map(this.overallVisits, function(visit) {
+                    return visit.contentVisits;
+                });
+                const assessmentVisits = _.map(this.overallVisits, function(visit) {
+                    return visit.assessmentVisits;
+                });
+                const graphData = [
+                    {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Content",
+                        x: dates,
+                        y: contentVisits,
+                    },
+                    {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Communication",
+                        x: dates,
+                        y: communicationVisits,
+                    },
+                    {
+                        type: "scatter",
+                        mode: "lines",
+                        name: "Assessment",
+                        x: dates,
+                        y: assessmentVisits,
+                    },
+                ];
+                const graphLayout = {
+                    margin: {
+                        t: 0,
+                    },
+                };
+                Plotly.newPlot('overall_pageviews_chart',
+                    graphData,
+                    graphLayout,
+                );
+
             },
             async plotPerWeekGraph(weekNum) {
                 const data = [{
