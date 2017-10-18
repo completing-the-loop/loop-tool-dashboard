@@ -12,6 +12,7 @@ from olap.views.content import ContentEventsView
 from olap.views.content import ContentStudentsView
 from olap.views.dashboard import TopCommunicationAccessView
 from olap.views.dashboard import TopAccessedContentView
+from olap.views.dashboard import TopAssessmentAccessView
 from olap.views.dashboard import TopCourseUsersViewSet
 from olap.views.importer import CourseImportsApiView
 
@@ -29,8 +30,9 @@ urlpatterns = [
         url(r'^content_students/$', ContentStudentsView.as_view(), name='content_students'),
         url(r'^content_events/(?P<event_id>\d+)/$', ContentEventsView.as_view(), name='content_events'),
 
-        url(r'^top_users/$', TopCourseUsersViewSet.as_view(), name='top_users'),
-        url(r'^top_content/(?:(?P<week_num>\d+)/)?$', TopAccessedContentView.as_view(), name='top_content'), # optional week
+        url(r'^top_assessments/(?:(?P<week_num>\d+)/)?$', TopAssessmentAccessView.as_view(), name='top_assessment'), # optional week
         url(r'^top_communication/(?:(?P<week_num>\d+)/)?$', TopCommunicationAccessView.as_view(), name='top_communication'), # optional week
+        url(r'^top_content/(?:(?P<week_num>\d+)/)?$', TopAccessedContentView.as_view(), name='top_content'), # optional week
+        url(r'^top_users/$', TopCourseUsersViewSet.as_view(), name='top_users'),
     ])),
 ]

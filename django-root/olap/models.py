@@ -235,9 +235,7 @@ class SubmissionType(models.Model):
     course_offering = models.ForeignKey(CourseOffering)
     content_id = models.IntegerField() # This should be an FK to Page, but we can't replace it yet because the importer tries to create DimSubmissionAttempts before Pages.
     content_type = models.CharField(max_length=255)
-    # timeopen = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
-    # timeclose = models.DateTimeField() # Hardcoded in importer to 0.  Not needed?
-    grade = models.CharField(max_length=50)
+    grade = models.DecimalField(max_digits=7, decimal_places=4) # Up to 999.9999
 
 
 # CREATE TABLE `Summary_CourseAssessmentVisitsByDayInWeek` (
