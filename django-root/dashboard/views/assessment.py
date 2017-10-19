@@ -3,8 +3,8 @@ from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from dashboard.models import CourseRepeatingEvent
 
-class CourseCommunicationView(TemplateView):
-    template_name = 'dashboard/communication.html'
+class CourseAssessmentView(TemplateView):
+    template_name = 'dashboard/assessment.html'
 
     def get(self, request, *args, **kwargs):
         self.course_offering = request.course_offering

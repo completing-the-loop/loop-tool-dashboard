@@ -13,7 +13,7 @@ const init = async (
     const pieAfterColor = window.__APP_CONTEXT__.PAGE_PIE_CHART_AFTER_COLOR;
 
     new Vue({
-        el: '#course-communication',
+        el: '#course-assessment',
         data: {
             courseId: initialData.courseId,
             numWeeks: initialData.numWeeks,
@@ -21,9 +21,10 @@ const init = async (
                 pageSet: [],
                 totalsByWeek: []
             },
-            posts: {
-                pageSet: [],
-                totalsByWeek: []
+            grades: {
+                users: [],
+                assessments: [],
+                grades: [],
             },
             students: {
                 pageSet: [],
@@ -34,22 +35,22 @@ const init = async (
         },
         mounted: async function mounted() {
             this.getAccesses();
-            this.getPosts();
+            this.getGrades();
             this.getStudents();
             this.getEvents();
         },
         methods: {
             async getAccesses() {
-                this.accesses = await get(`${this.courseId}/communication_accesses/`);
+                this.accesses = await get(`${this.courseId}/assessment_accesses/`);
             },
-            async getPosts() {
-                this.posts = await get(`${this.courseId}/communication_posts/`);
+            async getGrades() {
+                this.grades = await get(`${this.courseId}/assessment_grades/`);
             },
             async getStudents() {
-                this.students = await get(`${this.courseId}/communication_students/`);
+                this.students = await get(`${this.courseId}/assessment_students/`);
             },
             async getEvents() {
-                this.events = await get(`${this.courseId}/communication_events/${this.eventId}/`);
+                this.events = await get(`${this.courseId}/assessment_events/${this.eventId}/`);
 
                 this.$nextTick(function () {
                     let maxVisits = 0;
@@ -113,6 +114,6 @@ const init = async (
 };
 
 window.pages = window.pages || {};
-window.pages.communication = {};
-window.pages.communication.init = init;
+window.pages.assessment = {};
+window.pages.assessment.init = init;
 

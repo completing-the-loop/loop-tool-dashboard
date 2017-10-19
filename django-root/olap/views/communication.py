@@ -10,8 +10,8 @@ from dashboard.models import CourseRepeatingEvent
 from olap.models import Page
 from olap.models import PageVisit
 from olap.models import SummaryPost
-from olap.serializers import CourseCommunicationSerializer
-from olap.serializers import CourseCommunicationPageEventSerializer
+from olap.serializers import CoursePagesetAndTotalsSerializer
+from olap.serializers import CourseEventSerializer
 
 
 # Base class for CommunicationAccessesView and CommunicationPostsView.
@@ -60,7 +60,7 @@ class CommunicationGenericView(APIView):
             'totals_by_week': events_by_week_for_all_pages,
         }
 
-        serializer = CourseCommunicationSerializer(data=results)
+        serializer = CoursePagesetAndTotalsSerializer(data=results)
         # If we pass data to the serializer, we need to call .is_valid() before it's available in .data
         serializer.is_valid()
         sd = serializer.data
@@ -129,7 +129,7 @@ class CommunicationStudentsView(APIView):
             'totals_by_week': students_by_week_for_all_pages,
         }
 
-        serializer = CourseCommunicationSerializer(data=results)
+        serializer = CoursePagesetAndTotalsSerializer(data=results)
         # If we pass data to the serializer, we need to call .is_valid() before it's available in .data
         serializer.is_valid()
         sd = serializer.data
@@ -166,7 +166,7 @@ class CommunicationEventsView(APIView):
                     pass
             page['weeks'] = visit_pairs_by_week
 
-        serializer = CourseCommunicationPageEventSerializer(page_queryset, many=True)
+        serializer = CourseEventSerializer(page_queryset, many=True)
         sd = serializer.data
 
         return Response(sd)

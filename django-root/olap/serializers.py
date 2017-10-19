@@ -1,3 +1,4 @@
+from rest_framework.serializers import CharField
 from rest_framework.serializers import DateField
 from rest_framework.serializers import DecimalField
 from rest_framework.serializers import IntegerField
@@ -30,17 +31,23 @@ class PageSerializer(ModelSerializer):
         fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
 
 
-class CourseCommunicationSerializer(Serializer):
+class CoursePagesetAndTotalsSerializer(Serializer):
     page_set = PageSerializer(many=True)
     totals_by_week = ListField(child=IntegerField())
 
 
-class CourseContentSerializer(Serializer):
-    page_set = PageSerializer(many=True)
-    totals_by_week = ListField(child=IntegerField())
+class IdAndNameSerializer(Serializer):
+    id = IntegerField()
+    name = CharField()
 
 
-class CourseCommunicationPageEventSerializer(ModelSerializer):
+class CourseAssessmentGradesSerializer(Serializer):
+    students = IdAndNameSerializer(many=True)
+    assessments = IdAndNameSerializer(many=True)
+    grades = ListField(child=ListField())
+
+
+class CourseEventSerializer(ModelSerializer):
     weeks = ListField()
 
     class Meta:

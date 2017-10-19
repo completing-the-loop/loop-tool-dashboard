@@ -1,26 +1,26 @@
 {% extends 'base.html' %}
 
-{% block page_id %}course-communication{% endblock page_id %}
+{% block page_id %}course-assessment{% endblock page_id %}
 
 {% block content %}
 <div class="row">
   <ol class="breadcrumb col-md-12">
     <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
     <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
-    <li class="active">Communication</li>
+    <li class="active">Assessment</li>
   </ol>
 </div>
 
 <div class="row">
   <div class="col-md-12">
-    <div id="communication" class="panel with-nav-tabs panel-default">
+    <div id="assessment" class="panel with-nav-tabs panel-default">
       <div class="panel-heading">
-        <h1 class="pull-left">Communication</h1>
+        <h1 class="pull-left">Assessment</h1>
         <ul class="nav nav-tabs">
           <li role="presentation" class="active navbar-right"><a href="#access" aria-controls="access" role="tab"
                                                                  data-toggle="tab">Accesses</a></li>
-          <li role="presentation" class=" navbar-right"><a href="#posts" aria-controls="posts" role="tab"
-                                                           data-toggle="tab">Posts</a></li>
+          <li role="presentation" class=" navbar-right"><a href="#grades" aria-controls="grades" role="tab"
+                                                           data-toggle="tab">Grades</a></li>
           <li role="presentation" class=" navbar-right"><a href="#unique-students" aria-controls="unique-students" role="tab"
                                                            data-toggle="tab">Unique Students</a></li>
           <li role="presentation" class=" navbar-right"><a href="#events" aria-controls="events" role="tab"
@@ -64,40 +64,24 @@
               </table>
             {% endverbatim %}
           </div>
-          <div class="tab-pane fade" id="posts">
+          <div class="tab-pane fade" id="grades">
             {% verbatim %}
-              <table id="postsTable" class="table table-striped table-bordered heat-map">
+              <table id="gradesTable" class="table table-striped table-bordered heat-map">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>View</th>
-
-                    <th v-for="week in numWeeks">Week {{ week }}</th>
-
-                    <th>Total</th>
-                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
+                    <th>Student name</th>
+                    <th v-for="assessment in grades.assessments">{{ assessment[1] }}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="resource in posts.pageSet" class="stats-row">
-                    <td class="stats-title"><span>{{ resource.title }}</span></td>
-                    <td class="stats-title">{{ resource.content_type }}</td>
-                    <td class="stats-title"><a :href="`/${courseId}/course_page/${resource.id}/`" class="btn btn-small btn-primary">View</a></td>
-                    <td v-for="week in numWeeks">{{ resource.weeks[week - 1] }}</td>
-                    <td class="stats-title">{{ resource.total }}</td>
-                    <td>{{ resource.percent }}</td>
-                  </tr>
-                  <tr class="stats-row">
-                    <th>Totals</th>
-                    <th colspan="2">&nbsp;</th>
-                    <td v-for="week in numWeeks">{{ posts.totalsByWeek[week - 1] }}</td>
-                    <td>{{ posts.totalsByWeek[numWeeks] }}</td>
-                    <td>&nbsp;</td>
+                  <tr v-for="(user, user_i) in grades.users" class="stats-row">
+                    <td class="stats-title"><span>{{ user[1] }}</span></td>
+                    <td class="text-right" v-for="grade in grades.grades[user_i]">{{ grade == undefined ? "&empty;" : grade }}</td>
                   </tr>
                 </tbody>
               </table>
             {% endverbatim %}
+            <p><strong>&empty;</strong>: Student made no submission attempts for this assessment.</p>
           </div>
           <div class="tab-pane fade" id="unique-students">
             {% verbatim %}
@@ -172,6 +156,6 @@
 
 {% block javascript %}
   <script>
-    window.pages.communication.init(JSON.parse('{{ initial_data | escapejs }}'));
+    window.pages.assessment.init(JSON.parse('{{ initial_data | escapejs }}'));
   </script>
 {% endblock javascript %}
