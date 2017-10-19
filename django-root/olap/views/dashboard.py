@@ -2,6 +2,7 @@ import datetime
 
 from django.db.models import Avg
 from django.db.models import Count
+from django.utils.timezone import get_current_timezone
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -147,6 +148,7 @@ class PerWeekPageVisitsView(APIView):
         week_num = kwargs.get('week_num')
         week_start = request.course_offering.start_datetime + datetime.timedelta(weeks=int(week_num) - 1)
         dt_range = (week_start, week_start + datetime.timedelta(weeks=1))
+        our_tz = get_current_timezone()
 
         day_dict = {}
         for day_offset in range(7):
@@ -161,7 +163,7 @@ class PerWeekPageVisitsView(APIView):
 
         # Add the page visits to their corresponding entry
         for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering, visited_at__range=dt_range).values('visited_at', 'page__content_type'):
-            visit_date = page_visit['visited_at'].date()
+            visit_date = page_visit['visited_at'].astimezone(our_tz).date()
             if page_visit['page__content_type'] in CourseOffering.communication_types():
                 day_dict[visit_date]['communication_visits'] += 1
             elif page_visit['page__content_type'] in CourseOffering.assessment_types():
