@@ -75,11 +75,14 @@ class LMSUser(models.Model):
         unique_together = (('course_offering', 'lms_user_id'), )
 
     def __str__(self):
-        possible_name = " ".join((self.firstname, self.lastname))
-        if possible_name:
-            return "<LMSUser {}: {}>".format(self.lms_user_id, possible_name)
+        name = self.full_name()
+        if name:
+            return "<LMSUser {}: {}>".format(self.lms_user_id, name)
         else:
             return "<LMSUser {}: ## Phantom user ##>".format(self.lms_user_id)
+
+    def full_name(self):
+        return " ".join((self.firstname, self.lastname))
 
 # CREATE TABLE `fact_coursevisits` (
 #   `id` int(11) NOT NULL,
