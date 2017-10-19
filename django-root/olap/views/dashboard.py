@@ -158,12 +158,14 @@ class PerWeekPageVisitsView(APIView):
                 'content_visits': 0,
                 'communication_visits': 0,
                 'assessment_visits': 0,
+                'page_list': [],
                 'repeating_events': [],
             }
 
         # Add the page visits to their corresponding entry
-        for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering, visited_at__range=dt_range).values('visited_at', 'page__content_type'):
+        for page_visit in PageVisit.objects.filter(page__course_offering=request.course_offering, visited_at__range=dt_range).values('page_id', 'visited_at', 'page__content_type'):
             visit_date = page_visit['visited_at'].astimezone(our_tz).date()
+            day_dict[visit_date]['page_list'].append(page_visit['page_id'])
             if page_visit['page__content_type'] in CourseOffering.communication_types():
                 day_dict[visit_date]['communication_visits'] += 1
             elif page_visit['page__content_type'] in CourseOffering.assessment_types():
@@ -175,6 +177,11 @@ class PerWeekPageVisitsView(APIView):
         for repeating_event in CourseRepeatingEvent.objects.filter(course_offering=request.course_offering, start_week__gte=week_num, end_week__lte=week_num):
             repeat_event_date = week_start + datetime.timedelta(days=repeating_event.day_of_week)
             day_dict[repeat_event_date.date()]['repeating_events'].append(repeating_event.title)
+
+        # Turn the list of pages visited for each day into a count of unique visits
+        for day in day_dict:
+            day_dict[day]['unique_visits'] = len(set(day_dict[day]['page_list']))
+            del day_dict[day]['page_list']
 
         # Convert to array and serialize
         data = [v for v in day_dict.values()]

@@ -80,7 +80,7 @@ const init = async (
                     contentVisits.push(visit.contentVisits);
                     communicationVisits.push(visit.communicationVisits);
                     assessmentVisits.push(visit.assessmentVisits);
-                    uniqueVisits.push(0);
+                    uniqueVisits.push(visit.uniqueVisits);
                     repeatingEvents.push(visit.repeatingEvents);
                 });
 

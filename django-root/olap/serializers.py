@@ -90,4 +90,5 @@ class WeeklyPageVisitsSerializer(Serializer):
     content_visits = IntegerField()
     communication_visits = IntegerField()
     assessment_visits = IntegerField()
+    unique_visits = IntegerField()
     repeating_events = ListField()
