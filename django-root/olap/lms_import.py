@@ -406,7 +406,7 @@ class BlackboardImport(BaseLmsImport):
             if row['parent_content_key']:
                 content_page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
                 try:
-                    parent_page = Page.objects.get(content_id=row['parent_content_key'])
+                    parent_page = Page.objects.get(content_id=row['parent_content_key'], course_offering=self.course_offering)
                     content_page.parent = parent_page
                     content_page.save()
                 except Page.DoesNotExist:
