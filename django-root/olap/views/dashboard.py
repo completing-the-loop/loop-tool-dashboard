@@ -174,7 +174,7 @@ class PerWeekPageVisitsView(APIView):
                 day_dict[visit_date]['content_visits'] += 1
 
         # Add the repeating events to their corresponding entry
-        for repeating_event in CourseRepeatingEvent.objects.filter(course_offering=request.course_offering, start_week__gte=week_num, end_week__lte=week_num):
+        for repeating_event in CourseRepeatingEvent.objects.filter(course_offering=request.course_offering, start_week__lte=week_num, end_week__gte=week_num):
             repeat_event_date = week_start + datetime.timedelta(days=repeating_event.day_of_week)
             day_dict[repeat_event_date.date()]['repeating_events'].append(repeating_event.title)
 
