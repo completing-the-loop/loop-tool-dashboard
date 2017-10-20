@@ -86,11 +86,10 @@ class AssessmentGradesView(APIView):
         users_out = []
         assessments_set = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.assessment_types()).order_by('pk').values('id', 'title')
         page_ids = tuple(a['id'] for a in assessments_set)
-        # Gross, needs someone who knows what they're doing to construct better queries.
         for user in users_set:
             most_recent_attempts = {} # Dict of attempts for this student, keyed by assessment id
             # Find all the attempts for this student
-            attempts = SubmissionAttempt.objects.filter(lms_user=user, page__in=page_ids)
+            attempts = SubmissionAttempt.objects.filter(lms_user__id=user.id, page__in=page_ids)
             # Iterate over the attempts, recording the most recent attempt in the dict
             for attempt in attempts:
                 page_id = attempt.page_id
@@ -153,7 +152,7 @@ class AssessmentStudentsView(APIView):
             page['percent'] = (Decimal(page['total'] * 100 / grand_total_uniques) if grand_total_uniques else 0)
 
         results = {
-            'page_set': page_queryset,
+            'page_set': list(page_queryset),
             'totals_by_week': students_by_week_for_all_pages,
         }
 
