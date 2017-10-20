@@ -193,6 +193,6 @@ class AssessmentEventsView(APIView):
             page['weeks'] = visit_pairs_by_week
 
         serializer = CourseEventSerializer(page_queryset, many=True)
-        sd = serializer.initial_data
+        sd = serializer.data
 
         return Response(sd)
