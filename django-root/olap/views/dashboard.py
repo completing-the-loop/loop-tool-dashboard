@@ -203,10 +203,15 @@ class PerWeekPageVisitsView(APIView):
             day = (week_start + datetime.timedelta(days=day_offset)).date()
             day_dict[day] = {
                 'day': day,
+
+                # Temporary values to calculate final data - will be stripped out by the serializer
+                'page_list': [],
+
+                # Final calculated values returned by the endpoint
+                'unique_visits': 0,
                 'content_visits': 0,
                 'communication_visits': 0,
                 'assessment_visits': 0,
-                'page_list': [],
                 'repeating_events': [],
             }
 
@@ -217,7 +222,7 @@ class PerWeekPageVisitsView(APIView):
             if page_visit['page__content_type'] in CourseOffering.communication_types():
                 day_dict[visit_date]['communication_visits'] += 1
             elif page_visit['page__content_type'] in CourseOffering.assessment_types():
-                day_dict[visit_date]['assessment_visits']+= 1
+                day_dict[visit_date]['assessment_visits'] += 1
             else:
                 day_dict[visit_date]['content_visits'] += 1
 
@@ -229,7 +234,6 @@ class PerWeekPageVisitsView(APIView):
         # Turn the list of pages visited for each day into a count of unique visits
         for day in day_dict:
             day_dict[day]['unique_visits'] = len(set(day_dict[day]['page_list']))
-            del day_dict[day]['page_list']
 
         # Convert to array and serialize
         data = [v for v in day_dict.values()]
