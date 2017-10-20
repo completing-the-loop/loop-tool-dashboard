@@ -100,7 +100,8 @@ class ImportLmsData(object):
             errors = lms_import.process_import_data()
 
             print("Processing user sessions for", offering)
-            self._calculate_sessions()
+            if not len(errors):
+                self._calculate_sessions()
 
         if len(errors):
             send_mail(
