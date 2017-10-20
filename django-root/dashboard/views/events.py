@@ -30,7 +30,7 @@ class CourseRepeatingEventCreateView(CreateView):
         return CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
 
     def get_success_url(self):
-        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering})
+        return reverse('dashboard:list_course_repeating_events', kwargs={'course_id': self.request.course_offering.id})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
