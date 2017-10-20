@@ -70,13 +70,13 @@
                 <thead>
                   <tr>
                     <th>Student name</th>
-                    <th v-for="assessment in grades.assessments">{{ assessment[1] }}</th>
+                    <th v-for="assessment in grades.assessments">{{ assessment.title }}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(user, user_i) in grades.users" class="stats-row">
-                    <td class="stats-title"><span>{{ user[1] }}</span></td>
-                    <td class="text-right" v-for="grade in grades.grades[user_i]">{{ grade == undefined ? "&empty;" : grade }}</td>
+                  <tr v-for="user in grades.users" class="stats-row">
+                    <td class="stats-title"><span>{{ user.name }}</span></td>
+                    <td class="text-right" v-for="assessment in grades.assessments" v-html="getGradeForAssessment(user, assessment)"></td>
                   </tr>
                 </tbody>
               </table>

@@ -22,9 +22,8 @@ const init = async (
                 totalsByWeek: []
             },
             grades: {
-                users: [],
-                assessments: [],
-                grades: [],
+                users: {},
+                assessments: {},
             },
             students: {
                 pageSet: [],
@@ -40,11 +39,18 @@ const init = async (
             this.getEvents();
         },
         methods: {
+            getGradeForAssessment(user, assessment) {
+                const grade = this.grades.users[user.pk].grades[assessment.pk];
+                return (grade == undefined) ? '&empty;' : grade.grade;
+            },
             async getAccesses() {
                 this.accesses = await get(`${this.courseId}/assessment_accesses/`);
             },
             async getGrades() {
-                this.grades = await get(`${this.courseId}/assessment_grades/`);
+                const grades = await get(`${this.courseId}/assessment_grades/`);
+
+                this.grades.assessments = _.keyBy(grades.assessments, 'pk');
+                this.grades.users = _.keyBy(grades.users, 'pk');
             },
             async getStudents() {
                 this.students = await get(`${this.courseId}/assessment_students/`);

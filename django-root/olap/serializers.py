@@ -1,6 +1,7 @@
 from rest_framework.serializers import CharField
 from rest_framework.serializers import DateField
 from rest_framework.serializers import DecimalField
+from rest_framework.serializers import DictField
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ListField
 from rest_framework.serializers import ModelSerializer
@@ -36,15 +37,22 @@ class CoursePagesetAndTotalsSerializer(Serializer):
     totals_by_week = ListField(child=IntegerField())
 
 
-class IdAndNameSerializer(Serializer):
-    id = IntegerField()
-    name = CharField()
+class AssessmentUsersAndGradesSerializer(Serializer):
+    class UserAndGradesSerializer(Serializer):
+        class PkAndGradeDictField(DictField):
+            pk = IntegerField()
+            grade = DecimalField(max_digits=7, decimal_places=4)
 
+        pk = IntegerField()
+        name = CharField()
+        grades = ListField(child=PkAndGradeDictField())
 
-class CourseAssessmentGradesSerializer(Serializer):
-    students = IdAndNameSerializer(many=True)
-    assessments = IdAndNameSerializer(many=True)
-    grades = ListField(child=ListField())
+    class PkAndTitleSerializer(Serializer):
+        pk = IntegerField()
+        s = CharField()
+
+    assessments = PkAndTitleSerializer(many=True)
+    users = UserAndGradesSerializer(many=True)
 
 
 class CourseEventSerializer(ModelSerializer):

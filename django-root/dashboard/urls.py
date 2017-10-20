@@ -3,8 +3,8 @@ from decorator_include import decorator_include
 from django.conf.urls import url
 from stronghold.decorators import public
 
-from dashboard.views.communication import CourseCommunicationView
 from dashboard.views.assessment import CourseAssessmentView
+from dashboard.views.communication import CourseCommunicationView
 from dashboard.views.content import CourseContentView
 from dashboard.views.content import CoursePageView
 from dashboard.views.courses import CourseListView

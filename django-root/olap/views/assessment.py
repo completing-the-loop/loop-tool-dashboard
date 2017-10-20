@@ -11,7 +11,7 @@ from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
 from olap.models import SubmissionAttempt
-from olap.serializers import CourseAssessmentGradesSerializer
+from olap.serializers import AssessmentUsersAndGradesSerializer
 from olap.serializers import CourseEventSerializer
 from olap.serializers import CoursePagesetAndTotalsSerializer
 
@@ -81,12 +81,11 @@ class AssessmentAccessesView(AssessmentGenericView):
 class AssessmentGradesView(APIView):
     def get(self, request, format=None):
         course_offering = self.request.course_offering
-        course_start_dt = course_offering.start_datetime
 
         users_set = LMSUser.objects.filter(course_offering=course_offering).order_by('lms_user_id') # TODO: values()
+        users_out = []
         assessments_set = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.assessment_types()).order_by('pk').values('id', 'title')
         page_ids = tuple(a['id'] for a in assessments_set)
-        grades_set = []
         # Gross, needs someone who knows what they're doing to construct better queries.
         for user in users_set:
             most_recent_attempts = {} # Dict of attempts for this student, keyed by assessment id
@@ -99,19 +98,15 @@ class AssessmentGradesView(APIView):
                 if page_id not in most_recent_attempts or attempt.attempted_at > most_recent_attempts[page_id].attempted_at:
                     most_recent_attempts[page_id] = attempt
             # Take the dict of most recent attempts, and extract the grades.  No attempt gives a None grade.
-            attempts_or_none = tuple(most_recent_attempts.get(page_id) for page_id in page_ids)
-            grades = list(a.grade if a else None for a in attempts_or_none)
-            grades_set.append(grades)
+            grades = {str(k): {'pk': k, 'grade': v.grade} for k, v in most_recent_attempts.items()}
+            users_out.append({'pk': user.id, 'name': user.full_name(), 'grades': grades})
 
         results = {
-            'users': list([user.id, user.full_name()] for user in users_set),
-            'assessments': list([assessment['id'], assessment['title']] for assessment in assessments_set),
-            'grades': grades_set,
+            'assessments': [{'pk': assessment['id'], 'title': assessment['title']} for assessment in assessments_set],
+            'users': users_out,
         }
 
-        serializer = CourseAssessmentGradesSerializer(data=results)
-        # If we pass data to the serializer, we need to call .is_valid() before it's available in .data
-        # serializer.is_valid()
+        serializer = AssessmentUsersAndGradesSerializer(data=results)
         sd = serializer.initial_data
 
         return Response(sd)
@@ -163,9 +158,7 @@ class AssessmentStudentsView(APIView):
         }
 
         serializer = CoursePagesetAndTotalsSerializer(data=results)
-        # If we pass data to the serializer, we need to call .is_valid() before it's available in .data
-        serializer.is_valid()
-        sd = serializer.data
+        sd = serializer.initial_data
 
         return Response(sd)
 
@@ -200,6 +193,6 @@ class AssessmentEventsView(APIView):
             page['weeks'] = visit_pairs_by_week
 
         serializer = CourseEventSerializer(page_queryset, many=True)
-        sd = serializer.data
+        sd = serializer.initial_data
 
         return Response(sd)

@@ -308,9 +308,10 @@ class APICommunicationEventsTests(APITestsBase):
 
 
 class APIAssessmentsGradesTests(APITestsBase):
-    def dont_test_three_students_three_assessments_simple(self):
+    def test_three_students_three_assessments_simple(self):
         course_offering  = self.course_offering
         # Three students, three assessments, for 9 submission attempts (ie, no double-ups, none missing)
+        self.lms_user.delete() # If we don't delete it, it throws off the view code, which iterates over all students
         students = LMSUserFactory.create_batch(3, course_offering=course_offering)
         assessments = PageFactory.create_batch(3, course_offering=course_offering, content_type='resource/x-turnitin-assignment')
         for student in students:
@@ -321,10 +322,13 @@ class APIAssessmentsGradesTests(APITestsBase):
         api_url = reverse('olap:assessment_grades', kwargs={'course_id': self.course_offering.id})
         response = self.client.get(api_url)
         self.assertEqual(response.status_code, HTTP_200_OK)
+        users = []
+        for user in students:
+            expected_grades = {str(sa.page.pk): {'pk': sa.page.pk, 'grade': float(sa.grade)} for sa in SubmissionAttempt.objects.filter(lms_user=user)}
+            users.append({'pk': user.id, 'name': user.full_name(), 'grades': expected_grades})
         expected = {
-            'users': list([user.id, user.full_name()] for user in students),
-            'assessments': list([assessment.id, assessment.title] for assessment in assessments),
-            'grades': [[float(sa.grade) for sa in SubmissionAttempt.objects.filter(lms_user=s)] for s in students]
+            'users': users,
+            'assessments': [{'pk': assessment.id, 'title': assessment.title} for assessment in assessments],
         }
 
         response_dict = json.loads(response.content.decode('utf-8'))
@@ -341,11 +345,14 @@ class APIAssessmentsGradesTests(APITestsBase):
         api_url = reverse('olap:assessment_grades', kwargs={'course_id': self.course_offering.id})
         response = self.client.get(api_url)
         self.assertEqual(response.status_code, HTTP_200_OK)
+        expected_grades = {str(sa.pk): {'pk': sa.pk, 'grade': grade}}
         expected = {
-            'users': [[self.lms_user.id, self.lms_user.full_name()]],
-            'assessments': list([assessment.id, assessment.title] for assessment in assessments),
-            'grades': [[grade, None]],
+            'users': [{'pk': self.lms_user.id, 'name': self.lms_user.full_name(), 'grades': expected_grades}],
+            'assessments': [{'pk': assessment.id, 'title': assessment.title} for assessment in assessments],
         }
+
+        response_dict = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(expected, response_dict)
 
     def test_only_saves_latest_submission(self):
         course_offering = self.course_offering
@@ -355,7 +362,7 @@ class APIAssessmentsGradesTests(APITestsBase):
         grade_1 = 5.4321
         attempted_dt = self.get_dt_in_courseoffering_window()
         sa1 = SubmissionAttemptFactory(page=assessment, lms_user=self.lms_user, attempted_at=attempted_dt, grade=grade_1)
-        # Make the second assessment
+        # submit again, one second later
         grade_2 = 1.2345
         attempted_dt += datetime.timedelta(seconds=1)
         sa2 = SubmissionAttemptFactory(page=assessment, lms_user=self.lms_user, attempted_at=attempted_dt, grade=grade_2)
@@ -364,43 +371,11 @@ class APIAssessmentsGradesTests(APITestsBase):
         api_url = reverse('olap:assessment_grades', kwargs={'course_id': self.course_offering.id})
         response = self.client.get(api_url)
         self.assertEqual(response.status_code, HTTP_200_OK)
+        expected_grades = {str(sa2.pk): {'pk': sa2.pk, 'grade': grade_2}}
         expected = {
-            'users': [[self.lms_user.id, self.lms_user.full_name()]],
-            'assessments': [[assessment.id, assessment.title]],
-            'grades': [[grade_2]],
+            'users': [{'pk': self.lms_user.id, 'name': self.lms_user.full_name(), 'grades': expected_grades}],
+            'assessments': [{'pk': assessment.id, 'title': assessment.title}],
         }
 
         response_dict = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response_dict, expected)
-
-    def dont_test_posts_one_page(self):
-        self.api_url = reverse('olap:communication_posts', kwargs={'course_id': self.course_offering.id})
-        page = PageFactory(course_offering=self.course_offering, content_type='resource/x-bb-discussionboard')
-        # For this one page, generate one post per week for the duration of the course
-        for week_no in range(self.course_offering.no_weeks):
-            week_start_dt = self.course_offering.start_datetime + datetime.timedelta(weeks=week_no)
-            week_end_dt = week_start_dt + datetime.timedelta(days=7)
-            post_event_dt = fuzzy.FuzzyDateTime(week_start_dt, week_end_dt)
-            post_event = SummaryPostFactory(page=page, lms_user=self.lms_user, posted_at=post_event_dt)
-
-        # Call the API endpoint
-        response = self.client.get(self.api_url)
-        self.assertEqual(response.status_code, HTTP_200_OK)
-        totals = [1] * self.course_offering.no_weeks # One visit per week
-        totals.append(self.course_offering.no_weeks) # Add a final number for the total visits
-        expected = {
-            'pageSet': [
-                {
-                    'id': page.id,
-                    'title': page.title,
-                    'content_type': page.content_type,
-                    'weeks': [1] * self.course_offering.no_weeks, # One visit per week
-                    'total': self.course_offering.no_weeks, # One visit per week
-                    'percent': 100.0,
-               },
-            ],
-            'totalsByWeek': totals,
-        }
-        response_dict = json.loads(response.content.decode('utf-8'))
-        self.assertEqual(response_dict, expected)
-
