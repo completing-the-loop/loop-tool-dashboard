@@ -151,8 +151,8 @@ class OverallPageVisitsView(APIView):
         # Setup list of days in course with initial values
         day_dict = {}
         our_tz = get_current_timezone()
-        course_span = request.course_offering.end_date - request.course_offering.start_date + 1
-        for day_offset in range(course_span.days):
+        course_span = request.course_offering.end_date - request.course_offering.start_date
+        for day_offset in range(course_span.days + 1):
             day = request.course_offering.start_date + timedelta(days=day_offset)
             day_dict[day] = {
                 'day': day,
