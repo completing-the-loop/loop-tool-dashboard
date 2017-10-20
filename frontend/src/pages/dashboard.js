@@ -193,7 +193,8 @@ const init = async (
                                     stepmode: 'backward'
                                 },
                                 {
-                                    step: 'All',
+                                    label: 'All',
+                                    step: 'all',
                                 },
                             ],
                             y: 1.1,
