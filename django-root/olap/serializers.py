@@ -92,3 +92,12 @@ class DailyPageVisitsSerializer(Serializer):
     assessment_visits = IntegerField()
     single_events = ListField()
     submission_events = ListField()
+
+
+class WeeklyPageVisitsSerializer(Serializer):
+    day = DateField()
+    content_visits = IntegerField()
+    communication_visits = IntegerField()
+    assessment_visits = IntegerField()
+    unique_visits = IntegerField()
+    repeating_events = ListField()

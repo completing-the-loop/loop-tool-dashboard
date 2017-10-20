@@ -18,6 +18,7 @@ const init = async (
             topCommunications: [],
             topAssessments: [],
             overallVisits: [],
+            perWeekVisits: [],
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -221,13 +222,115 @@ const init = async (
                 );
             },
             async plotPerWeekGraph(weekNum) {
-                const data = [{
-                    x: [1, 2, 3, 4, 5],
-                    y: [1, 2, 4, 8, 16]
-                }];
-                Plotly.plot('graph_container', data, {margin: {t: 0}});
+                this.perWeekVisits = await get(`${this.courseId}/weekly_page_visits/${weekNum}/`);
+                const days = [];
+                const contentVisits = [];
+                const communicationVisits = [];
+                const assessmentVisits = [];
+                const uniqueVisits = [];
+                const repeatingEvents = [];
+
+                // Initial loop through data for page views
+                _.forEach(this.perWeekVisits, function(visit) {
+                    days.push(moment(visit.day).format('ddd'));
+                    contentVisits.push(visit.contentVisits);
+                    communicationVisits.push(visit.communicationVisits);
+                    assessmentVisits.push(visit.assessmentVisits);
+                    uniqueVisits.push(visit.uniqueVisits);
+                    repeatingEvents.push(visit.repeatingEvents);
+                });
+
+                const tags = this.generateGraphTags(repeatingEvents);
+
+                this.$nextTick(function() {
+                    const graphLayout = {
+                        margin: {
+                            t: 20,
+                            r: 20,
+                            b: 20,
+                            l: 20
+                        },
+                    };
+                    const graphConfig = {
+                        displayModeBar: false,
+                    };
+
+                    Plotly.newPlot(
+                        'per_week_pageviews_chart',
+                        [
+                            {
+                                x: days,
+                                y: contentVisits,
+                                mode: 'lines+markers',
+                                name: 'Content',
+                                fill: 'tozeroy',
+                            },
+                            {
+                                x: days,
+                                y: communicationVisits,
+                                mode: 'lines+markers',
+                                name: 'Communication',
+                                fill: 'tozeroy',
+                            },
+                            {
+                                x: days,
+                                y: assessmentVisits,
+                                mode: 'lines+markers',
+                                name: 'Assessment',
+                                fill: 'tozeroy',
+                            },
+                            {
+                                x: days,
+                                y: uniqueVisits,
+                                mode: 'lines+markers',
+                                name: 'Unique Pages',
+                                fill: 'tozeroy',
+                            },
+                        ],
+                        Object.assign({}, graphLayout, tags),
+                        graphConfig,
+                    );
+                });
             },
             async plotWeekMetrics(weekNum) {
+            },
+            generateGraphTags(events) {
+                const shapes = _.map(events, function(eventList, index) {
+                    if (eventList.length) {
+                        return {
+                            type: 'line',
+                            x0: index,
+                            y0: 0,
+                            x1: index,
+                            y1: 1,
+                            xref: 'x',
+                            yref: 'paper',
+                            line: {
+                                width: 3,
+                            }
+                        }
+                    }
+                });
+                const annotations = _.map(events, function(eventList, index) {
+                    if (eventList.length) {
+                        return {
+                            x: index,
+                            y: 1,
+                            xref: 'x',
+                            yref: 'paper',
+                            text: _.join(eventList, ', '),
+                            textangle: 90,
+                            showarrow: false,
+                            yanchor: 'top',
+                            xshift: 10,
+                        }
+                    }
+                });
+
+                return {
+                    shapes: shapes,
+                    annotations: annotations,
+                }
             },
         },
         watch: {

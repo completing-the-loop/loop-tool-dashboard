@@ -11,6 +11,7 @@ from olap.views.content import ContentAccessesView
 from olap.views.content import ContentEventsView
 from olap.views.content import ContentStudentsView
 from olap.views.dashboard import OverallPageVisitsView
+from olap.views.dashboard import PerWeekPageVisitsView
 from olap.views.dashboard import TopAccessedContentView
 from olap.views.dashboard import TopAssessmentAccessView
 from olap.views.dashboard import TopCommunicationAccessView
@@ -37,5 +38,7 @@ urlpatterns = [
         url(r'^top_communication/(?:(?P<week_num>\d+)/)?$', TopCommunicationAccessView.as_view(), name='top_communication'), # optional week
         url(r'^top_content/(?:(?P<week_num>\d+)/)?$', TopAccessedContentView.as_view(), name='top_content'), # optional week
         url(r'^top_users/$', TopCourseUsersViewSet.as_view(), name='top_users'),
+
+        url(r'^weekly_page_visits/(?P<week_num>\d+)/$', PerWeekPageVisitsView.as_view(), name='per_week_page_visits'),
     ])),
 ]
