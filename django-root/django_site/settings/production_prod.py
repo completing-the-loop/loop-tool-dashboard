@@ -24,9 +24,7 @@ BODY_ENV_CLASS = 'env-prod'
 #SESSION_COOKIE_SECURE = True
 #CSRF_COOKIE_SECURE = True
 
-ADMINS = (
-    ('Alliance Software', 'client-melbourneuni.loop@alliancesoftware.com.au'),
-)
+ADMINS = get_env_setting('ADMINS').split(',')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Custom Project Configuration
