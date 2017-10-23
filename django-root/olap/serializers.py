@@ -58,6 +58,33 @@ class AssessmentUsersAndGradesSerializer(Serializer):
     users = UserAndGradesSerializer(many=True)
 
 
+class StudentsetAndTotalsSerializer(Serializer):
+    class StudentSerializer(ModelSerializer):
+        weeks = ListField()
+        total = IntegerField()
+        percent = DecimalField(max_digits=7, decimal_places=4)
+
+        class Meta:
+            model = LMSUser
+            fields = ('id', 'fullname', 'weeks', 'total', 'percent')
+
+    student_set = StudentSerializer(many=True)
+    totals_by_week = ListField(child=IntegerField())
+    highest_cell_value = IntegerField()
+
+
+class StudentsetAndHighestSerializer(Serializer):
+    class StudentSerializer(ModelSerializer):
+        weeks = ListField()
+
+        class Meta:
+            model = LMSUser
+            fields = ('id', 'fullname', 'weeks')
+
+    student_set = StudentSerializer(many=True)
+    highest_cell_value = IntegerField()
+
+
 class CourseEventSerializer(ModelSerializer):
     weeks = ListField()
 

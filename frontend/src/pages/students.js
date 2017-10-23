@@ -13,19 +13,11 @@ const init = async (
     const pieAfterColor = window.__APP_CONTEXT__.PAGE_PIE_CHART_AFTER_COLOR;
 
     new Vue({
-        el: '#course-communication',
+        el: '#students',
         data: {
             courseId: initialData.courseId,
             numWeeks: initialData.numWeeks,
             accesses: {
-                pageSet: [],
-                totalsByWeek: []
-            },
-            posts: {
-                pageSet: [],
-                totalsByWeek: []
-            },
-            students: {
                 pageSet: [],
                 totalsByWeek: []
             },
@@ -34,33 +26,17 @@ const init = async (
         },
         mounted: async function mounted() {
             this.getAccesses();
-            this.getPosts();
-            this.getStudents();
             this.getEvents();
         },
         methods: {
             async getAccesses() {
-                this.accesses = await get(`${this.courseId}/communication_accesses/`);
-            },
-            async getPosts() {
-                this.posts = await get(`${this.courseId}/communication_posts/`);
-            },
-            async getStudents() {
-                this.students = await get(`${this.courseId}/communication_students/`);
+                this.accesses = await get(`${this.courseId}/students_accesses/`);
             },
             async getEvents() {
-                this.events = await get(`${this.courseId}/communication_events/${this.eventId}/`);
+                this.events = await get(`${this.courseId}/students_events/${this.eventId}/`);
 
                 this.$nextTick(function () {
-                    let maxVisits = 0;
-                    _.forEach(this.events, function(event) {
-                        _.forEach(event.weeks, function (eventWeek) {
-                            if (eventWeek[0] + eventWeek[1] > maxVisits) {
-                                maxVisits = eventWeek[0] + eventWeek[1];
-                            }
-                        });
-                    });
-
+                    const maxEvents = this.events.highestCellValue;
                     const pieLayout = {
                         showlegend: false,
                         autosize: false,
@@ -84,15 +60,15 @@ const init = async (
                     };
                     const vue = this;
 
-                    _.forEach(this.events, function(event) {
-                        _.forEach(event.weeks, function(eventWeek, index) {
-                            if (maxVisits) {
-                                const pieProportion = (eventWeek[0] + eventWeek[1]) / maxVisits;
+                    _.forEach(this.events.studentSet, function(student) {
+                        _.forEach(student.weeks, function(studentWeek, index) {
+                            if (maxEvents) {
+                                const pieProportion = (studentWeek[0] + studentWeek[1]) / maxEvents;
                                 if (pieProportion) { // Skip graph if no views before and after event.
                                     const pieSize = pieProportion * (maxPieSize - minPieSize) + minPieSize;
                                     Plotly.newPlot(
-                                        vue.$refs["pie_" + event.id][index],
-                                        [Object.assign({}, pieData, {values: [eventWeek[0], eventWeek[1],],}),],
+                                        vue.$refs["pie_" + student.id][index],
+                                        [Object.assign({}, pieData, {values: [studentWeek[0], studentWeek[1],],}),],
                                         Object.assign({}, pieLayout, {width: pieSize, height: pieSize,}),
                                         pieConfig,
                                     );
@@ -113,6 +89,6 @@ const init = async (
 };
 
 window.pages = window.pages || {};
-window.pages.communication = {};
-window.pages.communication.init = init;
+window.pages.students = {};
+window.pages.students.init = init;
 

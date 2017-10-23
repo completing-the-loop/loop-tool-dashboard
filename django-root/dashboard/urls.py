@@ -21,6 +21,8 @@ from dashboard.views.events import CourseSubmissionEventCreateView
 from dashboard.views.events import CourseSubmissionEventDeleteView
 from dashboard.views.events import CourseSubmissionEventListView
 from dashboard.views.events import CourseSubmissionEventUpdateView
+from dashboard.views.students import StudentDetailView
+from dashboard.views.students import StudentsView
 from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
 from dashboard.views import views
@@ -39,6 +41,8 @@ urlpatterns = [
         url(r'^assessment/$', CourseAssessmentView.as_view(), name='course_assessments'),
         url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communications'),
         url(r'^course_content/$', CourseContentView.as_view(), name='course_content'),
+        url(r'^students/$', StudentsView.as_view(), name='students'),
+        url(r'^student/(?P<pk>\d+)//$', StudentDetailView.as_view(), name='student_detail'),
 
         url(r'^course_page/(?P<pk>\d+)/$', CoursePageView.as_view(), name='course_page'),
 
@@ -58,8 +62,6 @@ urlpatterns = [
     ])),
 
     # These are to be removed or moved to the permissions wrapper above
-    url(r'^coursemembers/$', views.coursemembers, name='course_members'),
-    url(r'^coursemember/$', views.coursemember, name='coursemember'),
     url(r'^coursepage/$', views.coursepage, name='coursepage'),
     url(r'^content/$', views.content, name='course_content'),
     url(r'^assessment/$', views.assessment, name='course_assessments'),
