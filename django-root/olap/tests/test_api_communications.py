@@ -345,10 +345,10 @@ class APIAssessmentsGradesTests(APITestsBase):
         api_url = reverse('olap:assessment_grades', kwargs={'course_id': self.course_offering.id})
         response = self.client.get(api_url)
         self.assertEqual(response.status_code, HTTP_200_OK)
-        expected_grades = {str(sa.pk): {'pk': sa.pk, 'grade': grade}}
+        expected_grades = {str(assessments[0].pk): {'pk': assessments[0].pk, 'grade': grade}}
         expected = {
             'users': [{'pk': self.lms_user.id, 'name': self.lms_user.full_name(), 'grades': expected_grades}],
-            'assessments': [{'pk': assessment.id, 'title': assessment.title} for assessment in assessments],
+            'assessments': [{'pk': assessment.pk, 'title': assessment.title} for assessment in assessments],
         }
 
         response_dict = json.loads(response.content.decode('utf-8'))
@@ -371,7 +371,7 @@ class APIAssessmentsGradesTests(APITestsBase):
         api_url = reverse('olap:assessment_grades', kwargs={'course_id': self.course_offering.id})
         response = self.client.get(api_url)
         self.assertEqual(response.status_code, HTTP_200_OK)
-        expected_grades = {str(sa2.pk): {'pk': sa2.pk, 'grade': grade_2}}
+        expected_grades = {str(assessment.pk): {'pk': assessment.pk, 'grade': grade_2}}
         expected = {
             'users': [{'pk': self.lms_user.id, 'name': self.lms_user.full_name(), 'grades': expected_grades}],
             'assessments': [{'pk': assessment.id, 'title': assessment.title}],

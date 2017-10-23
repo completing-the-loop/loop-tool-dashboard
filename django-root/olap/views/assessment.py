@@ -58,7 +58,7 @@ class AssessmentGenericView(APIView):
             page['percent'] = (Decimal(page['total'] * 100 / total_events) if total_events else 0)
 
         results = {
-            'page_set': page_queryset,
+            'page_set': list(page_queryset),
             'totals_by_week': events_by_week_for_all_pages,
         }
 

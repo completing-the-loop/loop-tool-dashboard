@@ -26,13 +26,16 @@ class TopCourseUsersSerializer(ModelSerializer):
         fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
 
 
-class PageSerializer(ModelSerializer):
-    class Meta:
-        model = Page
-        fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
-
-
 class CoursePagesetAndTotalsSerializer(Serializer):
+    class PageSerializer(ModelSerializer):
+        weeks = ListField()
+        total = IntegerField()
+        percent = DecimalField(max_digits=7, decimal_places=4)
+
+        class Meta:
+            model = Page
+            fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
+
     page_set = PageSerializer(many=True)
     totals_by_week = ListField(child=IntegerField())
 
