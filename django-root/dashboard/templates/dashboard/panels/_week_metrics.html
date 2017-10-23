@@ -4,26 +4,37 @@
       <h3 class="panel-title"><i class="halflings-icon align-justify"></i><span class="break"></span>Week Metrics</h3>
     </div>
     <div class="panel-body">
-      <div class="widget green">
-        <ul class="unstyled">
-          <li><span id="uniquepageviewsbydayinweek"></span>
-              Unique Pageviews <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique page views in the course"><i class="halflings-icon info-sign"></i></a>
-              <!--<span class="number">781</span>-->
-          </li>
-          <li><span id="participantsbydayinweek"></span>
-              Students <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of active students"><i class="halflings-icon info-sign"></i></a>
-              <!--<span class="number">2,19</span>-->
-          </li>
-          <li><span id="sessionsbydayinweek"></span>
-              Sessions <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="“Number of student sessions. A session is defined by student clicks where the time between clicks is less than 40 minutes."><i class="halflings-icon info-sign"></i></a>
-          </li>
-          <li><span id="averagesessionlengthbydayinweek"></span>
-              Avg. Session Duration (in mins) <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average duration in minutes of a student session"><i class="halflings-icon info-sign"></i></a>
-          </li>
-          <li><span id="averagepagespersessionbydayinweek"></span>
-              Avg. Pageviews Per Session <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average number of pages a student has viewed in a session"><i class="halflings-icon info-sign"></i></a>
-          </li>
-        </ul>
+      <div class="container-flow green">
+        <div class="row">
+          <div id="metrics_unique_visits" class="col-md-4"></div>
+          <div class="col-md-8">
+            Unique Pageviews <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of unique page views in the course"><i class="halflings-icon info-sign"></i></a>
+          </div>
+        </div>
+        <div class="row">
+          <div id="metrics_students" class="col-md-4"></div>
+          <div class="col-md-8">
+            Students <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Number of active students"><i class="halflings-icon info-sign"></i></a>
+          </div>
+        </div>
+        <div class="row">
+          <span id="metrics_sessions" class="col-md-4"></span>
+          <div class="col-md-8">
+            Sessions <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="“Number of student sessions. A session is defined by student clicks where the time between clicks is less than 40 minutes."><i class="halflings-icon info-sign"></i></a>
+          </div>
+        </div>
+        <div class="row">
+          <span id="metrics_avg_session_duration" class="col-md-4"></span>
+          <div class="col-md-8">
+            Avg. Session Duration (in mins) <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average duration in minutes of a student session"><i class="halflings-icon info-sign"></i></a>
+          </div>
+        </div>
+        <div class="row">
+          <span id="metrics_avg_session_pageviews" class="col-md-4"></span>
+          <div class="col-md-8">
+            Avg. Pageviews Per Session <a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Average number of pages a student has viewed in a session"><i class="halflings-icon info-sign"></i></a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -119,3 +119,12 @@ class WeeklyPageVisitsSerializer(Serializer):
     assessment_visits = IntegerField()
     unique_visits = IntegerField()
     repeating_events = ListField()
+
+
+class WeeklyMetricsSerializer(Serializer):
+    day = DateField()
+    unique_visits = IntegerField()
+    students = IntegerField()
+    sessions = IntegerField()
+    avg_session_duration = IntegerField()
+    avg_session_pageviews = IntegerField()

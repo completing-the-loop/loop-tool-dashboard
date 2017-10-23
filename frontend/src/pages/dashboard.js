@@ -19,6 +19,7 @@ const init = async (
             topAssessments: [],
             overallVisits: [],
             perWeekVisits: [],
+            weekMetrics: {},
         },
         mounted: async function mounted() {
             this.getOverallDashboard();
@@ -294,6 +295,76 @@ const init = async (
                 });
             },
             async plotWeekMetrics(weekNum) {
+                this.weekMetrics = await get(`${this.courseId}/weekly_metrics/${this.weekNum}/`);
+
+                const days = [];
+                const uniqueVisits = [];
+                const students = [];
+                const sessions = [];
+                const avgSessionDuration = [];
+                const avgSessionPageviews = [];
+
+                _.forEach(this.weekMetrics, function(dayMetrics) {
+                    days.push(moment(dayMetrics.day).format('ddd'));
+                    uniqueVisits.push(dayMetrics.uniqueVisits);
+                    students.push(dayMetrics.students);
+                    sessions.push(dayMetrics.sessions);
+                    avgSessionDuration.push(dayMetrics.avgSessionDuration);
+                    avgSessionPageviews.push(dayMetrics.avgSessionPageviews);
+                });
+
+                this.$nextTick(function() {
+                    this.plotMetricGraph('metrics_unique_visits', days, uniqueVisits);
+                    this.plotMetricGraph('metrics_students', days, students);
+                    this.plotMetricGraph('metrics_sessions', days, sessions);
+                    this.plotMetricGraph('metrics_avg_session_duration', days, avgSessionDuration);
+                    this.plotMetricGraph('metrics_avg_session_pageviews', days, avgSessionPageviews);
+                });
+            },
+            plotMetricGraph(graphId, days, values) {
+                    const graphLayout = {
+                        margin: {
+                            t: 10,
+                            r: 10,
+                            b: 10,
+                            l: 10
+                        },
+                        paper_bgcolor: 'rgba(0,0,0,0)',
+                        plot_bgcolor: 'rgba(0,0,0,0)',
+                        showlegend: false,
+                        hovermode: 'closest',
+                        height: 60,
+                        width: 120,
+                        xaxis: {
+                            visible: false,
+                            fixedrange: true,
+                        },
+                        yaxis: {
+                            visible: false,
+                            fixedrange: true,
+                        },
+                    };
+                    const graphConfig = {
+                        displayModeBar: false,
+                    };
+
+                    Plotly.newPlot(
+                        graphId,
+                        [
+                            {
+                                x: days,
+                                y: values,
+                                mode: 'lines+markers',
+                                fill: 'tozeroy',
+                                hover: 'y',
+                                line: {
+                                    color: 'white',
+                                },
+                            },
+                        ],
+                        graphLayout,
+                        graphConfig,
+                    );
             },
             generateGraphTags(events) {
                 const shapes = _.map(events, function(eventList, index) {
