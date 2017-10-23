@@ -10,8 +10,8 @@ from dashboard.models import CourseRepeatingEvent
 from olap.models import Page
 from olap.models import PageVisit
 from olap.models import SummaryPost
-from olap.serializers import CoursePagesetAndTotalsSerializer
 from olap.serializers import CourseEventSerializer
+from olap.serializers import CoursePagesetAndTotalsSerializer
 
 
 # Base class for CommunicationAccessesView and CommunicationPostsView.

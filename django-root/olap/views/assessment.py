@@ -80,7 +80,7 @@ class AssessmentGradesView(APIView):
     def get(self, request, format=None):
         course_offering = self.request.course_offering
 
-        users_set = LMSUser.objects.filter(course_offering=course_offering).order_by('lms_user_id') # TODO: values()
+        users_set = LMSUser.objects.filter(course_offering=course_offering).order_by('lms_user_id')
         users_out = []
         assessments_set = Page.objects.filter(course_offering=course_offering, content_type__in=CourseOffering.assessment_types()).order_by('pk').values('id', 'title')
         page_ids = tuple(a['id'] for a in assessments_set)
