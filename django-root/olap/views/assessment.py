@@ -63,9 +63,7 @@ class AssessmentGenericView(APIView):
         }
 
         serializer = CoursePagesetAndTotalsSerializer(data=results)
-        # If we pass data to the serializer, we need to call .is_valid() before it's available in .data
-        serializer.is_valid()
-        sd = serializer.data
+        sd = serializer.initial_data
 
         return Response(sd)
 
