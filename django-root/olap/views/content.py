@@ -10,7 +10,7 @@ from dashboard.models import CourseRepeatingEvent
 from olap.models import Page
 from olap.models import PageVisit
 from olap.serializers import CourseContentPageEventSerializer
-from olap.serializers import CourseContentSerializer
+from olap.serializers import CoursePagesetAndTotalsSerializer
 
 
 class ContentAccessesView(APIView):
@@ -52,7 +52,7 @@ class ContentAccessesView(APIView):
             'page_set': list(page_queryset),
             'totals_by_week': events_by_week_for_all_pages,
         }
-        serializer = CourseContentSerializer(data=results)
+        serializer = CoursePagesetAndTotalsSerializer(data=results)
 
         return Response(serializer.initial_data)
 
@@ -102,7 +102,7 @@ class ContentStudentsView(APIView):
             'page_set': list(page_queryset),
             'totals_by_week': students_by_week_for_all_pages,
         }
-        serializer = CourseContentSerializer(data=results)
+        serializer = CoursePagesetAndTotalsSerializer(data=results)
 
         return Response(serializer.initial_data)
 

@@ -9,6 +9,7 @@ from dashboard.tests.factories import CourseOfferingFactory
 from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
+from olap.models import SubmissionAttempt
 from olap.models import SummaryPost
 
 
@@ -100,16 +101,32 @@ class SummaryPostFactory(factory.DjangoModelFactory):
     lms_user = factory.SubFactory(LMSUserFactory)
     posted_at = faker.Faker('date_time_between_dates', datetime_start=Params.VISITS_START, datetime_end=Params.VISITS_END)
 
+
+class SubmissionAttemptFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = SubmissionAttempt
+
+    class Params:
+        our_tz = get_current_timezone()
+        VISITS_START = datetime.datetime(2016, 2, 26, 8, 0, 10, tzinfo=our_tz)
+        VISITS_END = datetime.datetime(2016, 6, 16, 17, 35, 9, tzinfo=our_tz)
+
+    attempt_key = factory.Sequence(lambda n: "key %d" % n)
+    page = factory.SubFactory(PageFactory)
+    lms_user = factory.SubFactory(LMSUserFactory)
+    attempted_at = faker.Faker('date_time_between_dates', datetime_start=Params.VISITS_START, datetime_end=Params.VISITS_END)
+    grade = fuzzy.FuzzyFloat(10.0)
+
+    @classmethod
+    def _setup_next_sequence(cls):
+        return 1000000
+
+
 """
 # TODO: Save these for another day.
 class LMSSessionFactory(factory.DjangoModelFactory):
     class Meta:
         model = LMSSession
-
-
-class SubmissionAttemptFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = SubmissionAttempt
 
 
 class SubmissionTypeFactory(factory.DjangoModelFactory):

@@ -1,5 +1,7 @@
+from rest_framework.serializers import CharField
 from rest_framework.serializers import DateField
 from rest_framework.serializers import DecimalField
+from rest_framework.serializers import DictField
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ListField
 from rest_framework.serializers import ModelSerializer
@@ -24,23 +26,39 @@ class TopCourseUsersSerializer(ModelSerializer):
         fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
 
 
-class PageSerializer(ModelSerializer):
-    class Meta:
-        model = Page
-        fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
+class CoursePagesetAndTotalsSerializer(Serializer):
+    class PageSerializer(ModelSerializer):
+        weeks = ListField()
+        total = IntegerField()
+        percent = DecimalField(max_digits=7, decimal_places=4)
 
+        class Meta:
+            model = Page
+            fields = ('id', 'title', 'parent_id', 'content_type', 'weeks', 'total', 'percent')
 
-class CourseCommunicationSerializer(Serializer):
     page_set = PageSerializer(many=True)
     totals_by_week = ListField(child=IntegerField())
 
 
-class CourseContentSerializer(Serializer):
-    page_set = PageSerializer(many=True)
-    totals_by_week = ListField(child=IntegerField())
+class AssessmentUsersAndGradesSerializer(Serializer):
+    class UserAndGradesSerializer(Serializer):
+        class PkAndGradeDictField(DictField):
+            pk = IntegerField()
+            grade = DecimalField(max_digits=7, decimal_places=4)
+
+        pk = IntegerField()
+        name = CharField()
+        grades = ListField(child=PkAndGradeDictField())
+
+    class PkAndTitleSerializer(Serializer):
+        pk = IntegerField()
+        s = CharField()
+
+    assessments = PkAndTitleSerializer(many=True)
+    users = UserAndGradesSerializer(many=True)
 
 
-class CourseCommunicationPageEventSerializer(ModelSerializer):
+class CourseEventSerializer(ModelSerializer):
     weeks = ListField()
 
     class Meta:

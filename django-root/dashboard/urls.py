@@ -3,6 +3,7 @@ from decorator_include import decorator_include
 from django.conf.urls import url
 from stronghold.decorators import public
 
+from dashboard.views.assessment import CourseAssessmentView
 from dashboard.views.communication import CourseCommunicationView
 from dashboard.views.content import CourseContentView
 from dashboard.views.content import CoursePageView
@@ -35,6 +36,7 @@ urlpatterns = [
 
     url(r'^(?P<course_id>\d+)/', decorator_include(course_access_url_wrapper, [
         url(r'^course_dashboard/$', CourseDashboardView.as_view(), name='course_dashboard'),
+        url(r'^assessment/$', CourseAssessmentView.as_view(), name='course_assessments'),
         url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communications'),
         url(r'^course_content/$', CourseContentView.as_view(), name='course_content'),
 
