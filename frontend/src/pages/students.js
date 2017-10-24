@@ -29,6 +29,19 @@ const init = async (
             this.getEvents();
         },
         methods: {
+            // Heatmap colour generation
+            getRGBStringForVisits(visitCount) {
+                // Map a visitCount of 0 to white (255, 255, 255).
+                // Map a visitCount of highestCellValue to (52, 119, 220) (a dark blue)
+                // Interpolate every value between accordingly.
+                // Could probably be done more cleanly with the bottom and top colours in arrays,
+                // and using map().  | 0 converts to an integer, which rgb() needs.
+                const r = (visitCount / this.accesses.highestCellValue * (52 - 255) + 255) | 0;
+                const g = (visitCount / this.accesses.highestCellValue * (119 - 255) + 255) | 0;
+                const b = (visitCount / this.accesses.highestCellValue * (220 - 255) + 255) | 0;
+
+                return "rgb(" + r + ", " + g + ", " + b + ")";
+            },
             async getAccesses() {
                 this.accesses = await get(`${this.courseId}/students_accesses/`);
             },

@@ -43,7 +43,7 @@
                 <tr v-for="student in accesses.studentSet" class="stats-row">
                   <td class="stats-title"><span>{{ student.fullname }}</span></td>
                   <td class="stats-title"><a :href="`/${courseId}/student_page/${student.id}/`" class="btn btn-small btn-primary">View</a></td>
-                  <td v-for="week in numWeeks">{{ student.weeks[week - 1] }}</td>
+                  <td v-for="week in numWeeks" :style="{backgroundColor: getRGBStringForVisits(student.weeks[week - 1])}">{{ student.weeks[week - 1] }}</td>
                   <td class="stats-title">{{ student.total }}</td>
                   <td>{{ student.percent }}</td>
                 </tr>
