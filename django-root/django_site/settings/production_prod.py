@@ -24,7 +24,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-ADMINS = get_env_setting('ADMINS').split(',')
+ADMINS = [(email, email) for email in get_env_setting('ADMINS').split(',')]
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Custom Project Configuration
