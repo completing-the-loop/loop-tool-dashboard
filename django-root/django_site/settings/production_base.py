@@ -65,7 +65,8 @@ CACHES = {
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Logging configuration
-LOGGING['loggers']['django']['handlers'] += 'mail_admins'
+LOGGING['loggers']['django']['handlers'].append('mail_admins')
+LOGGING['loggers']['django.request']['handlers'].append('mail_admins')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
