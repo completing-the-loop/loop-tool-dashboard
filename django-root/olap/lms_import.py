@@ -111,7 +111,7 @@ class ImportLmsData(object):
                     datetime.now(),
                     "\n".join(errors),
                 ),
-                settings.ADMINS,
+                settings.SERVER_EMAIL,
                 settings.CLOOP_IMPORT_ADMINS,
             )
             raise LMSImportDataError(errors)
