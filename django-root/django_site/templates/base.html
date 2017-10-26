@@ -70,7 +70,7 @@
                 </ul>
               </li>
               <li>
-                <a href="{% url 'dashboard:course_members' %}?course_id={{ request.course_offering.id }}">
+                <a href="{% url 'dashboard:students' course_id=request.course_offering.id %}">
                   <i class="icon-user"></i><span class="hidden-tablet">Students</span>
                 </a>
               </li>

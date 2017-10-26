@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block page_id %}students{% endblock page_id %}
+
+{% block content %}
+<div class="row">
+  <ol class="breadcrumb col-md-12">
+    <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
+    <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
+    <li class="active">Students</li>
+  </ol>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div id="students" class="panel with-nav-tabs panel-default">
+      <div class="panel-heading">
+        <h1 class="pull-left">Students</h1>
+        <ul class="nav nav-tabs">
+          <li role="presentation" class="active navbar-right"><a href="#access" aria-controls="access" role="tab"
+                                                                 data-toggle="tab">Pageviews</a></li>
+          <li role="presentation" class=" navbar-right"><a href="#events" aria-controls="events" role="tab"
+                                                           data-toggle="tab">Events</a></li>
+        </ul>
+      </div>
+      <div class="panel-body" style="overflow: scroll;">
+        <div class="tab-content">
+          <div class="tab-pane fade in active" id="access">
+            {% verbatim %}
+              <table id="accessesTable" class="table table-striped table-bordered heat-map">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>View</th>
+
+                    <th v-for="week in numWeeks">Week {{ week }}</th>
+
+                    <th>Total</th>
+                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
+                  </tr>
+                </thead>
+                <tbody>
+                <tr v-for="student in accesses.studentSet" class="stats-row">
+                  <td class="stats-title"><span>{{ student.fullname }}</span></td>
+                  <td class="stats-title"><a :href="`/${courseId}/student/${student.id}/`" class="btn btn-small btn-primary">View</a></td>
+                  <td v-for="week in numWeeks" :style="{backgroundColor: getRGBStringForVisits(student.weeks[week - 1])}">{{ student.weeks[week - 1] }}</td>
+                  <td class="stats-title">{{ student.total }}</td>
+                  <td>{{ student.percent }}</td>
+                </tr>
+                <tr class="stats-row">
+                  <th>Totals</th>
+                  <th colspan="2">&nbsp; </th>
+                  <td v-for="week in numWeeks">{{ accesses.totalsByWeek[week - 1] }}</td>
+                  <td>{{ accesses.totalsByWeek[numWeeks] }}</td>
+                  <td>&nbsp;</td>
+                </tr>
+                </tbody>
+              </table>
+            {% endverbatim %}
+          </div>
+          <div class="tab-pane fade" id="events">
+            <select id="eventfilter" name="eventfilter" v-model="eventId">
+              {% for event in repeating_events %}
+                <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
+              {% endfor %}
+            </select>
+            {% verbatim %}
+              <table id="eventsTable" class="table table-striped table-bordered heat-map">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>View</th>
+
+                    <th v-for="week in numWeeks">Week {{ week }}</th>
+
+                  </tr>
+                </thead>
+                <tbody>
+                <tr v-for="student in events.studentSet" class="stats-row">
+                  <td class="stats-title"><span>{{ student.fullname }}</span></td>
+                  <td class="stats-title"><a :href="`/${courseId}/student/${student.id}/`" class="btn btn-small btn-primary">View</a></td>
+                  <td v-for="week in numWeeks" :ref="`pie_${student.id}`"></td>
+                </tr>
+                </tbody>
+              </table>
+            {% endverbatim %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+  <script>
+    window.pages.students.init(JSON.parse('{{ initial_data | escapejs }}'));
+  </script>
+{% endblock javascript %}

@@ -22,6 +22,8 @@ from olap.views.dashboard import TopAssessmentAccessView
 from olap.views.dashboard import TopCommunicationAccessView
 from olap.views.dashboard import TopCourseUsersViewSet
 from olap.views.importer import CourseImportsApiView
+from olap.views.students import StudentsAccessesView
+from olap.views.students import StudentsEventsView
 
 urlpatterns = [
     # This endpoint is protected with Token Authentication
@@ -41,6 +43,9 @@ urlpatterns = [
         url(r'^content_accesses/$', ContentAccessesView.as_view(), name='content_accesses'),
         url(r'^content_students/$', ContentStudentsView.as_view(), name='content_students'),
         url(r'^content_events/(?P<event_id>\d+)/$', ContentEventsView.as_view(), name='content_events'),
+
+        url(r'^students_accesses/$', StudentsAccessesView.as_view(), name='students_accesses'),
+        url(r'^students_events/(?P<event_id>\d+)/$', StudentsEventsView.as_view(), name='students_events'),
 
         url(r'^overall_pagevisits/$', OverallPageVisitsView.as_view(), name='overall_pagevisits'),
 
