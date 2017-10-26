@@ -22,6 +22,7 @@ from olap.views.dashboard import TopAssessmentAccessView
 from olap.views.dashboard import TopCommunicationAccessView
 from olap.views.dashboard import TopCourseUsersViewSet
 from olap.views.importer import CourseImportsApiView
+from olap.views.student import StudentCommunicationView
 from olap.views.students import StudentsAccessesView
 from olap.views.students import StudentsEventsView
 
@@ -46,6 +47,8 @@ urlpatterns = [
 
         url(r'^students_accesses/$', StudentsAccessesView.as_view(), name='students_accesses'),
         url(r'^students_events/(?P<event_id>\d+)/$', StudentsEventsView.as_view(), name='students_events'),
+
+        url(r'^student_communications/(?P<student_id>\d+)/$', StudentCommunicationView.as_view(), name='student_communications'),
 
         url(r'^overall_pagevisits/$', OverallPageVisitsView.as_view(), name='overall_pagevisits'),
 

@@ -16,7 +16,7 @@ const init = async (
         },
         mounted: async function mounted() {
             this.getAccesses();
-            this.getCommunication();
+            this.getCommunications();
             this.getAssessment();
         },
         methods: {
@@ -31,18 +31,8 @@ const init = async (
                     {date: '2017-06-15', accesses: 8},
                 ];
             },
-            async getCommunication() {
-                this.communications = [
-                    {page_id: 11, title: 'Page 11', module: 'module', page_views: 6, post_count: 65},
-                    {page_id: 12, title: 'Page 12', module: 'module', page_views: 86, post_count: 23},
-                    {page_id: 13, title: 'Page 13', module: 'module', page_views: 23, post_count: 32},
-                    {page_id: 14, title: 'Page 14', module: 'module', page_views: 37, post_count: 31},
-                    {page_id: 15, title: 'Page 15', module: 'module', page_views: 87, post_count: 13},
-                    {page_id: 16, title: 'Page 16', module: 'module', page_views: 23, post_count: 12},
-                    {page_id: 17, title: 'Page 17', module: 'module', page_views: 56, post_count: 14},
-                    {page_id: 18, title: 'Page 18', module: 'module', page_views: 45, post_count: 23},
-                ];
-            },
+            async getCommunications() {
+                this.communications = await get(`${this.courseId}/student_communications/${this.studentId}`);            },
             async getAssessment() {
                 this.assessments = [
                     {page_id: 21, title: 'Page 21', module: 'module', page_views: 6, average_score: 65, attempts: 12},

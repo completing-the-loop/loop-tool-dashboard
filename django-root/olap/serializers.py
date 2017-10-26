@@ -155,3 +155,12 @@ class WeeklyMetricsSerializer(Serializer):
     sessions = IntegerField()
     avg_session_duration = IntegerField()
     avg_session_pageviews = IntegerField()
+
+
+class StudentCommunicationSerializer(ModelSerializer):
+    user_views = IntegerField()
+    posts = IntegerField()
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'user_views', 'posts')

@@ -70,10 +70,12 @@
             <tbody>
               {% verbatim %}
                 <tr v-for="communication in communications">
-                  <td>{{ communication.title }}</td>
-                  <td>{{ communication.module }}</td>
-                  <td>{{ communication.page_views }}</td>
-                  <td>{{ communication.post_count }}</td>
+                  <td>
+                    <a :href="`/${courseId}/course_page/${communication.id}/`"> {{ communication.title }}</a>
+                  </td>
+                  <td>{{ communication.content_type }}</td>
+                  <td>{{ communication.user_views }}</td>
+                  <td>{{ communication.posts }}</td>
                 </tr>
               {% endverbatim %}
             </tbody>
