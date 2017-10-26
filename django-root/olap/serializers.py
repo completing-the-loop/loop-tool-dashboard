@@ -23,7 +23,7 @@ class TopCourseUsersSerializer(ModelSerializer):
 
     class Meta:
         model = LMSUser
-        fields = ('lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
+        fields = ('id','lms_user_id', 'firstname', 'lastname', 'role', 'pageviews')
 
 
 class CoursePagesetAndTotalsSerializer(Serializer):
