@@ -24,7 +24,7 @@ class StudentsAccessesView(APIView):
         highest_cell_value = None
         for student in student_list:
             pagevisits_for_this_student = PageVisit.objects.filter(lms_user_id=student['id'])
-            pagevisits_by_week_for_this_page = [0] * course_offering.no_weeks
+            pagevisits_by_week_for_this_student = [0] * course_offering.no_weeks
             total_pagevisits += pagevisits_for_this_student.count()
             for pagevisit in pagevisits_for_this_student:
                 # Calculate the time since start of course for this pagevisit.  From this we can calculate the week.
@@ -34,13 +34,13 @@ class StudentsAccessesView(APIView):
                 week = td.days // 7  # Integer division, the first week after the course starts is week 0.
                 try:
                     # try is here to catch invalid week indexes caused by pagevisits outside of the course offering.
-                    pagevisits_by_week_for_this_page[week] += 1
+                    pagevisits_by_week_for_this_student[week] += 1
                     pagevisits_by_week_for_all_students[week] += 1
                 except IndexError:
                     pass
-            student['weeks'] = pagevisits_by_week_for_this_page
-            student['total'] = sum(pagevisits_by_week_for_this_page) # Add along the row.
-            highest_cell_for_this_student = max(pagevisits_by_week_for_this_page)
+            student['weeks'] = pagevisits_by_week_for_this_student
+            student['total'] = sum(pagevisits_by_week_for_this_student) # Add along the row.
+            highest_cell_for_this_student = max(pagevisits_by_week_for_this_student)
             try:
                 highest_cell_value = max(highest_cell_value, highest_cell_for_this_student)
             except TypeError:

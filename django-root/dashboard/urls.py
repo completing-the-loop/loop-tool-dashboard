@@ -42,7 +42,7 @@ urlpatterns = [
         url(r'^communication/$', CourseCommunicationView.as_view(), name='course_communications'),
         url(r'^course_content/$', CourseContentView.as_view(), name='course_content'),
         url(r'^students/$', StudentsView.as_view(), name='students'),
-        url(r'^student/(?P<pk>\d+)//$', StudentDetailView.as_view(), name='student_detail'),
+        url(r'^student/(?P<pk>\d+)/$', StudentDetailView.as_view(), name='student_detail'),
 
         url(r'^course_page/(?P<pk>\d+)/$', CoursePageView.as_view(), name='course_page'),
 
