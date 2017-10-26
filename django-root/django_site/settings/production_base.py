@@ -48,6 +48,7 @@ EMAIL_USE_SSL = False
 
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
+SITE_NAME = 'cloop'
 EMAIL_SUBJECT_PREFIX = '[%s] ' % SITE_NAME
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
