@@ -32,18 +32,10 @@ const init = async (
                 ];
             },
             async getCommunications() {
-                this.communications = await get(`${this.courseId}/student_communications/${this.studentId}`);            },
+                this.communications = await get(`${this.courseId}/student_communications/${this.studentId}`);
+            },
             async getAssessment() {
-                this.assessments = [
-                    {page_id: 21, title: 'Page 21', module: 'module', page_views: 6, average_score: 65, attempts: 12},
-                    {page_id: 22, title: 'Page 22', module: 'module', page_views: 4, average_score: 86, attempts: 23},
-                    {page_id: 23, title: 'Page 23', module: 'module', page_views: 2, average_score: 23, attempts: 32},
-                    {page_id: 24, title: 'Page 24', module: 'module', page_views: 7, average_score: 37, attempts: 31},
-                    {page_id: 25, title: 'Page 25', module: 'module', page_views: 7, average_score: 87, attempts: 13},
-                    {page_id: 26, title: 'Page 26', module: 'module', page_views: 4, average_score: 23, attempts: 12},
-                    {page_id: 27, title: 'Page 27', module: 'module', page_views: 3, average_score: 56, attempts: 14},
-                    {page_id: 28, title: 'Page 28', module: 'module', page_views: 6, average_score: 45, attempts: 23},
-                ];
+                this.assessments = await get(`${this.courseId}/student_assessments/${this.studentId}`);
             },
             async plotGraph() {
                 var accessSeries = {

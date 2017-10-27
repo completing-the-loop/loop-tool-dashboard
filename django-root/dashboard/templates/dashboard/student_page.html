@@ -107,11 +107,13 @@
             <tbody>
               {% verbatim %}
                 <tr v-for="assessment in assessments">
-                  <td>{{ assessment.title }}</td>
-                  <td>{{ assessment.module }}</td>
-                  <td>{{ assessment.page_views }}</td>
+                  <td>
+                    <a :href="`/${courseId}/course_page/${assessment.id}/`">{{ assessment.title }}</a>
+                  </td>
+                  <td>{{ assessment.content_type }}</td>
+                  <td>{{ assessment.user_views }}</td>
                   <td>{{ assessment.attempts }}</td>
-                  <td>{{ assessment.average_score }}</td>
+                  <td>{{ assessment.average_grade }}</td>
                 </tr>
               {% endverbatim %}
             </tbody>

@@ -164,3 +164,13 @@ class StudentCommunicationSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'user_views', 'posts')
+
+
+class StudentAssessmentSerializer(ModelSerializer):
+    user_views = IntegerField()
+    attempts = IntegerField()
+    average_score = DecimalField(max_digits=7, decimal_places=4)
+
+    class Meta:
+        model = Page
+        fields = ('id', 'title', 'content_type', 'user_views', 'attempts', 'average_score')
