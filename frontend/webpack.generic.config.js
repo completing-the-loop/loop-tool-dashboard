@@ -257,7 +257,7 @@ module.exports = ({
     // Setup support for .vue files
     let vueConfig = {
       test: /\.vue$/,
-      loader: 'vue',
+      loader: 'vue-loader',
       // vue-loader options goes here
       options: {}
     };
