@@ -44,6 +44,8 @@ class StudentDetailView(TemplateView):
 
         initial_data = {
             'course_id': self.request.course_offering.id,
+            'course_start': self.request.course_offering.start_date,
+            'num_weeks': self.request.course_offering.no_weeks,
             'student_id': student_id,
         }
 

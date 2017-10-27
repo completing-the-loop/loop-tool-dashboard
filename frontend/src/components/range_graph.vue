@@ -26,15 +26,23 @@
                 type: Number,
                 required: true,
             },
+            studentId: {
+                type: String,
+            },
         },
     data: function() {
         return {
-            overallVisits: [],
+            coursePageVisits: [],
         };
     },
     mounted: async function mounted() {
 
-        this.overallVisits = await get(`${this.courseId}/overall_pagevisits`);
+        let params = {};
+        if (this.studentId) {
+            params['student_id'] = this.studentId;
+        }
+
+        this.coursePageVisits = await get(`${this.courseId}/course_page_visits`, params);
 
         let maxVisits = 0;
         const dates = [];
@@ -47,7 +55,7 @@
         const submissionEventsText = [];
 
         // Initial loop through data for page views
-        _.forEach(this.overallVisits, function(visit) {
+        _.forEach(this.coursePageVisits, function(visit) {
             dates.push(visit.day);
             contentVisits.push(visit.contentVisits);
             communicationVisits.push(visit.communicationVisits);
@@ -64,7 +72,7 @@
         });
 
         // Second loop to build events data
-        _.forEach(this.overallVisits, function(visit) {
+        _.forEach(this.coursePageVisits, function(visit) {
             if (visit.singleEvents.length) {
                 singleEventsData.push(maxVisits+1);
                 singleEventsText.push(_.join(visit.singleEvents, ', '));
@@ -185,7 +193,8 @@
             ],
         };
 
-        Plotly.newPlot('overall_pageviews_chart',
+        Plotly.newPlot(
+            this.graphId,
             graphData,
             graphLayout,
             graphConfig,
