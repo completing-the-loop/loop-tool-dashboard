@@ -18,13 +18,13 @@ const init = async (
         },
         mounted: async function mounted() {
             this.getCommunications();
-            this.getAssessment();
+            this.getAssessments();
         },
         methods: {
             async getCommunications() {
                 this.communications = await get(`${this.courseId}/student_communications/${this.studentId}`);
             },
-            async getAssessment() {
+            async getAssessments() {
                 this.assessments = await get(`${this.courseId}/student_assessments/${this.studentId}`);
             },
         },
