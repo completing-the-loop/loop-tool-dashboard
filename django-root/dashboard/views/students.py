@@ -1,7 +1,10 @@
+from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 from dashboard.models import CourseRepeatingEvent
+from olap.models import LMSUser
+
 
 class StudentsView(TemplateView):
     template_name = 'dashboard/students.html'
@@ -38,10 +41,17 @@ class StudentDetailView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        student_id = kwargs.get('pk')
+        student = get_object_or_404(LMSUser, pk=student_id, course_offering=self.request.course_offering)
+
         initial_data = {
             'course_id': self.request.course_offering.id,
+            'course_start': self.request.course_offering.start_date,
+            'num_weeks': self.request.course_offering.no_weeks,
+            'student_id': student.id,
         }
 
         context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
+        context['student'] = student
 
         return context

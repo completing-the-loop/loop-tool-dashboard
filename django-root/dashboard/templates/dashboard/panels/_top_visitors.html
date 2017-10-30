@@ -15,7 +15,7 @@
         </thead>
         <tbody>
             <tr v-for="user in topUsers">
-              <td>{{ user.firstname }}</td>
+              <td><a :href="`/${courseId}/student/${user.id}/`">{{ user.firstname }}</a></td>
               <td>{{ user.lastname }}</td>
               <td>{{ user.role }}</td>
               <td class="text-right">{{ user.pageviews }}</td>

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block page_id %}student-page{% endblock page_id %}
+
+{% block content %}
+  <div class="row">
+    <ol class="breadcrumb col-md-12">
+      <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
+      <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
+      <li class="active">Student</li>
+    </ol>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table">
+        <tr>
+          <td><strong>Course Member:</strong></td>
+          <td>{{ student.fullname }}</td>
+        </tr>
+        <tr>
+          <td><strong>Email:</strong></td>
+          <td>{{ student.email }}</td>
+        </tr>
+        <tr>
+          <td><strong>Role:</strong></td>
+          <td>{{ student.role }}</td>
+        </tr>
+        <tr>
+          <td><strong>User ID:</strong></td>
+          <td>{{ student.lms_user_id }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default ">
+          <div class="panel-heading">
+            <h3 class="panel-title">
+              <i class="halflings-icon list-alt"></i><span class="break"></span>Pageviews
+            </h3>
+          </div>
+          <div class="panel-body">
+            <range-graph graph-id="student_pageviews_chart" :student-id="studentId" :course-id="courseId" :course-start="courseStart" :num-weeks="numWeeks"></range-graph>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">
+            <i class="halflings-icon list-alt"></i><span class="break"></span>Course Communication
+          </h2>
+        </div>
+        <div class="panel-body">
+          <table class="table ">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Pageviews</th>
+                <th>Posts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% verbatim %}
+                <tr v-for="communication in communications">
+                  <td>
+                    <a :href="`/${courseId}/course_page/${communication.id}/`"> {{ communication.title }}</a>
+                  </td>
+                  <td>{{ communication.content_type }}</td>
+                  <td>{{ communication.user_views }}</td>
+                  <td>{{ communication.posts }}</td>
+                </tr>
+              {% endverbatim %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title">
+            <i class="halflings-icon list-alt"></i><span class="break"></span>Course Assessment
+          </h2>
+        </div>
+        <div class="panel-body">
+          <table class="table ">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Pageviews</th>
+                <th>Attempts</th>
+                <th>Average Student Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% verbatim %}
+                <tr v-for="assessment in assessments">
+                  <td>
+                    <a :href="`/${courseId}/course_page/${assessment.id}/`">{{ assessment.title }}</a>
+                  </td>
+                  <td>{{ assessment.content_type }}</td>
+                  <td>{{ assessment.user_views }}</td>
+                  <td>{{ assessment.attempts }}</td>
+                  <td>{{ assessment.average_grade }}</td>
+                </tr>
+              {% endverbatim %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block javascript %}
+  <script>
+      window.pages.studentPage.init(JSON.parse("{{ initial_data | escapejs }}"));
+  </script>
+{% endblock javascript %}
