@@ -22,11 +22,13 @@
     </div>
   {% endverbatim %}
 
-  <div v-if="weekNum == 0" class="row-fluid">
-    {% include "dashboard/panels/_overall_graph.html" %}
+  <div v-if="weekNum == 0" class="row">
+    <div class="col-md-12">
+      {% include "dashboard/panels/_overall_graph.html" %}
+    </div>
   </div>
 
-  <div v-if="weekNum >= 1" class="row-fluid">
+  <div v-if="weekNum >= 1" class="row">
     <div class="col-md-8">
       {% include "dashboard/panels/_per_week_graph.html" %}
     </div>
@@ -35,7 +37,7 @@
     </div>
   </div>
 
-  <div class="row-fluid">
+  <div class="row">
     <div class="col-md-6">
       {% include "dashboard/panels/_histogram.html" %}
     </div>
@@ -45,7 +47,7 @@
     </div>
   </div>
 
-  <div class="row-fluid">
+  <div class="row">
     <div class="col-md-6">
       {% include "dashboard/panels/_top_communication.html" %}
     </div>
@@ -55,7 +57,7 @@
     </div>
   </div>
 
-  <div class="row-fluid">
+  <div class="row">
     <div class="col-md-6">
       {% include "dashboard/panels/_top_assessment.html" %}
     </div>

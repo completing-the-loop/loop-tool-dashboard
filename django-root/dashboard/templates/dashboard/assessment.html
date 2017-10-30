@@ -4,27 +4,33 @@
 
 {% block content %}
 <div class="row">
-  <ol class="breadcrumb col-md-12">
-    <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
-    <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
-    <li class="active">Assessment</li>
-  </ol>
+  <div class="col-md-12">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'dashboard:course_list' %}"><i class="glyphicon glyphicon-home glyphicon-fw"></i>My Courses</a></li>
+      <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
+      <li class="active">Assessment</li>
+    </ol>
+  </div>
 </div>
 
 <div class="row">
   <div class="col-md-12">
     <div id="assessment" class="panel with-nav-tabs panel-default">
       <div class="panel-heading">
-        <h1 class="pull-left">Assessment</h1>
+        <h1>Assessment</h1>
         <ul class="nav nav-tabs">
-          <li role="presentation" class="active navbar-right"><a href="#access" aria-controls="access" role="tab"
-                                                                 data-toggle="tab">Accesses</a></li>
-          <li role="presentation" class=" navbar-right"><a href="#grades" aria-controls="grades" role="tab"
-                                                           data-toggle="tab">Grades</a></li>
-          <li role="presentation" class=" navbar-right"><a href="#unique-students" aria-controls="unique-students" role="tab"
-                                                           data-toggle="tab">Unique Students</a></li>
-          <li role="presentation" class=" navbar-right"><a href="#events" aria-controls="events" role="tab"
-                                                           data-toggle="tab">Events</a></li>
+          <li role="presentation" class="active navbar-right">
+            <a href="#access" aria-controls="access" role="tab" data-toggle="tab">Accesses</a>
+          </li>
+          <li role="presentation" class=" navbar-right">
+            <a href="#grades" aria-controls="grades" role="tab" data-toggle="tab">Grades</a>
+          </li>
+          <li role="presentation" class=" navbar-right">
+            <a href="#unique-students" aria-controls="unique-students" role="tab" data-toggle="tab">Unique Students</a>
+          </li>
+          <li role="presentation" class=" navbar-right">
+            <a href="#events" aria-controls="events" role="tab" data-toggle="tab">Events</a>
+          </li>
         </ul>
       </div>
       <div class="panel-body" style="overflow: scroll;">
@@ -41,7 +47,7 @@
                     <th v-for="week in numWeeks">Week {{ week }}</th>
 
                     <th>Total</th>
-                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
+                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="glyphicon glyphicon-info-sign glyphicon-fw"></i></a></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -95,7 +101,7 @@
                     <th v-for="week in numWeeks">Week {{ week }}</th>
 
                     <th>Total</th>
-                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="halflings-icon info-sign"></i></a></th>
+                    <th>%<a href="#" class="btn btn-mini" data-rel="tooltip" data-original-title="Percentage in relation to total pageviews"><i class="glyphicon glyphicon-info-sign glyphicon-fw"></i></a></th>
                   </tr>
                 </thead>
                 <tbody>

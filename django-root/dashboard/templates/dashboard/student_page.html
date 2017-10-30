@@ -4,11 +4,13 @@
 
 {% block content %}
   <div class="row">
-    <ol class="breadcrumb col-md-12">
-      <li><a href="{% url 'dashboard:course_list' %}"><i class="icon-home"></i>My Courses</a></li>
-      <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
-      <li class="active">Student</li>
-    </ol>
+    <div class="col-md-12">
+      <ol class="breadcrumb">
+        <li><a href="{% url 'dashboard:course_list' %}"><i class="glyphicon glyphicon-home glyphicon-fw"></i>My Courses</a></li>
+        <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
+        <li class="active">Student</li>
+      </ol>
+    </div>
   </div>
 
   <div class="row">
@@ -16,7 +18,7 @@
       <table class="table">
         <tr>
           <td><strong>Course Member:</strong></td>
-          <td>{{ student.fullname }}</td>
+          <td>{{ student.full_name }}</td>
         </tr>
         <tr>
           <td><strong>Email:</strong></td>
@@ -39,7 +41,7 @@
         <div class="panel panel-default ">
           <div class="panel-heading">
             <h3 class="panel-title">
-              <i class="halflings-icon list-alt"></i><span class="break"></span>Pageviews
+              <i class="glyphicon glyphicon-align-justify glyphicon-fw"></i>Pageviews
             </h3>
           </div>
           <div class="panel-body">
@@ -53,18 +55,18 @@
     <div class="col-md-12">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h2 class="panel-title">
-            <i class="halflings-icon list-alt"></i><span class="break"></span>Course Communication
-          </h2>
+          <h3 class="panel-title">
+            <i class="glyphicon glyphicon-align-justify glyphicon-fw"></i>Course Communication
+          </h3>
         </div>
         <div class="panel-body">
           <table class="table ">
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Pageviews</th>
-                <th>Posts</th>
+                <th class="text-center">Title</th>
+                <th class="text-center">Type</th>
+                <th class="text-center">Pageviews</th>
+                <th class="text-center">Posts</th>
               </tr>
             </thead>
             <tbody>
@@ -74,8 +76,8 @@
                     <a :href="`/${courseId}/course_page/${communication.id}/`"> {{ communication.title }}</a>
                   </td>
                   <td>{{ communication.content_type }}</td>
-                  <td>{{ communication.user_views }}</td>
-                  <td>{{ communication.posts }}</td>
+                  <td class="text-right">{{ communication.user_views }}</td>
+                  <td class="text-right">{{ communication.posts }}</td>
                 </tr>
               {% endverbatim %}
             </tbody>
@@ -89,19 +91,19 @@
     <div class="col-md-12">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h2 class="panel-title">
-            <i class="halflings-icon list-alt"></i><span class="break"></span>Course Assessment
-          </h2>
+          <h3 class="panel-title">
+            <i class="glyphicon glyphicon-align-justify glyphicon-fw"></i>Course Assessment
+          </h3>
         </div>
         <div class="panel-body">
           <table class="table ">
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Pageviews</th>
-                <th>Attempts</th>
-                <th>Average Student Score</th>
+                <th class="text-center">Title</th>
+                <th class="text-center">Type</th>
+                <th class="text-center">Pageviews</th>
+                <th class="text-center">Attempts</th>
+                <th class="text-center">Average Student Score</th>
               </tr>
             </thead>
             <tbody>
@@ -111,9 +113,9 @@
                     <a :href="`/${courseId}/course_page/${assessment.id}/`">{{ assessment.title }}</a>
                   </td>
                   <td>{{ assessment.content_type }}</td>
-                  <td>{{ assessment.user_views }}</td>
-                  <td>{{ assessment.attempts }}</td>
-                  <td>{{ assessment.average_grade }}</td>
+                  <td class="text-right">{{ assessment.user_views }}</td>
+                  <td class="text-right">{{ assessment.attempts }}</td>
+                  <td class="text-right">{{ assessment.average_grade }}</td>
                 </tr>
               {% endverbatim %}
             </tbody>

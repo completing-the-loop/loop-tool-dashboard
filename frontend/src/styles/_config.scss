@@ -1,1 +1,50 @@
 $icon-font-path: "../../node_modules/bootstrap-sass/assets/fonts/bootstrap/";
+
+$text-color: #333;
+
+$link-color: #646464;
+
+$border-radius-base:        0;
+$border-radius-large:       0;
+$border-radius-small:       0;
+
+
+$btn-font-weight:                normal;
+
+$btn-default-color:              #333;
+$btn-default-bg:                 #fff;
+$btn-default-border:             #ccc;
+
+$btn-primary-color:              #fff;
+$btn-primary-bg:                 #2D89EF;
+$btn-primary-border:             #2D89EF;
+
+$btn-success-color:              #fff;
+$btn-success-bg:                 #00A300;
+$btn-success-border:             #00A300;
+
+$btn-info-color:                 #fff;
+$btn-info-bg:                    #5bc0de;
+$btn-info-border:                #5bc0de;
+
+$btn-warning-color:              #fff;
+$btn-warning-bg:                 #FFC40D;
+$btn-warning-border:             #FFC40D;
+
+$btn-danger-color:               #fff;
+$btn-danger-bg:                  #EB3C00;
+$btn-danger-border:              #EB3C00;
+
+//$btn-link-disabled-color:        $gray-light;
+
+// Allows for customizing button radius independently from global border radius
+$btn-border-radius-base:         0;
+$btn-border-radius-large:        0;
+$btn-border-radius-small:        0;
+
+
+$breadcrumb-color: #aaa;
+$breadcrumb-bg: #eee;
+$breadcrumb-active-color: $breadcrumb-color;
+
+$panel-border-radius: 1px;
