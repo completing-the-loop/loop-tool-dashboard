@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
@@ -41,15 +42,16 @@ class StudentDetailView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         student_id = kwargs.get('pk')
+        student = get_object_or_404(LMSUser, pk=student_id, course_offering=self.request.course_offering)
 
         initial_data = {
             'course_id': self.request.course_offering.id,
             'course_start': self.request.course_offering.start_date,
             'num_weeks': self.request.course_offering.no_weeks,
-            'student_id': student_id,
+            'student_id': student.id,
         }
 
         context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
-        context['student'] = LMSUser.objects.get(pk=student_id)
+        context['student'] = student
 
         return context
