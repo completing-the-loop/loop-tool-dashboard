@@ -1,48 +1,53 @@
 {% extends 'base_unauthorised.html' %}
 
 {% block body %}
-    <!-- start: Header -->
-  <div class="navbar">
-    <div class="navbar-inner">
-      <div class="container-fluid">
-        <a class="btn btn-navbar" data-toggle="collapse" data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </a>
-        <a class="brand" href="{% url 'dashboard:course_list' %}"><span>Loop - Analytics for Learning Design </span></a>
 
-        <!-- start: Header Menu -->
-        <div class="nav-no-collapse header-nav">
-          <ul class="nav pull-right">
-            <!-- start: User Dropdown -->
-            <li class="dropdown">
-              <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-                <i class="halflings-icon white user"></i> {{ user.username }}
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu">
-                <li class="dropdown-menu-title">
-                  <span>Account Settings</span>
-                </li>
-                <li><a href="{% url 'dashboard:logout' %}"><i class="halflings-icon off"></i> Logout</a></li>
-              </ul>
-            </li>
-            <!-- end: User Dropdown -->
-          </ul>
+  <header class="banner">
+    <!-- start: Header -->
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+
+          <a class="brand" href="{% url 'dashboard:course_list' %}"><span>Loop - Analytics for Learning Design </span></a>
+
+          <!-- start: Header Menu -->
+          <div class="nav-no-collapse header-nav">
+            <ul class="nav">
+              <!-- start: User Dropdown -->
+              <li class="dropdown">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                  <i class="glyphicon glyphicon-user white"></i> {{ user.username }}
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="dropdown-menu-title">
+                    <span>Account Settings</span>
+                  </li>
+                  <li><a href="{% url 'dashboard:logout' %}"><i class="glyphicon glyphicon-off"></i> Logout</a></li>
+                </ul>
+              </li>
+              <!-- end: User Dropdown -->
+            </ul>
+          </div>
+          <!-- end: Header Menu -->
         </div>
-        <!-- end: Header Menu -->
       </div>
     </div>
-  </div>
-  <!-- start: Header -->
+  </header>
+  <!-- end: Header -->
 
-  <div class="container-fluid">
-    <div class="row">
+  <main class="main">
+    <div class="container-fluid">
+    <div class="row main-row">
       <!-- start: Main Menu -->
       <div id="sidebar-left" class="col-sm-3 col-md-2 sidebar">
         {% if request.course_offering %}
-          <div class="">
+          <div class="sidebar__bd">
             <ul class="nav nav-tabs nav-stacked main-menu">
               <li>
                 <a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">
@@ -96,8 +101,8 @@
               </li>
             </ul>
           </div>
+        {% endif %}
         </div>
-      {% endif %}
       <!-- end: Main Menu -->
 
       <noscript>
@@ -109,7 +114,6 @@
 
       <!-- start: Content -->
       <div id="content" class="col-sm-9 col-md-10">
-
         {% block breadcrumb %}
         <!--
           <ul class="breadcrumb">
@@ -132,13 +136,13 @@
       <!-- end: Content -->
     </div><!--/fluid-row-->
   </div><!--/.fluid-container-->
-
-  <div class="clearfix"></div>
-
-  <footer>
-    <p>
-      <span style="text-align:left;float:left">2016 Loop OLT Project - <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike</a></span>
-    </p>
+  </main>
+  <footer class="content-info">
+    <div class="container-fluid">
+      <p>
+        2016 Loop OLT Project - <a href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike</a>
+      </p>
+    </div>
   </footer>
 
 {% endblock body %}
