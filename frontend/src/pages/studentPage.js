@@ -1,4 +1,3 @@
-import Plotly from 'plotly';
 import Vue from 'vue';
 import { get } from '../api';
 import RangeGraph from '../components/range_graph.vue';
