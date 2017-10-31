@@ -49,6 +49,7 @@
     "webpack-hot-middleware": "^2.16.1"
   },
   "dependencies": {
+    "babel-cli": "^6.26.0",
     "bootstrap-sass": "^3.3.7",
     "invariant": "^2.2.2",
     "jquery": "^3.2.1",
