@@ -6,6 +6,16 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from rest_framework.authtoken.models import Token
+
+
+class LMSServer(models.Model):
+    name = models.CharField(max_length=255)
+    descriptions = models.TextField(blank=True)
+    token = models.ForeignKey(Token, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
 
 
 class CourseOffering(models.Model):
@@ -42,6 +52,7 @@ class CourseOffering(models.Model):
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
     last_activity_at = models.DateTimeField(blank=True, null=True)  # The last recorded page visit, submission attempt or summary post
     is_importing = models.BooleanField(default=False)
+    lms_server = models.ForeignKey(LMSServer, null=True, blank=True, help_text='If empty, then this course offering will not be able to be imported')
 
     @classmethod
     def assessment_types(cls):
