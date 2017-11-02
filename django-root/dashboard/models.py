@@ -42,7 +42,7 @@ class CourseOffering(models.Model):
         'resource/x-bb-asmt-test-link',
     )
 
-    code = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=100)
     title = models.CharField(max_length=255)
     offering = models.CharField(max_length=255)
     owners = models.ManyToManyField(User)
@@ -53,6 +53,9 @@ class CourseOffering(models.Model):
     last_activity_at = models.DateTimeField(blank=True, null=True)  # The last recorded page visit, submission attempt or summary post
     is_importing = models.BooleanField(default=False)
     lms_server = models.ForeignKey(LMSServer, null=True, blank=True, help_text='If empty, then this course offering will not be able to be imported')
+
+    class Meta:
+        unique_together = ('code', 'lms_server')
 
     @classmethod
     def assessment_types(cls):
