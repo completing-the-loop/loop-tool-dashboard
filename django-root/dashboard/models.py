@@ -1,8 +1,8 @@
 from datetime import datetime
+from datetime import timedelta
 import pytz
 
 from authtools.models import User
-from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
