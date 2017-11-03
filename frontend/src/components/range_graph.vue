@@ -7,6 +7,7 @@
     import Plotly from 'plotly';
     import Vue from 'vue';
     import { get } from '../api';
+    import { PAGE_TYPE_CONTENT, PAGE_TYPE_COMMUNICATION, PAGE_TYPE_ASSESSMENT } from '../consts';
 
     export default {
         props: {
@@ -31,6 +32,9 @@
             },
             resourceId: {
                 type: Number,
+            },
+            showType: {
+                type: String,
             },
         },
     mounted() {
@@ -91,47 +95,56 @@
                 }
             });
 
-            const graphData = [
-                {
+            const graphData = [];
+
+            if (!this.showType || this.showType === PAGE_TYPE_CONTENT) {
+                graphData.push({
                     type: "scatter",
                     mode: "lines",
                     name: "Content",
                     x: dates,
                     y: contentVisits,
-                },
-                {
+                });
+            }
+
+            if (!this.showType || this.showType === PAGE_TYPE_COMMUNICATION) {
+                graphData.push({
                     type: "scatter",
                     mode: "lines",
                     name: "Communication",
                     x: dates,
                     y: communicationVisits,
-                },
-                {
+                });
+            }
+
+            if (!this.showType || this.showType === PAGE_TYPE_ASSESSMENT) {
+                graphData.push({
                     type: "scatter",
                     mode: "lines",
                     name: "Assessment",
                     x: dates,
                     y: assessmentVisits,
-                },
-                {
-                    type: "scatter",
-                    mode: "markers+text",
-                    name: "Single Events",
-                    x: dates,
-                    y: singleEventsData,
-                    text: singleEventsText,
-                    textposition: "top center",
-                },
-                {
-                    type: "scatter",
-                    mode: "markers+text",
-                    name: "Submission Events",
-                    x: dates,
-                    y: submissionEventsData,
-                    text: submissionEventsText,
-                    textposition: "top center",
-                },
-            ];
+                });
+            }
+
+            graphData.push({
+                type: "scatter",
+                mode: "markers+text",
+                name: "Single Events",
+                x: dates,
+                y: singleEventsData,
+                text: singleEventsText,
+                textposition: "top center",
+            },
+            {
+                type: "scatter",
+                mode: "markers+text",
+                name: "Submission Events",
+                x: dates,
+                y: submissionEventsData,
+                text: submissionEventsText,
+                textposition: "top center",
+            });
 
             // Make the range slider range a bit longer to show shaded sidebars
             const rangeStart = moment(vue.courseStart).add(-2, 'weeks').format('YYYY-MM-DD');

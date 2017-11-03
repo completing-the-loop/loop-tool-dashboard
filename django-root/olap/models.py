@@ -136,6 +136,10 @@ class PageVisit(models.Model):
 # ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 class Page(models.Model):
+    PAGE_TYPE_CONTENT = 'content'
+    PAGE_TYPE_COMMUNICATION = 'communication'
+    PAGE_TYPE_ASSESSMENT = 'assessment'
+
     course_offering = models.ForeignKey(CourseOffering)
     content_type = models.CharField(max_length=255)
     content_id = models.IntegerField()
@@ -146,6 +150,14 @@ class Page(models.Model):
 
     class Meta:
         unique_together = (('course_offering', 'content_id', 'is_forum'), )
+
+    def get_page_type(self):
+        if self.content_type in CourseOffering.communication_types():
+            return Page.PAGE_TYPE_COMMUNICATION
+        elif self.content_type in CourseOffering.assessment_types():
+            return Page.PAGE_TYPE_ASSESSMENT
+        else:
+            return Page.PAGE_TYPE_CONTENT
 
     def __str__(self):
         return '<Page {}: {}>'.format(self.id, self.title)

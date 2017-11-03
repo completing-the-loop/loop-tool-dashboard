@@ -40,6 +40,7 @@ class ResourcePageView(TemplateView):
             'course_start': self.request.course_offering.start_date,
             'num_weeks': self.request.course_offering.no_weeks,
             'resource_id': page.id,
+            'resource_type': page.get_page_type(),
         }
         context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
 

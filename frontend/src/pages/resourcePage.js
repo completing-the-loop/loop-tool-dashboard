@@ -12,6 +12,7 @@ const init = async (
             courseStart: initialData.courseStart,
             numWeeks: initialData.numWeeks,
             resourceId: initialData.resourceId,
+            resourceType: initialData.resourceType,
         },
         asyncComputed: {
             notViewedStudents() {

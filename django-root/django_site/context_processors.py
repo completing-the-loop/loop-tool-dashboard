@@ -1,5 +1,7 @@
 import json
 
+from olap.models import Page
+
 
 def constants(request):
     constants_json = json.dumps({
@@ -10,6 +12,9 @@ def constants(request):
         'PAGE_MAX_PIE_GRAPH_PIXELS': 100,
         'PAGE_PIE_CHART_BEFORE_COLOR': 'blue',
         'PAGE_PIE_CHART_AFTER_COLOR': 'red',
+        'PAGE_TYPE_CONTENT': Page.PAGE_TYPE_CONTENT,
+        'PAGE_TYPE_COMMUNICATION': Page.PAGE_TYPE_COMMUNICATION,
+        'PAGE_TYPE_ASSESSMENT': Page.PAGE_TYPE_ASSESSMENT,
     })
 
     return {'CONSTANTS': constants_json}
