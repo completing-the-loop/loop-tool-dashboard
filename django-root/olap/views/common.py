@@ -44,7 +44,7 @@ class CoursePageVisitsView(APIView):
             if page_visit['page__content_type'] in CourseOffering.communication_types():
                 day_dict[visit_date]['communication_visits'] += 1
             elif page_visit['page__content_type'] in CourseOffering.assessment_types():
-                day_dict[visit_date]['assessment_visits']+= 1
+                day_dict[visit_date]['assessment_visits'] += 1
             else:
                 day_dict[visit_date]['content_visits'] += 1
 
@@ -61,5 +61,3 @@ class CoursePageVisitsView(APIView):
         data.sort(key=lambda day_data: day_data['day'])
         serializer = DailyPageVisitsSerializer(data, many=True)
         return Response(serializer.data)
-
-
