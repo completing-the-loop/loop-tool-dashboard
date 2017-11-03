@@ -7,10 +7,12 @@ from rest_framework.views import APIView
 
 from dashboard.models import CourseOffering
 from dashboard.models import CourseRepeatingEvent
+from olap.models import LMSUser
 from olap.models import Page
 from olap.models import PageVisit
 from olap.serializers import CourseContentPageEventSerializer
 from olap.serializers import CoursePagesetAndTotalsSerializer
+from olap.serializers import StudentsSerializer
 
 
 class ContentAccessesView(APIView):
@@ -138,5 +140,17 @@ class ContentEventsView(APIView):
             page['weeks'] = visit_pairs_by_week
 
         serializer = CourseContentPageEventSerializer(page_queryset, many=True)
+
+        return Response(serializer.data)
+
+
+class StudentsNotViewedResourceView(APIView):
+    def get(self, request, resource_id, format=None):
+        course_offering = self.request.course_offering
+        page = get_object_or_404(Page, pk=resource_id, course_offering=course_offering)
+
+        not_viewed_students = LMSUser.objects.exclude(pagevisit__page=page).order_by('lastname', 'firstname')
+
+        serializer = StudentsSerializer(not_viewed_students, many=True)
 
         return Response(serializer.data)

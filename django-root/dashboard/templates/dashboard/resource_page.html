@@ -71,6 +71,26 @@
           </h3>
         </div>
         <div class="panel-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="text-center">First Name</th>
+                <th class="text-center">Surname</th>
+                <th class="text-center">Email</th>
+                <th class="text-center">Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% verbatim %}
+                <tr v-for="student in notViewedStudents">
+                  <td><a :href="`/${courseId}/student/${student.id}/`">{{ student.firstname }}</a></td>
+                  <td>{{ student.lastname }}</td>
+                  <td>{{ student.email }}</td>
+                  <td>{{ student.role }}</td>
+                </tr>
+              {% endverbatim %}
+            </tbody>
+           </table>
         </div>
       </div>
     </div>

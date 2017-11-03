@@ -13,9 +13,10 @@ const init = async (
             numWeeks: initialData.numWeeks,
             resourceId: initialData.resourceId,
         },
-        mounted: async function mounted() {
-        },
-        methods: {
+        asyncComputed: {
+            notViewedStudents() {
+                return get(`${this.courseId}/resource/${this.resourceId}/not_viewed_students`);
+            },
         },
         components: {
             RangeGraph,
