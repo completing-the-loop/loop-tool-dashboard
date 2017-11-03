@@ -6,7 +6,7 @@ from stronghold.decorators import public
 from dashboard.views.assessment import CourseAssessmentView
 from dashboard.views.communication import CourseCommunicationView
 from dashboard.views.content import CourseContentView
-from dashboard.views.content import CoursePageView
+from dashboard.views.content import ResourcePageView
 from dashboard.views.courses import CourseListView
 from dashboard.views.dashboard import CourseDashboardView
 from dashboard.views.events import CourseRepeatingEventCreateView
@@ -43,8 +43,7 @@ urlpatterns = [
         url(r'^course_content/$', CourseContentView.as_view(), name='course_content'),
         url(r'^students/$', StudentsView.as_view(), name='students'),
         url(r'^student/(?P<pk>\d+)/$', StudentDetailView.as_view(), name='student_detail'),
-
-        url(r'^course_page/(?P<pk>\d+)/$', CoursePageView.as_view(), name='course_page'),
+        url(r'^course_page/(?P<pk>\d+)/$', ResourcePageView.as_view(), name='course_page'),
 
         # Event management for academic staff
         url(r'^course_repeating_events/$', CourseRepeatingEventListView.as_view(), name='list_course_repeating_events'),
@@ -60,9 +59,4 @@ urlpatterns = [
         url(r'^course_single_event/(?P<pk>\d+)/$', CourseSingleEventUpdateView.as_view(), name='edit_course_single_event'),
         url(r'^course_single_event/(?P<pk>\d+)/delete/$', CourseSingleEventDeleteView.as_view(), name='delete_course_single_event'),
     ])),
-
-    # These are to be removed or moved to the permissions wrapper above
-    url(r'^coursepage/$', views.coursepage, name='coursepage'),
-    url(r'^content/$', views.content, name='course_content'),
-    url(r'^assessment/$', views.assessment, name='course_assessments'),
 ]

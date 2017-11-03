@@ -15,6 +15,7 @@ class CoursePageVisitsView(APIView):
     def get(self, request, *args, **kwargs):
         # Setup list of days in course with initial values
         student_id = request.GET.get('student_id')
+        resource_id = request.GET.get('resource_id')
 
         day_dict = {}
         our_tz = get_current_timezone()
@@ -34,6 +35,8 @@ class CoursePageVisitsView(APIView):
         page_visit_qs = PageVisit.objects.filter(page__course_offering=request.course_offering)
         if student_id:
             page_visit_qs = page_visit_qs.filter(lms_user_id=student_id)
+        if resource_id:
+            page_visit_qs = page_visit_qs.filter(page_id=resource_id)
 
         # Add the page visits to their corresponding entry
         for page_visit in page_visit_qs.values('visited_at', 'page__content_type'):

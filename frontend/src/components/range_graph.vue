@@ -27,13 +27,19 @@
                 required: true,
             },
             studentId: {
-                type: String,
+                type: Number,
+            },
+            resourceId: {
+                type: Number,
             },
         },
     mounted() {
         let params = {};
         if (this.studentId) {
             params['student_id'] = this.studentId;
+        }
+        if (this.resourceId) {
+            params['resource_id'] = this.resourceId;
         }
 
         const vue = this;
