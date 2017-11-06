@@ -174,3 +174,9 @@ class StudentAssessmentSerializer(ModelSerializer):
     class Meta:
         model = Page
         fields = ('id', 'title', 'content_type', 'user_views', 'attempts', 'average_score')
+
+
+class StudentsSerializer(ModelSerializer):
+    class Meta:
+        model = LMSUser
+        fields = ('id', 'firstname', 'lastname', 'role', 'email')

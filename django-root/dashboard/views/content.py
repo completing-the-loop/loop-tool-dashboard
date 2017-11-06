@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
@@ -25,12 +26,24 @@ class CourseContentView(TemplateView):
         return context
 
 
-class CoursePageView(TemplateView):
-    template_name = 'dashboard/course_page.html'
+class ResourcePageView(TemplateView):
+    template_name = 'dashboard/resource_page.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['course_page'] = Page.objects.get(pk=self.kwargs.get('pk'), course_offering=self.request.course_offering)
+        resource_id = kwargs.get('pk')
+        page = get_object_or_404(Page, pk=resource_id, course_offering=self.request.course_offering)
+
+        initial_data = {
+            'course_id': self.request.course_offering.id,
+            'course_start': self.request.course_offering.start_date,
+            'num_weeks': self.request.course_offering.no_weeks,
+            'resource_id': page.id,
+            'resource_type': page.get_page_type(),
+        }
+        context['initial_data'] = CamelCaseJSONRenderer().render(initial_data)
+
+        context['resource_page'] = page
 
         return context
