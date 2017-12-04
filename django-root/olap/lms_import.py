@@ -86,7 +86,7 @@ class ImportLmsData(object):
         self.course_offering.save()
 
     def process(self):
-        errors = []
+        errors = set()
         offering = self.course_offering
         if self.just_clear:
             print("Removing old data for", offering)
@@ -97,7 +97,8 @@ class ImportLmsData(object):
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
             lms_import = BlackboardImport(self.course_import_path, offering)
-            errors = lms_import.process_import_data()
+            # Convert to set to remove duplicates
+            errors = set(lms_import.process_import_data())
 
             print("Processing user sessions for", offering)
             if not len(errors):
