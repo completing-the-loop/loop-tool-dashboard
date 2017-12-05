@@ -80,8 +80,8 @@ class StudentPageVisitsView(APIView):
             range_end = range_start + timedelta(weeks=1)
             page_visit_qs = page_visit_qs.filter(pagevisit__visited_at__range=(range_start, range_end))
 
-        # Count the filtered page visits grouped by LMSUser
-        page_visit_qs = page_visit_qs.values('lms_user_id').annotate(num_visits=Count('lms_user_id'))
+        # Count the filtered page visits grouped by LMSUser and order by number of visits
+        page_visit_qs = page_visit_qs.values('lms_user_id').annotate(num_visits=Count('lms_user_id')).order_by('num_visits')
 
         serializer = StudentPageVisitsHistogramSerializer(page_visit_qs, many=True)
         return Response(serializer.data)
