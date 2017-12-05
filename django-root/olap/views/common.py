@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from dashboard.models import CourseOffering
 from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
+from olap.models import LMSUser
 from olap.models import PageVisit
 from olap.serializers import DailyPageVisitsSerializer
 from olap.serializers import StudentPageVisitsHistogramSerializer
@@ -71,6 +72,15 @@ class StudentPageVisitsView(APIView):
         week_num = request.GET.get('week_num')
         resource_id = request.GET.get('resource_id')
 
+        # Setup the initial collection of all users
+        lms_user_qs = LMSUser.objects.filter(course_offering=request.course_offering)
+        user_dict = {}
+        for lms_user in lms_user_qs:
+            user_dict[lms_user.id] = {
+                'lms_user_id': lms_user.id,
+                'num_visits': 0,
+            }
+
         # Filter the list of page visits
         page_visit_qs = PageVisit.objects.filter(page__course_offering=request.course_offering)
         if resource_id:
@@ -80,8 +90,15 @@ class StudentPageVisitsView(APIView):
             range_end = range_start + timedelta(weeks=1)
             page_visit_qs = page_visit_qs.filter(visited_at__range=(range_start, range_end))
 
-        # Count the filtered page visits grouped by LMSUser and order by number of visits
-        page_visit_qs = page_visit_qs.values('lms_user_id').annotate(num_visits=Count('lms_user_id')).order_by('num_visits')
+        # Count the filtered page visits grouped by LMSUser
+        page_visit_qs = page_visit_qs.values('lms_user_id').annotate(num_visits=Count('lms_user_id'))
 
-        serializer = StudentPageVisitsHistogramSerializer(page_visit_qs, many=True)
+        # Update the user collection
+        for lms_user in page_visit_qs:
+            user_dict[lms_user['lms_user_id']]['num_visits'] = lms_user['num_visits']
+
+        # Convert to array and serialize
+        data = [v for v in user_dict.values()]
+        data.sort(key=lambda user_data: user_data['num_visits'])
+        serializer = StudentPageVisitsHistogramSerializer(data, many=True)
         return Response(serializer.data)

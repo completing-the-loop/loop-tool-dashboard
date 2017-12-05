@@ -55,6 +55,7 @@
                 }
                 const binSize = Math.ceil(maxVisits / this.numBins);
 
+                let zeroBin = 0;
                 let binLabels, binData;
                 if (binSize) {
                     binData = new Array(this.numBins).fill(0);
@@ -69,13 +70,21 @@
 
                     // Loop through the page visits and assign to bins
                     _.forEach(studentPageVisits, function (visit) {
-                        const binIndex = Math.floor((visit.numVisits - 1) / binSize);
-                        binData[binIndex] += 1;
+                        if (visit.numVisits) {
+                            const binIndex = Math.floor((visit.numVisits - 1) / binSize);
+                            binData[binIndex] += 1;
+                        } else {
+                            zeroBin += 1;
+                        }
                     });
                 } else {
+                    binLabels = ["> 0"];
                     binData = [0];
-                    binLabels = [0];
+                    zeroBin = studentPageVisits.length;
                 }
+
+                binData.unshift(zeroBin);
+                binLabels.unshift("None");
 
                 const graphData = [
                     {
