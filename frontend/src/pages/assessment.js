@@ -56,6 +56,10 @@ const init = async (
                 this.students = await get(`${this.courseId}/assessment_students/`);
             },
             async getEvents() {
+                if (this.eventId === null) {
+                    return;
+                }
+
                 this.events = await get(`${this.courseId}/assessment_events/${this.eventId}/`);
 
                 this.$nextTick(function () {

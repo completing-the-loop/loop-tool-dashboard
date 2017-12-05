@@ -157,6 +157,10 @@ const init = async (
                 this.students.pageSet = this.processPages(apiStudents.pageSet);
             },
             async getEvents() {
+                if (this.eventId === null) {
+                    return;
+                }
+
                 const apiEvents = await get(`${this.courseId}/content_events/${this.eventId}/`);
 
                 this.events = this.processPages(apiEvents);
