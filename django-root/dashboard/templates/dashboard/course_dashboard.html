@@ -14,7 +14,7 @@
       <div class="col-md-2 text-right">
         <form>
           <select v-model="weekNum">
-            <option value="0">View All</option>
+            <option :value="0">View All</option>
             <option v-for="i in numWeeks" :value="i">Week {{ i }}</option>
           </select>
         </form>
