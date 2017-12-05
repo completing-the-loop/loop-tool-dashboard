@@ -125,24 +125,30 @@
               {% endverbatim %}
             </div>
             <div class="tab-pane fade" id="events">
-              <div class="row">
-                <div class="col-md-2">
-                  <div class="form-group">
-                    <label class="sr-only" for="eventfilter">Select event</label>
+              {% if repeating_events %}
+                <div class="row">
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label class="sr-only" for="eventfilter">Select event</label>
 
-                    <select class="form-control" id="eventfilter" name="eventfilter" v-model="eventId">
-                      {% for event in repeating_events %}
-                        <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
-                      {% endfor %}
-                    </select>
+                      <select class="form-control" id="eventfilter" name="eventfilter" v-model="eventId">
+                        {% for event in repeating_events %}
+                          <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
+                        {% endfor %}
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p>
-                <strong>Note: </strong>
-                Blue indicates the content was viewed before the selected event, and Red after the event. The size of the circle is
-                related to the number of views. Bigger circles indicate higher number of views.
-              </p>
+                <p>
+                  <strong>Note: </strong>
+                  Blue indicates the content was viewed before the selected event, and Red after the event. The size of the circle is
+                  related to the number of views. Bigger circles indicate higher number of views.
+                </p>
+              {% else %}
+                <p>
+                  To view the data on this tab, please <a href="{% url 'dashboard:add_course_repeating_event' course_id=request.course_offering.id %}">add at least one repeating event</a>.
+                </p>
+              {% endif %}
               {% verbatim %}
                 <p>
                   <a href="#" @click.prevent="expandAll(events)">Expand All</a> |
