@@ -1,13 +1,14 @@
 import csv
-import io
-from zipfile import ZipFile
-
 from datetime import datetime
+import io
+import itertools
+from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.utils import dateparse
+from unipath import Path
 
 from dashboard.models import CourseOffering
 from olap.models import LMSSession
@@ -84,6 +85,14 @@ class ImportLmsData(object):
             self.course_offering.last_activity_at = None
         self.course_offering.save()
 
+    def write_error_log(self, errors, log_time):
+        error_log_filename = 'errors_{}'.format(log_time)
+        error_log_path = Path(settings.DATA_ERROR_LOGS_DIR, error_log_filename)
+        with open(error_log_path, "w") as error_log:
+            for error in errors:
+                error_log.write("{}\n".format(error))
+        return error_log_path
+
     def process(self):
         errors = set()
         offering = self.course_offering
@@ -104,13 +113,21 @@ class ImportLmsData(object):
                 self._calculate_sessions()
 
         if len(errors):
+            error_sample = itertools.islice(errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
+            log_time = datetime.now()
+            error_log_path = self.write_error_log(errors, log_time)
+            msg_text = "There were a total of {} errors during the import of {} at {}.\n\n".format(
+                len(errors),
+                self.course_offering.code,
+                log_time,
+            )
+            msg_text += "A sample of the errors can be found below. The full error log can be found at {}\n\n{}".format(
+                error_log_path,
+                "\n".join(error_sample),
+            )
             send_mail(
                 'Errors in import of {}'.format(self.course_offering.code),
-                "The following errors occurred during the import of {} at {}:\n{}".format(
-                    self.course_offering.code,
-                    datetime.now(),
-                    "\n".join(errors),
-                ),
+                msg_text,
                 settings.SERVER_EMAIL,
                 settings.CLOOP_IMPORT_ADMINS,
             )

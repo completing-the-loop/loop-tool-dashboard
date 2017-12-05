@@ -606,7 +606,7 @@ CELERY_BEAT_SCHEDULE = {
 
 
 CLOOP_IMPORT_ADMINS = []
-
+CLOOP_IMPORT_ERRORS_SAMPLE_SIZE = 100
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Frontend Testing Settings

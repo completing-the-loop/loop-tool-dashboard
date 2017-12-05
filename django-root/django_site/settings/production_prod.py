@@ -31,6 +31,7 @@ ADMINS = [(email, email) for email in get_env_setting('ADMINS').split(',')]
 
 DATA_IMPORT_DIR = _Path(get_env_setting('DATA_IMPORT_DIR'))
 DATA_PROCESSING_DIR = _Path(get_env_setting('DATA_PROCESSING_DIR'))
+DATA_ERROR_LOGS_DIR = _Path(get_env_setting('DATA_ERROR_LOGS_DIR'))
 
 
 # ----------------------------------------------------------------------------------------------------------------------

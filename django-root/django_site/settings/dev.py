@@ -142,6 +142,8 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
 DATA_PROCESSING_DIR = _Path(PROJECT_DIR, 'data')
+DATA_ERROR_LOGS_DIR = _Path(PROJECT_DIR, 'import_errors')
+
 CLOOP_IMPORT_ADMINS = ['dev@localhost']
 
 # ----------------------------------------------------------------------------------------------------------------------
