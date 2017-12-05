@@ -5,7 +5,7 @@
       <h3 class="panel-title"><i class="glyphicon glyphicon-align-justify glyphicon-fw"></i>Student Pageviews Histogram</h3>
     </div>
     <div class="panel-body">
-      <div id="userhistogram" style="height: 500px"></div>
+       <histogram-graph graph-id="course_histogram" :course-id="courseId" :num-bins="histogramNumBins" :week-num="weekNum"></histogram-graph>
     </div>
   </div>
 {% endverbatim %}

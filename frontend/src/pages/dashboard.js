@@ -3,10 +3,14 @@ import Plotly from 'plotly';
 import Vue from 'vue';
 import { get } from '../api';
 import RangeGraph from '../components/range_graph.vue';
+import HistogramGraph from '../components/histogram_graph.vue';
 
 const init = async (
     initialData,
 ) => {
+    const COURSE_OVERALL_NUM_HISTOGRAM_BINS = window.__APP_CONTEXT__.COURSE_OVERALL_NUM_HISTOGRAM_BINS;
+    const COURSE_WEEK_NUM_HISTOGRAM_BINS = window.__APP_CONTEXT__.COURSE_WEEK_NUM_HISTOGRAM_BINS;
+
     new Vue({
         el: '#course-dashboard',
         data: {
@@ -32,6 +36,13 @@ const init = async (
             weekEnd: function() {
                 return moment(this.courseStart).add(this.weekNum, 'weeks').add(-1, 'days').format('MMM D, YYYY');
             },
+            histogramNumBins: function() {
+                if (this.weekNum) {
+                    return COURSE_WEEK_NUM_HISTOGRAM_BINS;
+                } else {
+                    return COURSE_OVERALL_NUM_HISTOGRAM_BINS;
+                }
+            },
         },
         methods: {
             async getOverallDashboard() {
@@ -39,7 +50,6 @@ const init = async (
                 this.getTopCommunications();
                 this.getTopAssessments();
                 this.getTopUsers();
-                this.plotHistogram();
             },
             async getWeekDashboard(weekNum) {
                 this.getTopContent(weekNum);
@@ -48,7 +58,6 @@ const init = async (
                 this.getTopUsers(weekNum);
                 this.plotPerWeekGraph(weekNum);
                 this.plotWeekMetrics(weekNum);
-                this.plotHistogram(weekNum);
             },
             async getTopContent(weekNum = null) {
                 this.topContent = await get(`${this.courseId}/top_content/${weekNum ? weekNum + '/' : ''}`);
@@ -62,8 +71,6 @@ const init = async (
             async getTopUsers(weekNum = null) {
                 // This is getting top users with page views filtered by week
                 this.topUsers = await get(`${this.courseId}/top_users`);
-            },
-            async plotHistogram(weekNum = null) {
             },
             async plotPerWeekGraph(weekNum) {
                 this.perWeekVisits = await get(`${this.courseId}/weekly_page_visits/${weekNum}/`);
@@ -258,6 +265,7 @@ const init = async (
         },
         components: {
             RangeGraph,
+            HistogramGraph,
         },
     });
 };

@@ -30,63 +30,75 @@
             },
         },
     mounted() {
-        let params = {};
-        if (this.weekNum) {
-            params['week_num'] = this.weekNum;
-        }
-        if (this.resourceId) {
-            params['resource_id'] = this.resourceId;
-        }
-
-        get(`${this.courseId}/student_page_visits`, params).then((studentPageVisits) => {
-            // Calculate the max visits and bin size
-            let maxVisits = 0;
-            if (studentPageVisits) {
-                maxVisits = studentPageVisits[studentPageVisits.length - 1].numVisits;
+        this.plotHistogram();
+    },
+    watch: {
+        weekNum: function (val) {
+            this.plotHistogram();
+        },
+    },
+    methods: {
+        plotHistogram() {
+            let params = {};
+            if (this.weekNum) {
+                params['week_num'] = this.weekNum;
             }
-            const binSize = maxVisits / this.numBins;
+            if (this.resourceId) {
+                params['resource_id'] = this.resourceId;
+            }
 
-            const binData = new Array(this.numBins).fill(0);
-            let binLabels = new Array(this.numBins).fill('');
-            binLabels = _.map(binLabels, function(label, index) {
-                if (index) {
-                    return `${(index * binSize) + 1} - ${(index + 1) * binSize}`;
+            get(`${this.courseId}/student_page_visits`, params).then((studentPageVisits) => {
+                // Calculate the max visits and bin size
+                let maxVisits = 0;
+                if (studentPageVisits.length) {
+                    maxVisits = studentPageVisits[studentPageVisits.length - 1].numVisits;
+                }
+                const binSize = Math.ceil(maxVisits / this.numBins);
+
+                let binLabels, binData;
+                if (binSize) {
+                    binData = new Array(this.numBins).fill(0);
+                    binLabels = new Array(this.numBins).fill('');
+                    binLabels = _.map(binLabels, function(label, index) {
+                        if (index) {
+                            return `${(index * binSize) + 1} - ${(index + 1) * binSize}`;
+                        } else {
+                            return `<= ${binSize}`;
+                        }
+                    });
+
+                    // Loop through the page visits and assign to bins
+                    _.forEach(studentPageVisits, function (visit) {
+                        const binIndex = Math.floor((visit.numVisits - 1) / binSize);
+                        binData[binIndex] += 1;
+                    });
                 } else {
-                    return `<= ${binSize}`;
+                    binData = [0];
+                    binLabels = [0];
                 }
+
+                const graphData = [
+                    {
+                      x: binLabels,
+                      y: binData,
+                      type: 'bar'
+                    }
+                ];
+                const graphLayout = {};
+                const graphConfig = {
+                    modeBarButtonsToRemove: [
+                        'sendDataToCloud',
+                    ],
+                };
+
+                Plotly.newPlot(
+                    this.graphId,
+                    graphData,
+                    graphLayout,
+                    graphConfig,
+                );
             });
-
-            if (binSize) {
-                // Loop through the page visits and assign to bins
-                _.forEach(studentPageVisits, function (visit) {
-                    const binIndex = Math.floor((visit.numVisits - 1) / binSize);
-                    binData[binIndex] += 1;
-                });
-            }
-
-            const graphData = [
-                {
-                  x: binLabels,
-                  y: binData,
-                  type: 'bar'
-                }
-            ];
-            const graphLayout = {};
-            const graphConfig = {
-                modeBarButtonsToRemove: [
-                    'sendDataToCloud',
-                ],
-            };
-
-            Plotly.newPlot(
-                this.graphId,
-                graphData,
-                graphLayout,
-                graphConfig,
-            );
-
-        });
-
+        },
     },
   };
 </script>

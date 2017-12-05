@@ -608,6 +608,8 @@ CELERY_BEAT_SCHEDULE = {
 CLOOP_IMPORT_ADMINS = []
 
 RESOURCE_NUM_HISTOGRAM_BINS = 10
+COURSE_WEEK_NUM_HISTOGRAM_BINS = 10
+COURSE_OVERALL_NUM_HISTOGRAM_BINS = 10
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Frontend Testing Settings
