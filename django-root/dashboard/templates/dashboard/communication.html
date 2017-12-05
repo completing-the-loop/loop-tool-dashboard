@@ -144,9 +144,9 @@
           </div>
           <div class="tab-pane fade" id="events">
             <div class="row">
-              <div class="col-md-4">
+              <div class="col-md-2">
                 <div class="form-group">
-                  <label class="sr-only" for="eventfilter">Select Day of week</label>
+                  <label class="sr-only" for="eventfilter">Select event</label>
                   <select class="form-control" id="eventfilter" name="eventfilter" v-model="eventId">
                     {% for event in repeating_events %}
                       <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>

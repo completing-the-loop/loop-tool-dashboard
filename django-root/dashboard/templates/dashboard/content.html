@@ -125,12 +125,19 @@
               {% endverbatim %}
             </div>
             <div class="tab-pane fade" id="events">
+              <div class="row">
+                <div class="col-md-2">
+                  <div class="form-group">
+                    <label class="sr-only" for="eventfilter">Select event</label>
 
-              <select id="eventfilter" name="eventfilter" v-model="eventId">
-                {% for event in repeating_events %}
-                  <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
-                {% endfor %}
-              </select>
+                    <select class="form-control" id="eventfilter" name="eventfilter" v-model="eventId">
+                      {% for event in repeating_events %}
+                        <option value="{{ event.id}}" >{{ event.title}} ({{ event.get_day_of_week_display }})</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
               <p>
                 <strong>Note: </strong>
                 Blue indicates the content was viewed before the selected event, and Red after the event. The size of the circle is
