@@ -157,6 +157,11 @@ class WeeklyMetricsSerializer(Serializer):
     avg_session_pageviews = IntegerField()
 
 
+class StudentPageVisitsHistogramSerializer(Serializer):
+    lms_user_id = IntegerField()
+    num_visits = IntegerField()
+
+
 class StudentCommunicationSerializer(ModelSerializer):
     user_views = IntegerField()
     posts = IntegerField()
