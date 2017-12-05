@@ -14,9 +14,12 @@ class CourseContentView(TemplateView):
 
         repeating_events = CourseRepeatingEvent.objects.filter(course_offering=self.request.course_offering)
 
+        event = repeating_events.first()
+        event_id = event.id if event else None
+
         initial_data = {
             'num_weeks': self.request.course_offering.no_weeks,
-            'event_id': repeating_events.first().id,
+            'event_id': event_id,
             'course_id': self.request.course_offering.id,
         }
 
