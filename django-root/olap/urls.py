@@ -8,6 +8,7 @@ from olap.views.assessment import AssessmentEventsView
 from olap.views.assessment import AssessmentGradesView
 from olap.views.assessment import AssessmentStudentsView
 from olap.views.common import CoursePageVisitsView
+from olap.views.common import StudentPageVisitsView
 from olap.views.communication import CommunicationAccessesView
 from olap.views.communication import CommunicationEventsView
 from olap.views.communication import CommunicationPostsView
@@ -54,6 +55,7 @@ urlpatterns = [
         url(r'^student_communications/(?P<student_id>\d+)/$', StudentCommunicationView.as_view(), name='student_communications'),
 
         url(r'^course_page_visits/$', CoursePageVisitsView.as_view(), name='course_page_visits'),
+        url(r'^student_page_visits/$', StudentPageVisitsView.as_view(), name='student_page_visits'),
 
         url(r'^top_assessments/(?:(?P<week_num>\d+)/)?$', TopAssessmentAccessView.as_view(), name='top_assessment'), # optional week
         url(r'^top_communication/(?:(?P<week_num>\d+)/)?$', TopCommunicationAccessView.as_view(), name='top_communication'), # optional week

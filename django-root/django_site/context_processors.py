@@ -1,5 +1,7 @@
 import json
 
+from django.conf import settings
+
 from olap.models import Page
 
 
@@ -15,6 +17,9 @@ def constants(request):
         'PAGE_TYPE_CONTENT': Page.PAGE_TYPE_CONTENT,
         'PAGE_TYPE_COMMUNICATION': Page.PAGE_TYPE_COMMUNICATION,
         'PAGE_TYPE_ASSESSMENT': Page.PAGE_TYPE_ASSESSMENT,
+        'RESOURCE_NUM_HISTOGRAM_BINS': settings.RESOURCE_NUM_HISTOGRAM_BINS,
+        'COURSE_WEEK_NUM_HISTOGRAM_BINS': settings.COURSE_WEEK_NUM_HISTOGRAM_BINS,
+        'COURSE_OVERALL_NUM_HISTOGRAM_BINS': settings.COURSE_OVERALL_NUM_HISTOGRAM_BINS,
     })
 
     return {'CONSTANTS': constants_json}

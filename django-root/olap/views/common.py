@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Count
 from django.utils.timezone import get_current_timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,8 +8,10 @@ from rest_framework.views import APIView
 from dashboard.models import CourseOffering
 from dashboard.models import CourseSingleEvent
 from dashboard.models import CourseSubmissionEvent
+from olap.models import LMSUser
 from olap.models import PageVisit
 from olap.serializers import DailyPageVisitsSerializer
+from olap.serializers import StudentPageVisitsHistogramSerializer
 
 
 class CoursePageVisitsView(APIView):
@@ -60,4 +63,42 @@ class CoursePageVisitsView(APIView):
         data = [v for v in day_dict.values()]
         data.sort(key=lambda day_data: day_data['day'])
         serializer = DailyPageVisitsSerializer(data, many=True)
+        return Response(serializer.data)
+
+
+class StudentPageVisitsView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Setup list of days in course with initial values
+        week_num = request.GET.get('week_num')
+        resource_id = request.GET.get('resource_id')
+
+        # Setup the initial collection of all users
+        lms_user_qs = LMSUser.objects.filter(course_offering=request.course_offering)
+        user_dict = {}
+        for lms_user in lms_user_qs:
+            user_dict[lms_user.id] = {
+                'lms_user_id': lms_user.id,
+                'num_visits': 0,
+            }
+
+        # Filter the list of page visits
+        page_visit_qs = PageVisit.objects.filter(page__course_offering=request.course_offering)
+        if resource_id:
+            page_visit_qs = page_visit_qs.filter(page_id=resource_id)
+        if week_num:
+            range_start = request.course_offering.start_datetime + timedelta(weeks=int(week_num) - 1)
+            range_end = range_start + timedelta(weeks=1)
+            page_visit_qs = page_visit_qs.filter(visited_at__range=(range_start, range_end))
+
+        # Count the filtered page visits grouped by LMSUser
+        page_visit_qs = page_visit_qs.values('lms_user_id').annotate(num_visits=Count('lms_user_id'))
+
+        # Update the user collection
+        for lms_user in page_visit_qs:
+            user_dict[lms_user['lms_user_id']]['num_visits'] = lms_user['num_visits']
+
+        # Convert to array and serialize
+        data = [v for v in user_dict.values()]
+        data.sort(key=lambda user_data: user_data['num_visits'])
+        serializer = StudentPageVisitsHistogramSerializer(data, many=True)
         return Response(serializer.data)
