@@ -51,50 +51,54 @@
             <ul class="nav nav-tabs nav-stacked main-menu">
               <li>
                 <a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">
-                  <i class="icon-bar-chart"></i><span class="hidden-tablet">Course Dashboard</span>
+                  <i class="glyphicon glyphicon-stats"></i> Course Dashboard
                 </a>
               </li>
               <li>
-                <a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> Course Access</span></a>
-                <ul>
+                <a href="#access-menu" data-toggle="collapse">
+                  <i class="glyphicon glyphicon-list-alt"></i> Course Access
+                </a>
+                <ul class="collapse" id="access-menu">
                   <li>
                     <a class="submenu" href="{% url 'dashboard:course_content' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet"> Content</span>
+                      Content
                     </a>
                   </li>
                   <li>
                     <a class="submenu" href="{% url 'dashboard:course_communications' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet"> Communication</span>
+                      Communication
                     </a>
                   </li>
                   <li>
                     <a class="submenu" href="{% url 'dashboard:course_assessments' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet"> Assessment</span>
+                      Assessment
                     </a>
                   </li>
                 </ul>
               </li>
               <li>
                 <a href="{% url 'dashboard:students' course_id=request.course_offering.id %}">
-                  <i class="icon-user"></i><span class="hidden-tablet">Students</span>
+                  <i class="glyphicon glyphicon-user"></i> Students
                 </a>
               </li>
               <li>
-                <a class="dropmenu" href="#"><i class="icon-folder-close-alt"></i><span class="hidden-tablet"> Course Events</span></a>
-                <ul>
+                <a href="#events-menu" data-toggle="collapse">
+                  <i class="glyphicon glyphicon-pencil"></i> Course Events
+                </a>
+                <ul class="collapse" id="events-menu">
                   <li>
                     <a class="submenu" href="{% url 'dashboard:list_course_repeating_events' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet"> Repeating Events</span>
+                      Repeating Events
                     </a>
                   </li>
                   <li>
                     <a class="submenu" href="{% url 'dashboard:list_course_submission_events' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet">Submission Events</span>
+                      Submission Events
                     </a>
                   </li>
                   <li>
                     <a class="submenu" href="{% url 'dashboard:list_course_single_events' course_id=request.course_offering.id %}">
-                      <i class="icon-file-alt"></i><span class="hidden-tablet">Single Events</span>
+                      Single Events
                     </a>
                   </li>
                 </ul>
