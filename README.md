@@ -226,10 +226,15 @@ RABBITMQ_PASSWORD=RABBITMQ_PASSWORD_HERE
 
 DATA_IMPORT_DIR=/home/loop/import
 DATA_PROCESSING_DIR=/home/loop/processing
+DATA_ERROR_LOGS_DIR=/home/loop/import_errors
 
 CLOOP_IMPORT_ADMINS=ADMIN_EMAIL_ADDRESS1,ADMIN_EMAIL_ADDRESS2,...
 ADMINS=ADMIN_EMAIL_ADDRESS1,ADMIN_EMAIL_ADDRESS2,...
 ~~~~
+* Ensure the existence of the folders created for,
+  * `DATA_IMPORT_DIR`
+  * `DATA_PROCESSING_DIR`
+  * `DATA_ERROR_LOGS_DIR`
 * Initialize Django
   * `cd ~/website/django-root`
   * `./manage.py migrate`

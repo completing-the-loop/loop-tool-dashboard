@@ -1,14 +1,14 @@
 import csv
-import io
-from zipfile import ZipFile
-
 from datetime import datetime
+import io
+import itertools
+from zipfile import ZipFile
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db import connection
 from django.db.utils import IntegrityError
 from django.utils import dateparse
+from unipath import Path
 
 from dashboard.models import CourseOffering
 from olap.models import LMSSession
@@ -85,8 +85,16 @@ class ImportLmsData(object):
             self.course_offering.last_activity_at = None
         self.course_offering.save()
 
+    def write_error_log(self, errors, log_time):
+        error_log_filename = 'errors_{}'.format(log_time)
+        error_log_path = Path(settings.DATA_ERROR_LOGS_DIR, error_log_filename)
+        with open(error_log_path, "w") as error_log:
+            for error in errors:
+                error_log.write("{}\n".format(error))
+        return error_log_path
+
     def process(self):
-        errors = []
+        errors = set()
         offering = self.course_offering
         if self.just_clear:
             print("Removing old data for", offering)
@@ -97,20 +105,29 @@ class ImportLmsData(object):
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
             lms_import = BlackboardImport(self.course_import_path, offering)
-            errors = lms_import.process_import_data()
+            # Convert to set to remove duplicates
+            errors = set(lms_import.process_import_data())
 
             print("Processing user sessions for", offering)
             if not len(errors):
                 self._calculate_sessions()
 
         if len(errors):
+            error_sample = itertools.islice(errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
+            log_time = datetime.now()
+            error_log_path = self.write_error_log(errors, log_time)
+            msg_text = "There were a total of {} errors during the import of {} at {}.\n\n".format(
+                len(errors),
+                self.course_offering.code,
+                log_time,
+            )
+            msg_text += "A sample of the errors can be found below. The full error log can be found at {}\n\n{}".format(
+                error_log_path,
+                "\n".join(error_sample),
+            )
             send_mail(
                 'Errors in import of {}'.format(self.course_offering.code),
-                "The following errors occurred during the import of {} at {}:\n{}".format(
-                    self.course_offering.code,
-                    datetime.now(),
-                    "\n".join(errors),
-                ),
+                msg_text,
                 settings.SERVER_EMAIL,
                 settings.CLOOP_IMPORT_ADMINS,
             )
@@ -203,117 +220,6 @@ class ImportLmsData(object):
         for lms_user in lms_users:
             self.calculate_session_for_user(lms_user)
 
-    def _populate_summary_tables(self, course_offering, assessment_types, communication_types):
-        """
-            Produces summary tables Summary_CourseVisitsByDayInWeek, Summary_CourseCommunicationVisitsByDayInWeek
-            Summary_CourseAssessmentVisitsByDayInWeek, Summary_SessionAverageLengthByDayInWeek, Summary_SessionAveragePagesPerSessionByDayInWeek
-            Summary_ParticipatingUsersByDayInWeek, Summary_UniquePageViewsByDayInWeek
-        """
-
-        excluded_content_types = communication_types + assessment_types
-        course_weeks = course_offering.get_weeks()
-        excluded_types_placeholders = ",".join(['%s' for s in excluded_content_types])
-        communication_types_placeholders = ','.join("%s" for s in communication_types)
-        assessment_types_placeholders = ','.join("%s" for s in assessment_types)
-
-        # Populate Summary_CourseVisitsByDayInWeek - only contains content items
-        with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module NOT IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(excluded_types_placeholders)
-            cursor.execute(sql, [course_weeks, course_offering.id] + excluded_content_types)
-            results = cursor.fetchall()
-            for row in results:
-                pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_CourseCommunicationVisitsByDayInWeek - only contains forums
-        with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(communication_types_placeholders)
-            cursor.execute(sql, [course_weeks, course_offering.id] + communication_types)
-            results = cursor.fetchall()
-            for row in results:
-                pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseCommunicationVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_CourseAssessmentVisitsByDayInWeek - only contains quiz and assign
-        with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview) AS pageviews, F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s AND F.module IN ({}) GROUP BY D.date_week, D.date_dayinweek".format(assessment_types_placeholders)
-            cursor.execute(sql, [course_weeks, course_offering.id] + assessment_types)
-            results = cursor.fetchall()
-            for row in results:
-                pageview = row[4] if row[4] is not None else 0
-                summary = SummaryCourseAssessmentVisitsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_SessionAverageLengthByDayInWeek
-        with connection.cursor() as cursor:
-            sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, AVG(S.session_length_in_mins), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course_offering.id])
-            results = cursor.fetchall()
-            for row in results:
-                session_average_in_minutes = row[3] if row[3] is not None else 0
-                summary = SummarySessionAverageLengthByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], session_average_in_minutes=session_average_in_minutes, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_SessionAveragePagesPerSessionByDayInWeek
-        with connection.cursor() as cursor:
-            sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, AVG(S.pageviews), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course_offering.id])
-            results = cursor.fetchall()
-            for row in results:
-                pages_per_session = row[3] if row[3] is not None else 0
-                summary = SummarySessionAveragePagesPerSessionByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], pages_per_session=pages_per_session, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_SessionsByDayInWeek
-        with connection.cursor() as cursor:
-            sql = "SELECT S.date_year, S.date_week, S.date_dayinweek, COUNT(DISTINCT S.session_id), S.course_id FROM olap_dimsession S WHERE S.date_dayinweek IN (0,1,2,3,4,5,6) AND S.date_week IN %s AND S.course_id=%s GROUP BY S.date_week, S.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course_offering.id])
-            results = cursor.fetchall()
-            for row in results:
-                sessions = row[3] if row[3] is not None else 0
-                summary = SummarySessionsByDayInWeek(date_year=row[0], date_week=row[1], date_dayinweek=row[2], sessions=sessions, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_ParticipatingUsersByDayInWeek
-        with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, SUM(F.pageview), F.course_id FROM olap_dimdate D LEFT JOIN olap_pagevisit F ON D.id = F.date_id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek;"
-            cursor.execute(sql, [course_weeks, course_offering.id])
-            results = cursor.fetchall()
-            for row in results:
-                pageview = row[4] if row[4] is not None else 0
-                summary = SummaryParticipatingUsersByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
-                summary.save()
-
-        # Populate Summary_UniquePageViewsByDayInWeek
-        with connection.cursor() as cursor:
-            sql = "SELECT D.date_year, D.date_day, D.date_week, D.date_dayinweek, COUNT(DISTINCT F.page_id), F.course_id FROM olap_pagevisit F INNER JOIN olap_dimdate D ON F.date_id = D.id WHERE D.date_dayinweek IN (0,1,2,3,4,5,6) AND D.date_week IN %s AND F.course_id=%s GROUP BY D.date_week, D.date_dayinweek"
-            cursor.execute(sql, [course_weeks, course_offering.id])
-            results = cursor.fetchall()
-            for row in results:
-                pageview = row[4] if row[4] is not None else 0
-                summary = SummaryUniquePageViewsByDayInWeek(date_year=row[0], date_day=row[1], date_week=row[2], date_dayinweek=row[3], pageviews=pageview, course_offering=course_offering)
-                summary.save()
-
-    """
-    # This is what's left of the DimDates creation stuff, so we can see
-    # How they generated certain date related stuff.
-                id=datetime.datetime.strftime(date_val, "%d-%b-%y"),
-                date_year=date_val.year,
-                date_month=date_val.month,
-                date_day=date_val.day,
-                date_dayinweek=date_val.weekday(),
-                date_week=date_val.isocalendar()[1],
-                unixtimestamp=date_val.timestamp(),
-            )
-
-    # Would be good to have unit tests that catch these situations (so we know why this code exists)
-            if date_obj.date_month == 12 and date_obj.date_week <= 1:
-                date_obj.date_week = 52
-            if date_obj.date_month == 1 and date_obj.date_week >= 52:
-                date_obj.date_week = 1
-    """
 
 class BaseLmsImport(object):
 

@@ -64,6 +64,7 @@ SERVER_EMAIL = 'server-error@example.com'
 
 DATA_IMPORT_DIR = _Path(PROJECT_DIR, 'data_imports')
 DATA_PROCESSING_DIR = _Path(PROJECT_DIR, 'data')
+DATA_ERROR_LOGS_DIR = _Path(PROJECT_DIR, 'import_errors')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
