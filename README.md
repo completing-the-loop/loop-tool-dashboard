@@ -209,6 +209,7 @@ server {
   * `mkdir ~/run`
 * Create application configuration file (`~/.env`)
   * Example:
+
 ~~~~
 DJANGO_SETTINGS_MODULE=django_site.settings.production_prod
 SECRET_KEY=SECRET_KEY_HERE
@@ -253,6 +254,7 @@ ADMINS=ADMIN_EMAIL_ADDRESS1,ADMIN_EMAIL_ADDRESS2,...
   * See `~/start.sh`
 * `mkdir ~/conf`
 * Example circus.conf (`~/conf/circus.conf`)
+
 ~~~~
 [circus]
 endpoint=ipc:///home/loop/run/circus.sock
