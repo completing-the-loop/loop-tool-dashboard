@@ -193,7 +193,7 @@ DATABASES = {
         # mysql
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'init_command': "SET default_storage_engine=INNODB; SET sql_mode='STRICT_TRANS_TABLES'",
+            'init_command': "SET default_storage_engine=INNODB; SET sql_mode='STRICT_TRANS_TABLES'; SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;",
             'read_default_file': '~/.my.cnf',
             'charset': 'utf8mb4',
         },
