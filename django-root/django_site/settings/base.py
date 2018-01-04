@@ -63,7 +63,7 @@ _sys.path.insert(0, BASE_DIR)
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # These people will get error emails
 ADMINS = (
-    #('Receipient', 'address@alliancesoftware.com.au'),
+    #('Receipient', 'address@example.com'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -86,7 +86,6 @@ INSTALLED_APPS = (
 
     # 3rd party
     # 'admin_steroids',
-    'allianceutils',
     'authtools',
     # 'ckeditor',
     # 'ckeditor_uploader',
@@ -133,7 +132,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.common.BrokenLinkEmailsMiddleware',
-    # 'allianceutils.middleware.CurrentUserMiddleware',
     'stronghold.middleware.LoginRequiredMiddleware',
 
     # 'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware', # fall back to static html on 404
@@ -527,15 +525,6 @@ LOGGING = {
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Serialization
-
-SERIALIZATION_MODULES = {
-     'json': 'allianceutils.serializers.json_orminheritancefix',
-     'json_ordered': 'allianceutils.serializers.json_ordered',
-}
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # APIs
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -548,7 +537,6 @@ REST_FRAMEWORK = {
         # default to requiring authentication & a role
         # you can override this by setting the permission_classes to AllowAny in the view
         'rest_framework.permissions.IsAuthenticated',
-        #'allianceutils.api.permissions.SimpleDjangoObjectPermissions',
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',

@@ -2,6 +2,8 @@ import os as _os
 import sys as _sys
 import platform as _platform
 
+# FIXME: Replace with more generic development/production configuration
+
 _dev_hosts = [
     ('MacBook-Pro', 'darwin'),
     ('MacBook-Pro.local', 'darwin'),

@@ -1,4 +1,3 @@
--e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@88c57260b24035a4b30637d4d470a6e50bc86b04#egg=allianceutils
 amqp==2.2.2
 billiard==3.5.0.3
 celery==4.1.0

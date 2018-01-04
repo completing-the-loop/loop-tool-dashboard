@@ -2206,13 +2206,6 @@ escope@^3.6.0:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-"eslint-config-alliance@git+ssh://git@gitlab.internal.alliancesoftware.com.au/alliance/eslint-config.git#v2.0.0":
-  version "2.0.0"
-  resolved "git+ssh://git@gitlab.internal.alliancesoftware.com.au/alliance/eslint-config.git#1f4417dcd03dfab57c013e9494cc5769df4358bb"
-  dependencies:
-    eslint "^3.15.0"
-    eslint-plugin-import "^2.2"
-
 eslint-import-resolver-node@^0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/eslint-import-resolver-node/-/eslint-import-resolver-node-0.3.1.tgz#4422574cde66a9a7b099938ee4d508a199e0e3cc"

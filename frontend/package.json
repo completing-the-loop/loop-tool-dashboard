@@ -30,7 +30,6 @@
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "css-loader": "^0.26.1",
     "eslint": "^3.16.0",
-    "eslint-config-alliance": "git+ssh://git@gitlab.internal.alliancesoftware.com.au/alliance/eslint-config.git#v2.0.0",
     "express": "^4.14.1",
     "extract-text-webpack-plugin": "^2.0.0-rc.3",
     "file-loader": "^0.9.0",

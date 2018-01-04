@@ -7,7 +7,7 @@
  * [Staging](#staging)
 * [Deployment](#deployment)
 
-master: [![build status](https://gitlab.internal.alliancesoftware.com.au/melbuni/cloop/badges/master/build.svg)](https://gitlab.internal.alliancesoftware.com.au/melbuni/cloop/commits/master)
+
 
 ## Overview
 

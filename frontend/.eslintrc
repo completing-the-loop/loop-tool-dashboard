@@ -1,8 +1,5 @@
 {
   "parser": "babel-eslint",
-  "extends" : [
-    "alliance"
-  ],
   "env"     : {
     "browser": true,
     "jquery": true,
