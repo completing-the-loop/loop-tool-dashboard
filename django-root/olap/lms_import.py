@@ -236,8 +236,8 @@ class BaseLmsImport(object):
 
 
 class BlackboardImport(BaseLmsImport):
-    USERS_FILE = 'user.txt'
-    RESOURCES_FILE = 'resources.txt'
+    USERS_FILE = 'all_user.txt'
+    RESOURCES_FILE = 'all_resources.txt'
     POSTS_FILE = 'forums.txt'
     SUBMISSIONS_FILE = 'assessments.txt'
     ACTIVITY_FILE = 'activity.txt'
