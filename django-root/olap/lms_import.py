@@ -86,7 +86,13 @@ class ImportLmsData(object):
         self.course_offering.save()
 
     def write_error_log(self, errors, log_time):
-        error_log_filename = 'errors_{}'.format(log_time)
+        return self.write_to_error_log('errors_', errors, log_time)
+
+    def write_non_critical_error_log(self, errors, log_time):
+        return self.write_to_error_log('non_critical_errors_', errors, log_time)
+
+    def write_to_error_log(self, log_name_prefix, errors, log_time):
+        error_log_filename = '{}{}'.format(log_name_prefix, log_time)
         error_log_path = Path(settings.DATA_ERROR_LOGS_DIR, error_log_filename)
         with open(error_log_path, "w") as error_log:
             for error in errors:
@@ -105,12 +111,34 @@ class ImportLmsData(object):
         if offering.lms_type == CourseOffering.LMS_TYPE_BLACKBOARD:
             print("Importing course offering data for", offering)
             lms_import = BlackboardImport(self.course_import_path, offering)
+            all_errors = lms_import.process_import_data()
             # Convert to set to remove duplicates
-            errors = set(lms_import.process_import_data())
+            errors = set(all_errors['errors'])
+            non_critical_errors = set(all_errors['non_critical_errors'])
 
             print("Processing user sessions for", offering)
             if not len(errors):
                 self._calculate_sessions()
+
+        if len(non_critical_errors):
+            error_sample = itertools.islice(non_critical_errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
+            log_time = datetime.now()
+            error_log_path = self.write_non_critical_error_log(non_critical_errors, log_time)
+            msg_text = "There were a total of {} non critical errors during the import of {} at {}.\n\n".format(
+                len(non_critical_errors),
+                self.course_offering.code,
+                log_time,
+            )
+            msg_text += "A sample of the errors can be found below. The full error log can be found at {}\n\n{}".format(
+                error_log_path,
+                "\n".join(error_sample),
+            )
+            send_mail(
+                'Non critical errors in import of {}'.format(self.course_offering.code),
+                msg_text,
+                settings.SERVER_EMAIL,
+                settings.CLOOP_IMPORT_ADMINS,
+            )
 
         if len(errors):
             error_sample = itertools.islice(errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
@@ -227,12 +255,16 @@ class BaseLmsImport(object):
         self.course_offering = course_offering
         self.course_import_path = course_import_path
         self.error_list = []
+        self.non_critical_error_list = []
 
     def process_import_data(self):
         raise NotImplementedError("'process_import_data' must be implemented")
 
     def _add_error(self, error_msg):
         self.error_list.append(error_msg)
+
+    def _add_non_critical_error(self, error_msg):
+        self.non_critical_error_list.append(error_msg)
 
 
 class BlackboardImport(BaseLmsImport):
@@ -263,7 +295,10 @@ class BlackboardImport(BaseLmsImport):
         print("Processing activity")
         self._process_csv(self.ACTIVITY_FILE, self._process_access_log)
 
-        return self.error_list
+        return {
+            'errors': self.error_list,
+            'non_critical_errors': self.non_critical_error_list
+        }
 
     def _process_csv(self, file_name, process_callable):
         with ZipFile(self.course_import_path) as import_zip:
@@ -316,7 +351,7 @@ class BlackboardImport(BaseLmsImport):
                     content_page.parent = parent_page
                     content_page.save()
                 except Page.DoesNotExist:
-                    self._add_error('Unable to find parent resource {}'.format(row['parent_content_key']))
+                    self._add_non_critical_error('Unable to find parent resource {}'.format(row['parent_content_key']))
 
     def _process_submission_attempts(self, submissions_data):
         """
@@ -335,7 +370,7 @@ class BlackboardImport(BaseLmsImport):
             try:
                 page = Page.objects.get(content_id=row['content_key'], is_forum=False, course_offering=self.course_offering)
                 if page.content_type not in CourseOffering.assessment_types():
-                    self._add_error('Resource {} for submission attempt is not an assessment type'.format(page.content_id))
+                    self._add_non_critical_error('Resource {} for submission attempt is not an assessment type'.format(page.content_id))
                     continue
 
             except Page.DoesNotExist:
@@ -381,9 +416,9 @@ class BlackboardImport(BaseLmsImport):
                     page = Page.objects.get(content_id=row['forum_key'], is_forum=True, course_offering=self.course_offering)
             except Page.DoesNotExist:
                 if row['content_key']:
-                    self._add_error('Unable to find resource {} for activity'.format(row['content_key']))
+                    self._add_non_critical_error('Unable to find resource {} for activity'.format(row['content_key']))
                 else:
-                    self._add_error('Unable to find forum {} for activity'.format(row['forum_key']))
+                    self._add_non_critical_error('Unable to find forum {} for activity'.format(row['forum_key']))
                 continue
 
             try:
