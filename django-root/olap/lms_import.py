@@ -400,7 +400,6 @@ class BlackboardImport(BaseLmsImport):
             if len(batch) == batch_size:
                 try:
                     PageVisit.objects.bulk_create(batch)
-                    break
                 except IntegrityError as e:
                     self._add_error('Integrity Error in activity bulk insert: {}'.format(e))
                 batch = []
