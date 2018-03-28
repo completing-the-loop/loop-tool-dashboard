@@ -273,7 +273,7 @@ class ImportResourcesTestCase(TestCase):
         csv_data = io.StringIO(dedent(test_resources))
         resources_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_resource_parents(resources_data)
-        self.assertEqual(len(importer.error_list), 1)
+        self.assertEqual(len(importer.non_critical_error_list), 1)
 
 
 class ImportSubmissionAttemptsTestCase(TestCase):
@@ -335,7 +335,7 @@ class ImportSubmissionAttemptsTestCase(TestCase):
         submissions_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_submission_attempts(submissions_data)
 
-        self.assertEqual(len(importer.error_list), 1)
+        self.assertEqual(len(importer.non_critical_error_list), 1)
 
 
     def test_missing_related_objects(self):
@@ -374,7 +374,7 @@ class ImportSubmissionAttemptsTestCase(TestCase):
         submissions_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_submission_attempts(submissions_data)
 
-        self.assertEqual(len(importer.error_list), 2)
+        self.assertEqual(len(importer.non_critical_error_list), 2)
 
 
 class ImportPostsTestCase(TestCase):
@@ -541,4 +541,5 @@ class ImportActivityTestCase(TestCase):
         activity_data = csv.DictReader(csv_data, delimiter='|')
         importer._process_access_log(activity_data)
 
-        self.assertEqual(len(importer.error_list), 3)
+        self.assertEqual(len(importer.non_critical_error_list), 2)
+        self.assertEqual(len(importer.error_list), 1)
