@@ -341,7 +341,7 @@ class BlackboardImport(BaseLmsImport):
 
     def _process_resource_parents(self, resources_data):
         """
-        Go through the pages/resources from the course import files again and find the parents, deleting any pages whose parent is missing
+        Go through the pages/resources from the course import files again and find the parents
         """
         for row in resources_data:
             if row['parent_content_key']:
