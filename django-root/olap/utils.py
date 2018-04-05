@@ -23,6 +23,7 @@ def get_course_import_metadata(lms_server=None):
                 'id': course_offering.id,
                 'course_code': course_offering.code,
                 'last_activity': last_activity_at.isoformat(),
+                'course_end': course_offering.end_datetime.isoformat(),
                 'filename': '{}_{}_{}.zip'.format(course_offering.lms_server.id, course_offering.code, int(last_activity_at.timestamp()))
             }
 
