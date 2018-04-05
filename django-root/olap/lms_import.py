@@ -386,6 +386,10 @@ class BlackboardImport(BaseLmsImport):
                 self._add_error('Timestamp {} for submission attempt is not a valid datetime'.format(row['timestamp']))
                 continue
 
+            if attempted_at < self.course_offering.start_datetime or attempted_at > self.course_offering.end_datetime:
+                self._add_non_critical_error('Timestamp {} for submission attempt is outside course offering start/end'.format(row['timestamp']))
+                continue
+
             try:
                 submission = SubmissionAttempt.objects.create(lms_user=user, page=page, attempted_at=attempted_at, grade=row['user_grade'])
             except IntegrityError as e:
@@ -428,6 +432,10 @@ class BlackboardImport(BaseLmsImport):
                     continue
             except ValueError:
                 self._add_error('Timestamp {} for access activity is not a valid datetime'.format(row['timestamp']))
+                continue
+
+            if visited_at < self.course_offering.start_datetime or visited_at > self.course_offering.end_datetime:
+                self._add_error('Timestamp {} for access activity is outside course offering start/end'.format(row['timestamp']))
                 continue
 
             batch.append(PageVisit(lms_user=user, page=page, visited_at=visited_at))
@@ -477,6 +485,10 @@ class BlackboardImport(BaseLmsImport):
                     continue
             except ValueError:
                 self._add_error('Timestamp {} for post is not a valid datetime'.format(row['timestamp']))
+                continue
+
+            if posted_at < self.course_offering.start_datetime or posted_at > self.course_offering.end_datetime:
+                self._add_non_critical_error('Timestamp {} for post is outside course offering start/end'.format(row['timestamp']))
                 continue
 
             try:
