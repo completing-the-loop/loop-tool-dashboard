@@ -121,24 +121,8 @@ class ImportLmsData(object):
                 self._calculate_sessions()
 
         if len(non_critical_errors):
-            error_sample = itertools.islice(non_critical_errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
             log_time = datetime.now()
-            error_log_path = self.write_non_critical_error_log(non_critical_errors, log_time)
-            msg_text = "There were a total of {} non critical errors during the import of {} at {}.\n\n".format(
-                len(non_critical_errors),
-                self.course_offering.code,
-                log_time,
-            )
-            msg_text += "A sample of the errors can be found below. The full error log can be found at {}\n\n{}".format(
-                error_log_path,
-                "\n".join(error_sample),
-            )
-            send_mail(
-                'Non critical errors in import of {}'.format(self.course_offering.code),
-                msg_text,
-                settings.SERVER_EMAIL,
-                settings.CLOOP_IMPORT_ADMINS,
-            )
+            self.write_non_critical_error_log(non_critical_errors, log_time)
 
         if len(errors):
             error_sample = itertools.islice(errors, settings.CLOOP_IMPORT_ERRORS_SAMPLE_SIZE)
