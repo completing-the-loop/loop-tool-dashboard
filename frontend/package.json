@@ -12,8 +12,6 @@
     "lint --fix": "eslint src --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Alliance Software <support@alliancesoftware.com.au> (http://www.alliancesoftware.com.au) TEMPLATE_FIXME",
-  "license": "UNLICENSED",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.21.0",
