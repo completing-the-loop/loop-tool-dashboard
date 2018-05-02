@@ -1,7 +1,17 @@
 {
   "parser": "babel-eslint",
-  "env"     : {
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "rules": {
+    "strict": "error"
+  },
+  "env": {
     "browser": true,
-    "jquery": true,
+    "jquery": true
   }
 }
