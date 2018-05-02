@@ -5,8 +5,7 @@
 django-debug-toolbar
 
 # test dependencies
-#coverage
-#mock
+factory-boy
 
 # python module dependencies
 pip-autoremove
