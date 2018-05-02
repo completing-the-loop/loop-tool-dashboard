@@ -24,13 +24,6 @@ DATABASES['default']['USER'] = get_env_setting('DB_USER')
 DATABASES['default']['PASSWORD'] = get_env_setting('DB_PASSWORD')
 
 
-# Useful on heroku
-# DATABASES['default'].update({
-#     (key, value)
-#     for (key, value) in dj_database_url.config().items()
-#     if key in ('NAME', 'USER', 'PASSWORD', 'HOST', 'PORT')
-# })
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Email Configuration
 
