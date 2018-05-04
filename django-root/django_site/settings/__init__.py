@@ -16,7 +16,9 @@ if _os.environ.get('DJANGO_SETTINGS_MODULE') and _os.environ.get('DJANGO_SETTING
     # Do nothing; handled by django importing a custom settings module directly
     pass
 elif any(_hostname.endswith(dev_host) and _sys.platform == platform for (dev_host, platform) in _dev_hosts):
-    from .dev import *              # noqa isort:skip
+    from .dev import *  # noqa isort:skip
+elif _hostname.endswith(_os.environ.get('DEV_MACHINE')):
+    from .dev import *  # noqa isort:skip
 else:
     # Normally you should not import ANYTHING from Django directly
     # into your settings, but ImproperlyConfigured is an exception.
