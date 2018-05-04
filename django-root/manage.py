@@ -5,10 +5,7 @@ import sys
 
 from unipath import Path
 
-# On heroku don't worry about this check - the python buildpack runs
-# collectstatic from the root directory
-if not os.environ.get('HEROKU_ENV'):
-    assert os.getcwd() == Path(__file__).absolute().parent, 'To avoid import path issues please run manage.py from within the django-root dir'
+assert os.getcwd() == Path(__file__).absolute().parent, 'To avoid import path issues please run manage.py from within the django-root dir'
 
 
 def find_file_recursive(filename):

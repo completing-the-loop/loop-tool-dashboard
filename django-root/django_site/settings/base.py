@@ -63,7 +63,7 @@ _sys.path.insert(0, BASE_DIR)
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 # These people will get error emails
 ADMINS = (
-    #('Receipient', 'address@alliancesoftware.com.au'),
+    #('Receipient', 'address@example.com'),
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -86,7 +86,6 @@ INSTALLED_APPS = (
 
     # 3rd party
     # 'admin_steroids',
-    'allianceutils',
     'authtools',
     # 'ckeditor',
     # 'ckeditor_uploader',
@@ -133,7 +132,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.common.BrokenLinkEmailsMiddleware',
-    # 'allianceutils.middleware.CurrentUserMiddleware',
     'stronghold.middleware.LoginRequiredMiddleware',
 
     # 'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware', # fall back to static html on 404
@@ -307,17 +305,6 @@ MEDIA_URL = '/media/'
 # from MEDIA_URL before joining
 MEDIA_ROOT = _Path(PROJECT_DIR, MEDIA_URL.strip(_os.sep))
 
-# Use S3 for file storage
-# https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
-# TODO: allianceutils.storage.MediaStorage is wrapper to django-storages; need test cases for this
-# DEFAULT_FILE_STORAGE = 'allianceutils.storage.MediaStorage'
-# This is used as a prefix for media files in the S3 bucket
-# MEDIAFILES_LOCATION = 'media'
-# AWS_HEADERS = {'Cache-Control': 'max-age=86400'}
-# AWS_STORAGE_BUCKET_NAME = get_env_setting('AWS_BUCKET')
-# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-# MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
-
 # ----------------------------------------------------------------------------------------------------------------------
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -336,13 +323,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
-
-
-# Uncomment this to store static files on S3.
-# Note that this causes problems with heroku pipelines as the promotion doesn't take care of static files.
-# STATICFILES_STORAGE = 'allianceutils.storage.StaticStorage'
-# This is used as a prefix for static files in the S3 bucket
-# STATICFILES_LOCATION = 'static'
 
 
 WEBPACK_LOADER = {
@@ -527,15 +507,6 @@ LOGGING = {
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Serialization
-
-SERIALIZATION_MODULES = {
-     'json': 'allianceutils.serializers.json_orminheritancefix',
-     'json_ordered': 'allianceutils.serializers.json_ordered',
-}
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # APIs
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -548,7 +519,6 @@ REST_FRAMEWORK = {
         # default to requiring authentication & a role
         # you can override this by setting the permission_classes to AllowAny in the view
         'rest_framework.permissions.IsAuthenticated',
-        #'allianceutils.api.permissions.SimpleDjangoObjectPermissions',
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',

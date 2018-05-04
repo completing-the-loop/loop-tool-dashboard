@@ -1,11 +1,5 @@
 Django==1.11.*
 
-# Alliance software utils
--e git+git@gitlab.internal.alliancesoftware.com.au:alliance/alliance-django-utils.git@v/0.2#egg=allianceutils
-
-# AWS interface (esp access to S3 storage)
-#boto
-
 # Used for concurrent task processing
 celery
 
@@ -18,11 +12,8 @@ django-celery-beat
 # Use Django ORM to record celery results
 django-celery-results
 
-# HTML editor
-#django-ckeditor
-
 # Wraps URL views with a decorator
-django-decorator-include
+django-decorator-include>=1.4.1,<2
 
 # Useful extensions (eg reset_db, shell_plus, runserver_plus)
 # 1.7.5 required for picking up mysql database settings correctly
@@ -30,9 +21,6 @@ django-extensions>=1.7.5
 
 # Impersonate users
 django-hijack
-
-# Export
-#django-import-export
 
 # Default views to requiring login
 django-stronghold
@@ -47,12 +35,6 @@ djangorestframework-camel-case
 # Mysql database support
 mysqlclient
 
-# Used in handling data for data analysis
-pandas
-
-# Dynamic generation of Word docs
-python-docx
-
 # django timezones will use this if present
 # do NOT specify a version number: we want pip to not install the pytz but
 # instead use patched version from os repo if possible, because ubuntu/redhat/
@@ -66,8 +48,5 @@ rules
 # Better python directory utils interface
 Unipath
 
-# Test data generation
--e git+https://github.com/levic/factory_boy.git@9a9a05c420113446de4229cdc35ac98b620e6dd2#egg=factory_boy
-
-# temp required to make frontend run
-SQLAlchemy
+# test dependencies
+factory-boy

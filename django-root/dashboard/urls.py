@@ -25,7 +25,6 @@ from dashboard.views.students import StudentDetailView
 from dashboard.views.students import StudentsView
 from dashboard.views.users import CustomLoginView
 from dashboard.views.users import DashboardRedirectView
-from dashboard.views import views
 from django_site.permissions import course_access_url_wrapper
 
 

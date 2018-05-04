@@ -7,7 +7,7 @@
  * [Staging](#staging)
 * [Deployment](#deployment)
 
-master: [![build status](https://gitlab.internal.alliancesoftware.com.au/melbuni/cloop/badges/master/build.svg)](https://gitlab.internal.alliancesoftware.com.au/melbuni/cloop/commits/master)
+
 
 ## Overview
 
@@ -72,12 +72,19 @@ source venv/bin/activate
 ```bash
 nvm use
 cd frontend && yarn install
-cd myproject/requirements && pip install -r dev.txt
+cd requirements && pip install -r dev.txt
 ```
 
 ### Configuration
 * Add your hostname to `_dev_hosts` in `django-root/django_site/settings/__init__.py` (if you're not sure what to add, wait until you run the django server later and it will tell you what hostname it detected)
 * (mysql only) Add database username/password to `django-root/django_site/settings/dev.py` (will read from `~/.my.cnf` if not specified)
+
+### Create Data Directories
+* Unless you've changed the default directories in `django-root/django_site/settings/`, create the following directories in the top-level project folder:
+
+```
+mkdir log data data_imports import_errors
+```
 
 ### Database Setup
 
