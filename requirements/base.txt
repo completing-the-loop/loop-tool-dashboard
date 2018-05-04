@@ -47,3 +47,6 @@ rules
 
 # Better python directory utils interface
 Unipath
+
+# test dependencies
+factory-boy

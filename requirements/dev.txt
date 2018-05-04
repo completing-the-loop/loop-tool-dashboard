@@ -4,9 +4,6 @@
 # django dev tools
 django-debug-toolbar
 
-# test dependencies
-factory-boy
-
 # python module dependencies
 pip-autoremove
 
