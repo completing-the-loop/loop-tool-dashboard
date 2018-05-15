@@ -46,7 +46,7 @@ class CourseOffering(models.Model):
     title = models.CharField(max_length=255)
     offering = models.CharField(max_length=255)
     owners = models.ManyToManyField(User)
-    start_date = models.DateField()
+    start_date = models.DateField(help_text='Start date must be on a Monday')
     no_weeks = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     lms_type = models.CharField(max_length=50, choices=LMS_TYPE_CHOICES, default=LMS_TYPE_BLACKBOARD)
