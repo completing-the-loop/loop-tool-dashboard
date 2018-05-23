@@ -1,0 +1,5 @@
+<ol class="breadcrumb">
+  <li><a href="{% url 'dashboard:course_list' %}"><i class="glyphicon glyphicon-home glyphicon-fw"></i>My Courses</a></li>
+  <li><a href="{% url 'dashboard:course_dashboard' course_id=course_offering.id %}">Course: {{ course_offering.code }} - {{ course_offering.title }}</a></li>
+  <li class="active">{{ title }}</li>
+</ol>

@@ -5,6 +5,12 @@
 {% block content %}
   <!--<p v-tooltip:top="'My tooltip title'">Sample tooltip</p>-->
 
+  <div class="row">
+    <div class="col-md-12">
+      {% include "dashboard/_course_offering_breadcrumbs.html" with course_offering=request.course_offering title="Dashboard" %}
+    </div>
+  </div>
+
   {% verbatim %}
     <div class="row">
       <div class="col-md-10">
