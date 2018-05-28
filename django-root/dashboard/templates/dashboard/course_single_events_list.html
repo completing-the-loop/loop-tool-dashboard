@@ -4,6 +4,12 @@
 
 {% block content %}
 <div class="row">
+  <div class="col-md-12">
+    {% include "dashboard/_course_offering_breadcrumbs.html" with course_offering=request.course_offering title="Single Events" %}
+  </div>
+</div>
+
+<div class="row">
   <div class="col-sm-12">
     <div class="box">
       <div class="box-header" data-original-title>
