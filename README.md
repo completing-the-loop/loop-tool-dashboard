@@ -328,3 +328,61 @@ cd django-root
 
 * If something goes wrong, restore database and checkout previous sendlive tag
 * Disable maintenance mode
+
+### Create data import files
+
+The following files need to be zipped and deposited in the data-import directory (fieldnames and example entries included below):
+
+* activity.txt
+ * request data (in Blackboard, from the activity accumulator)
+ * used for incremental data
+```
+user_key|content_key|forum_key|timestamp
+12345|1234567||2018-05-07T09:29:01.000000+11:00
+```
+
+* all_resources.txt
+ * all resources used in the subject at any time
+```
+content_key|parent_content_key|title|resource_type
+12345|1234567|Week 1 Readings|resource/x-bb-folder
+```
+
+* all_user.txt
+ * all users who have existing in the course
+```
+user_key|username|firstname|lastname|email
+122222|studenta|John|Smithson|john.smithson@example.edu.au
+```
+
+*  assessments.txt
+ * tests and assignments
+ * used in incremental loads
+```
+user_key|content_key|user_grade|timestamp
+122222|1234567|22|2018-05-09T20:53:02.000000+11:00
+```
+
+*  forums.txt
+ * discussion boards, threads and posts
+ * used in incremental loads
+```
+forum_key|user_key|thread|post|timestamp
+123456|122222|Week 1 Discussion|Re: Introductions|2016-05-08T11:15:04+11:00
+```
+
+* resources.txt
+ * folders and content items in a course
+ * used in incremental loads
+```
+content_key|parent_content_key|title|resource_type
+12345|1234567|Week 2 Readings|resource/x-bb-folder
+```
+
+* user.txt
+ * users in the course
+ * used in incremental loads
+```
+user_key|username|firstname|lastname|email
+122222|studenta|John|Smithson|john.smithson@example.edu.au
+```
