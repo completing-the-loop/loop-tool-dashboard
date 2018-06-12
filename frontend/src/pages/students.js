@@ -1,3 +1,4 @@
+import $ from "jquery";
 import Vue from 'vue';
 import _ from 'lodash';
 import Plotly from 'plotly';
@@ -74,6 +75,7 @@ const init = async (
                         type: 'pie',
                         textinfo: 'none',
                         hoverinfo: 'none',
+                        labels: ['Before', 'After'],
                     };
                     const vue = this;
 
@@ -83,12 +85,30 @@ const init = async (
                                 const pieProportion = (studentWeek[0] + studentWeek[1]) / maxEvents;
                                 if (pieProportion) { // Skip graph if no views before and after event.
                                     const pieSize = pieProportion * (maxPieSize - minPieSize) + minPieSize;
+                                    const plotDiv = vue.$refs["pie_" + student.id][index];
+                                    const dataSeries = Object.assign({}, pieData, {values: [studentWeek[0], studentWeek[1],],});
                                     Plotly.newPlot(
-                                        vue.$refs["pie_" + student.id][index],
-                                        [Object.assign({}, pieData, {values: [studentWeek[0], studentWeek[1],],}),],
+                                        plotDiv,
+                                        [dataSeries,],
                                         Object.assign({}, pieLayout, {width: pieSize, height: pieSize,}),
                                         pieConfig,
                                     );
+                                    let tooltipText = '';
+                                    const seriesTotal = _.reduce(dataSeries.values, function(sum, num) {
+                                        return sum + num;
+                                    });
+                                    _.forEach(dataSeries.labels, function(label, index) {
+                                        const percentage = Math.round(dataSeries.values[index] / seriesTotal * 100);
+                                        tooltipText += `${label}: ${dataSeries.values[index]} (${percentage}%)<br />`
+                                    });
+                                    $(plotDiv).tooltip({
+                                        toggle: 'tooltip',
+                                        placement: 'auto top',
+                                        trigger: 'hover',
+                                        html: true,
+                                        container: 'body',
+                                        title: tooltipText,
+                                    });
                                 }
                             }
                         });
