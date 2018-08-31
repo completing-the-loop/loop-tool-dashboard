@@ -149,7 +149,7 @@ class StudentsNotViewedResourceView(APIView):
         course_offering = self.request.course_offering
         page = get_object_or_404(Page, pk=resource_id, course_offering=course_offering)
 
-        not_viewed_students = LMSUser.objects.exclude(pagevisit__page=page).order_by('lastname', 'firstname')
+        not_viewed_students = LMSUser.objects.filter(course_offering=course_offering).exclude(pagevisit__page=page).order_by('lastname', 'firstname')
 
         serializer = StudentsSerializer(not_viewed_students, many=True)
 
