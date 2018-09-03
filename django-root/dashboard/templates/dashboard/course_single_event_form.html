@@ -6,6 +6,12 @@
 
 {% block content %}
   <div class="row">
+    <div class="col-md-12">
+      {% include "dashboard/_course_offering_breadcrumbs.html" with course_offering=request.course_offering title="Add Single Event" %}
+    </div>
+  </div>
+
+  <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
       <h2>{% if object.id %}Edit{% else %}Add{% endif %} Single Event</h2>
     </div>

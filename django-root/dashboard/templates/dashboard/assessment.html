@@ -5,11 +5,7 @@
 {% block content %}
 <div class="row">
   <div class="col-md-12">
-    <ol class="breadcrumb">
-      <li><a href="{% url 'dashboard:course_list' %}"><i class="glyphicon glyphicon-home glyphicon-fw"></i>My Courses</a></li>
-      <li><a href="{% url 'dashboard:course_dashboard' course_id=request.course_offering.id %}">Course: {{ request.course_offering.code }} - {{ request.course_offering.title }}</a></li>
-      <li class="active">Assessment</li>
-    </ol>
+    {% include "dashboard/_course_offering_breadcrumbs.html" with course_offering=request.course_offering title="Assessment" %}
   </div>
 </div>
 

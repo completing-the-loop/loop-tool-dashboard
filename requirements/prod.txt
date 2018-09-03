@@ -2,6 +2,9 @@
 
 circus
 
+# A circus dependency - >=5 is not compatible with circus
+tornado<5
+
 # ---------------------------
 # WSGI lib
 
